@@ -6,6 +6,7 @@
   "enable_references": true,
   "enable_rename": true,
   "enable_checker_only_saved": true,
+  "checker_args": "-vet -strict-style",
   "profile": "default",
-  "profiles": [{ "name": "default", "checker_path": ["src"] }]
+  "profiles": [{ "name": "default", "checker_path": ["source"] }]
 }
