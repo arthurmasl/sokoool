@@ -4,12 +4,12 @@
 //  NOTE: This source file also uses the '#pragma sokol' form of the
 //  custom tags.
 //------------------------------------------------------------------------------
-@header package game
-@header import sg "sokol/gfx"
-@ctype mat4 Mat4
+#pragma sokol @header package game
+#pragma sokol @header import sg "sokol/gfx"
+#pragma sokol @ctype mat4 Mat4
 
-@vs vs
-layout(binding=0) uniform vs_params {
+#pragma sokol @vs vs
+layout(binding = 0) uniform vs_params {
     mat4 mvp;
 };
 
@@ -25,11 +25,11 @@ void main() {
     color = color0;
     uv = texcoord0;
 }
-@end
+#pragma sokol @end
 
-@fs fs
-layout(binding=0) uniform texture2D tex;
-layout(binding=0) uniform sampler smp;
+#pragma sokol @fs fs
+layout(binding = 0) uniform texture2D tex;
+layout(binding = 0) uniform sampler smp;
 
 in vec4 color;
 in vec2 uv;
@@ -38,6 +38,6 @@ out vec4 frag_color;
 void main() {
     frag_color = texture(sampler2D(tex, smp), uv) * color;
 }
-@end
+#pragma sokol @end
 
-@program texcube vs fs
+#pragma sokol @program texcube vs fs
