@@ -8,9 +8,9 @@ import sglue "sokol/glue"
 
 @(export)
 game_frame :: proc() {
-  dt := f32(sapp.frame_duration())
-  g.rx += 60 * dt
-  g.ry += 120 * dt
+  // dt := f32(sapp.frame_duration())
+  // g.rx += 60 * dt
+  // g.ry += 120 * dt
 
   // vertex shader uniform with model-view-projection matrix
   vs_params := Vs_Params {

@@ -36,15 +36,8 @@ Game_Memory :: struct {
   rx, ry: f32,
 }
 
-Mat4 :: matrix[4, 4]f32
-Vec3 :: [3]f32
 g: ^Game_Memory
-
-Vertex :: struct {
-  x, y, z: f32,
-  color:   u32,
-  u, v:    u16,
-}
+force_reset: bool
 
 @(export)
 game_app_default_desc :: proc() -> sapp.Desc {
@@ -56,18 +49,6 @@ game_app_default_desc :: proc() -> sapp.Desc {
     icon = {sokol_default = true},
     logger = {func = slog.func},
     html5_update_document_title = true,
-  }
-}
-
-force_reset: bool
-
-@(export)
-game_event :: proc(e: ^sapp.Event) {
-  #partial switch e.type {
-  case .KEY_DOWN:
-    if e.key_code == .R {
-      force_reset = true
-    }
   }
 }
 
