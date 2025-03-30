@@ -31,9 +31,9 @@ import sg "sokol/gfx"
 import slog "sokol/log"
 
 Game_Memory :: struct {
-  pip:    sg.Pipeline,
-  bind:   sg.Bindings,
-  rx, ry: f32,
+  pip:         sg.Pipeline,
+  bind:        sg.Bindings,
+  pass_action: sg.Pass_Action,
 }
 
 g: ^Game_Memory
