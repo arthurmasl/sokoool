@@ -12,15 +12,11 @@ game_init :: proc() {
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
 
-  
-  // odinfmt: disable
-  vertices := [?]f32 {
-    // positions         // colors
-     0.0,  0.5, 0.5,     1.0, 0.0, 0.0, 1.0,
-     0.5, -0.5, 0.5,     0.0, 1.0, 0.0, 1.0,
-    -0.5, -0.5, 0.5,     0.0, 0.0, 1.0, 1.0,
+  vertices := [?]Vertex {
+    {pos = {0.0, 0.5, 0.5}, color = {1, 0, 0, 1}},
+    {pos = {0.8, -0.5, 0.5}, color = {0, 1, 0, 1}},
+    {pos = {-0.8, -0.5, 0.5}, color = {0, 0, 1, 1}},
   }
-  // odinfmt: enable
 
   g.bind.vertex_buffers[0] = sg.make_buffer(
     {data = {ptr = &vertices, size = size_of(vertices)}},
