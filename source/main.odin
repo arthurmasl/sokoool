@@ -37,7 +37,6 @@ game_init :: proc() {
   g.pass_action = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0, 0, 0, 1}}},
   }
-
 }
 
 @(export)
@@ -53,10 +52,8 @@ game_frame :: proc() {
 
 @(export)
 game_event :: proc(e: ^sapp.Event) {
-  #partial switch e.type {
-  case .KEY_DOWN:
-    if e.key_code == .R {
-      force_reset = true
-    }
+  if e.type == .KEY_DOWN {
+    if e.key_code == .R do force_reset = true
+    if e.key_code == .Q do sapp.request_quit()
   }
 }
