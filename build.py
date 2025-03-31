@@ -17,6 +17,7 @@ args_parser.add_argument("-no-shader-compile", action="store_true",   help="Don'
 args_parser.add_argument("-web",               action="store_true",   help="Build web release. Make sure emscripten (emcc) is in your PATH or use -emsdk-path flag to specify where it lives.")
 args_parser.add_argument("-emsdk-path",                               help="Path to where you have emscripten installed. Should be the root directory of your emscripten installation. Not necessary if emscripten is in your PATH. Can be used with both -web and -compile-sokol (the latter needs it when building the Sokol web (WASM) libraries).")
 args_parser.add_argument("-gl",                action="store_true",   help="Force OpenGL Sokol backend. Useful on some older computers, for example old MacBooks that don't support Metal.")
+args_parser.add_argument("-hard",              action="store_true",   help="Force hard reload")
 
 import urllib.request
 import os
@@ -160,6 +161,9 @@ def build_hot_reload():
 	if args.gl:
 		dll_extra_args += " -define:SOKOL_USE_GL=true"
 
+	if args.hard:
+		dll_extra_args += " -define:FORCE_HARD_RELOAD=true"
+
 	game_running = process_exists(exe)
 
 	if IS_WINDOWS:
@@ -213,6 +217,9 @@ def build_hot_reload():
 
 	if args.gl:
 		exe_extra_args += " -define:SOKOL_USE_GL=true"
+
+	if args.hard:
+		exe_extra_args += " -define:FORCE_HARD_RELOAD=true"
 
 	print("Building " + exe + "...")
 	execute("odin build source/main_hot_reload -strict-style -define:SOKOL_DLL=true -vet -out:%s %s" % (exe, exe_extra_args))
