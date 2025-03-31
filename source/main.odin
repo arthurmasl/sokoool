@@ -11,12 +11,14 @@ game_init :: proc() {
   game_hot_reloaded(g)
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
-
-  vertices := [?]Vertex {
-    {pos = {0.0, 0.5, 0.5}, color = {1, 0, 0, 1}},
-    {pos = {0.8, -0.5, 0.5}, color = {0, 1, 0, 1}},
-    {pos = {-0.8, -0.5, 0.5}, color = {0, 0, 1, 1}},
+  
+  // odinfmt: disable
+  vertices := [?]f32{
+    -0.5, -0.5, 0.0,
+     0.5, -0.5, 0.0,
+     0.0,  0.5, 0.0,
   }
+  // odinfmt: enable
 
   g.bind.vertex_buffers[0] = sg.make_buffer(
     {data = {ptr = &vertices, size = size_of(vertices)}},
@@ -25,12 +27,7 @@ game_init :: proc() {
   g.pip = sg.make_pipeline(
     {
       shader = sg.make_shader(triangle_shader_desc(sg.query_backend())),
-      layout = {
-        attrs = {
-          ATTR_triangle_position = {format = .FLOAT3},
-          ATTR_triangle_color0 = {format = .FLOAT4},
-        },
-      },
+      layout = {attrs = {ATTR_triangle_position = {format = .FLOAT3}}},
     },
   )
 
