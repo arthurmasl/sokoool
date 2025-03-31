@@ -37,7 +37,6 @@ Game_Memory :: struct {
 }
 
 g: ^Game_Memory
-force_reset: bool
 
 @(export)
 game_app_default_desc :: proc() -> sapp.Desc {
@@ -76,6 +75,8 @@ game_hot_reloaded :: proc(mem: rawptr) {
   // your global variables into pointers that point to something inside
   // `g`. Then that state carries over between hot reloads.
 }
+
+force_reset: bool
 
 @(export)
 game_force_restart :: proc() -> bool {

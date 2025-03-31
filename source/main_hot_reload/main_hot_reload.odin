@@ -29,6 +29,8 @@ when ODIN_OS == .Windows {
 GAME_DLL_DIR :: "build/hot_reload/"
 GAME_DLL_PATH :: GAME_DLL_DIR + "game" + DLL_EXT
 
+always_hard_reload := true
+
 // We copy the DLL because using it directly would lock it, which would prevent
 // the compiler from writing to it.
 copy_dll :: proc(to: string) -> bool {
@@ -124,7 +126,7 @@ frame :: proc "c" () {
     if new_game_api_ok {
       force_restart = force_restart || game_api.memory_size() != new_game_api.memory_size()
 
-      if !force_restart {
+      if !always_hard_reload && !force_restart {
         // This does the normal hot reload
 
         // Note that we don't unload the old game APIs because that
