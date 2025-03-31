@@ -11,26 +11,30 @@ game_init :: proc() {
   game_hot_reloaded(g)
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
-  
-  // odinfmt: disable
-  vertices := [?]f32{
-    -0.5, -0.5, 0.0,
-     0.5, -0.5, 0.0,
-     0.0,  0.5, 0.0,
-  }
-  // odinfmt: enable
+  shader := sg.make_shader(triangle_shader_desc(sg.query_backend()))
 
+  // vertex buffer
+  vertices := [?]f32{0.5, 0.5, 0.0, 0.5, -0.5, 0.0, -0.5, -0.5, 0.0, -0.5, 0.5, 0.0}
   g.bind.vertex_buffers[0] = sg.make_buffer(
     {data = {ptr = &vertices, size = size_of(vertices)}},
   )
 
+  // index buffer
+  indices := [?]u16{0, 1, 2, 0, 2, 3}
+  g.bind.index_buffer = sg.make_buffer(
+    {type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}},
+  )
+
+  // pipeline
   g.pip = sg.make_pipeline(
     {
-      shader = sg.make_shader(triangle_shader_desc(sg.query_backend())),
+      shader = shader,
+      index_type = .UINT16,
       layout = {attrs = {ATTR_triangle_position = {format = .FLOAT3}}},
     },
   )
 
+  // clear
   g.pass_action = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0, 0, 0, 1}}},
   }
@@ -42,7 +46,7 @@ game_frame :: proc() {
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)
 
-  sg.draw(0, 3, 1)
+  sg.draw(0, 6, 1)
   sg.end_pass()
   sg.commit()
 }
