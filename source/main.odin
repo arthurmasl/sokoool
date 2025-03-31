@@ -14,7 +14,12 @@ game_init :: proc() {
   shader := sg.make_shader(triangle_shader_desc(sg.query_backend()))
 
   // vertex buffer
-  vertices := [?]f32{0.5, 0.5, 0.0, 0.5, -0.5, 0.0, -0.5, -0.5, 0.0, -0.5, 0.5, 0.0}
+  vertices := [?]Vertex {
+    {pos = {0.5, 0.5, 0.0}, color = {1, 0, 0, 1}},
+    {pos = {0.5, -0.5, 0.0}, color = {0, 1, 0, 1}},
+    {pos = {-0.5, -0.5, 0.0}, color = {0, 0, 1, 1}},
+    {pos = {-0.5, 0.5, 0.0}, color = {1, 1, 0, 1}},
+  }
   g.bind.vertex_buffers[0] = sg.make_buffer(
     {data = {ptr = &vertices, size = size_of(vertices)}},
   )
@@ -30,7 +35,13 @@ game_init :: proc() {
     {
       shader = shader,
       index_type = .UINT16,
-      layout = {attrs = {ATTR_triangle_position = {format = .FLOAT3}}},
+      // primitive_type = .LINES,
+      layout = {
+        attrs = {
+          ATTR_triangle_position = {format = .FLOAT3},
+          ATTR_triangle_color0 = {format = .FLOAT4},
+        },
+      },
     },
   )
 
