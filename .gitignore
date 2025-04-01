@@ -12,6 +12,7 @@ dylib/
 sokol-shdc
 source/sokol
 sokol_dll*
+.DS_Store
 
 # generated shaders are prefixed with gen__ so they can be ignored
 gen__*.odin

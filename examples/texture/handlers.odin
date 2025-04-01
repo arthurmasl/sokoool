@@ -17,14 +17,12 @@ game_init :: proc() {
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
 
   // vertex buffer
-  // odinfmt: disable
-  vertices := [?]f32 {
-     0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,  
-     0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0, 
-    -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,
-    -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0,
+  vertices := [?]Vertex {
+    {pos = {0.5, 0.5, 0.0}, color = {1.0, 0.0, 0.0, 1.0}, uvs = {1.0, 1.0}},
+    {pos = {0.5, -0.5, 0.0}, color = {0.0, 1.0, 0.0, 1.0}, uvs = {1.0, 0.0}},
+    {pos = {-0.5, -0.5, 0.0}, color = {0.0, 0.0, 1.0, 1.0}, uvs = {0.0, 0.0}},
+    {pos = {-0.5, 0.5, 0.0}, color = {1.0, 1.0, 0.0, 1.0}, uvs = {0.0, 1.0}},
   }
-  // odinfmt: enable
   g.bind.vertex_buffers[0] = sg.make_buffer(
     {data = {ptr = &vertices, size = size_of(vertices)}},
   )
@@ -42,14 +40,14 @@ game_init :: proc() {
     return
   }
 
-  img, img_err := png.load_from_bytes(data = img_data, allocator = context.temp_allocator)
+  img, img_err := png.load_from_bytes(img_data, nil, context.temp_allocator)
   if img_err != nil {
     log.error(img_err)
     return
   }
 
   // texture
-  g.bind.images[IMG_ourTexture] = sg.make_image(
+  g.bind.images[IMG_tex] = sg.make_image(
     {
       width = i32(img.width),
       height = i32(img.height),
@@ -64,7 +62,7 @@ game_init :: proc() {
   )
 
   // sampler
-  g.bind.samplers[SMP_ourTexture_smp] = sg.make_sampler({})
+  g.bind.samplers[SMP_smp] = sg.make_sampler({})
 
   // pipeline
   g.pip = sg.make_pipeline(
@@ -75,9 +73,9 @@ game_init :: proc() {
       // primitive_type = .LINES,
       layout = {
         attrs = {
-          ATTR_simple_position = {format = .FLOAT3},
-          ATTR_simple_aColor = {format = .FLOAT3},
-          ATTR_simple_aTexCoord = {format = .FLOAT2},
+          ATTR_simple_pos = {format = .FLOAT3},
+          ATTR_simple_color0 = {format = .FLOAT4},
+          ATTR_simple_uvs0 = {format = .FLOAT2},
         },
       },
     },
