@@ -15,6 +15,7 @@ Vec4 :: [4]f32
 // }
 
 Vertex :: struct {
-  pos:   Vec3,
-  color: sg.Color,
+  pos:            Vec3,
+  color:          sg.Color,
+  texture_coords: Vec2,
 }
