@@ -16,27 +16,19 @@ game_init :: proc() {
   // vertex buffer
   // odinfmt: disable
   vertices := [?]f32 {
-    -0.5, 0.5, 0,
-    0.5, -0.5, 0,
-    -0.5, -0.5, 0,
-    0.5, 0.5, 0,
+    -0.5, -0.5, 0.0,
+    0.5, -0.5, 0.0,
+    0.0, 0.5, 0.0, 
   }
   // odinfmt: enable
   g.bind.vertex_buffers[0] = sg.make_buffer(
     {data = {ptr = &vertices, size = size_of(vertices)}},
   )
 
-  // index buffer
-  indices := [?]u16{0, 1, 2, 0, 3, 1}
-  g.bind.index_buffer = sg.make_buffer(
-    {type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}},
-  )
-
   // pipeline
   g.pip = sg.make_pipeline(
     {
       shader = shader,
-      index_type = .UINT16,
       // primitive_type = .LINES,
       layout = {attrs = {ATTR_simple_position = {format = .FLOAT3}}},
     },
@@ -54,7 +46,7 @@ game_frame :: proc() {
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)
 
-  sg.draw(0, 6, 1)
+  sg.draw(0, 3, 1)
   sg.end_pass()
   sg.commit()
 }
