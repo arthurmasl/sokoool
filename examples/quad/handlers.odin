@@ -15,9 +15,10 @@ game_init :: proc() {
 
   // vertex buffer
   vertices := [?]Vertex {
-    {pos = {-0.5, -0.5, 0.0}, color = {1, 0, 0, 1}},
+    {pos = {0.5, 0.5, 0.0}, color = {1, 0, 0, 1}},
     {pos = {0.5, -0.5, 0.0}, color = {0, 1, 0, 1}},
-    {pos = {0.0, 0.5, 0.0}, color = {0, 0, 1, 1}},
+    {pos = {-0.5, -0.5, 0.0}, color = {0, 0, 1, 1}},
+    {pos = {-0.5, 0.5, 0.0}, color = {1, 1, 0, 1}},
   }
   g.bind.vertex_buffers[0] = sg.make_buffer(
     {data = {ptr = &vertices, size = size_of(vertices)}},
@@ -56,7 +57,7 @@ game_frame :: proc() {
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)
 
-  sg.draw(0, 3, 1)
+  sg.draw(0, 6, 1)
   sg.end_pass()
   sg.commit()
 }
