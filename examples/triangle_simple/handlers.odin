@@ -21,28 +21,26 @@ game_init :: proc() {
     0.0, 0.5, 0.0, 
   }
   // odinfmt: enable
-  g.bind.vertex_buffers[0] = sg.make_buffer(
-    {data = {ptr = &vertices, size = size_of(vertices)}},
-  )
+  g.bind.vertex_buffers[0] = sg.make_buffer({data = {ptr = &vertices, size = size_of(vertices)}})
 
   // pipeline
   g.pip = sg.make_pipeline(
-    {
-      shader = shader,
-      // primitive_type = .LINES,
-      layout = {attrs = {ATTR_simple_position = {format = .FLOAT3}}},
-    },
+  {
+    shader = shader,
+    // primitive_type = .LINES,
+    layout = {attrs = {ATTR_simple_position = {format = .FLOAT3}}},
+  },
   )
 
   // clear
-  g.pass_action = {
+  g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0, 0, 0, 1}}},
   }
 }
 
 @(export)
 game_frame :: proc() {
-  sg.begin_pass({action = g.pass_action, swapchain = sglue.swapchain()})
+  sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)
 

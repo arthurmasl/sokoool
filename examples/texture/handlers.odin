@@ -23,15 +23,11 @@ game_init :: proc() {
     {pos = {-0.5, -0.5, 0.0}, color = {0.0, 0.0, 1.0, 1.0}, uvs = {0.0, 0.0}},
     {pos = {-0.5, 0.5, 0.0}, color = {1.0, 1.0, 0.0, 1.0}, uvs = {0.0, 1.0}},
   }
-  g.bind.vertex_buffers[0] = sg.make_buffer(
-    {data = {ptr = &vertices, size = size_of(vertices)}},
-  )
+  g.bind.vertex_buffers[0] = sg.make_buffer({data = {ptr = &vertices, size = size_of(vertices)}})
 
   // index buffer
   indices := [?]u16{0, 1, 3, 1, 2, 3}
-  g.bind.index_buffer = sg.make_buffer(
-    {type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}},
-  )
+  g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}})
 
   // load image
   img_data, img_data_ok := read_entire_file("assets/round_cat.png", context.temp_allocator)
@@ -51,13 +47,7 @@ game_init :: proc() {
     {
       width = i32(img.width),
       height = i32(img.height),
-      data = {
-        subimage = {
-          0 = {
-            0 = {ptr = raw_data(img.pixels.buf), size = uint(slice.size(img.pixels.buf[:]))},
-          },
-        },
-      },
+      data = {subimage = {0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(slice.size(img.pixels.buf[:]))}}}},
     },
   )
 
@@ -82,14 +72,14 @@ game_init :: proc() {
   )
 
   // clear
-  g.pass_action = {
+  g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0, 0, 0, 1}}},
   }
 }
 
 @(export)
 game_frame :: proc() {
-  sg.begin_pass({action = g.pass_action, swapchain = sglue.swapchain()})
+  sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)
 

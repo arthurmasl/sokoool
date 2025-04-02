@@ -72,14 +72,14 @@ game_init :: proc() {
   )
 
   // clear
-  g.pass_action = {
+  g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0, 0, 0, 1}}},
   }
 }
 
 @(export)
 game_frame :: proc() {
-  sg.begin_pass({action = g.pass_action, swapchain = sglue.swapchain()})
+  sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)
 
