@@ -1,9 +1,6 @@
 package game
 
-import "core:image/png"
-import "core:log"
 import "core:math/linalg"
-import "core:slice"
 
 import sapp "sokol/app"
 import sg "sokol/gfx"
@@ -18,38 +15,24 @@ game_init :: proc() {
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
 
   // vertex buffer
-  vertices := [?]Vertex {
+  vertices := []Vertex {
     {pos = {0.5, 0.5, 0.0}, color = {1.0, 0.0, 0.0, 1.0}, uvs = {1.0, 1.0}},
     {pos = {0.5, -0.5, 0.0}, color = {0.0, 1.0, 0.0, 1.0}, uvs = {1.0, 0.0}},
     {pos = {-0.5, -0.5, 0.0}, color = {0.0, 0.0, 1.0, 1.0}, uvs = {0.0, 0.0}},
     {pos = {-0.5, 0.5, 0.0}, color = {1.0, 1.0, 0.0, 1.0}, uvs = {0.0, 1.0}},
   }
-  g.bind.vertex_buffers[0] = sg.make_buffer({data = {ptr = &vertices, size = size_of(vertices)}})
+  g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
 
   // index buffer
-  indices := [?]u16{0, 1, 3, 1, 2, 3}
-  g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}})
+  indices := []u16{0, 1, 3, 1, 2, 3}
+  g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = sg_range(indices)})
 
   // load image
-  img_data, img_data_ok := read_entire_file("assets/round_cat.png", context.temp_allocator)
-  if !img_data_ok {
-    log.error("Failed loading texture")
-    return
-  }
-
-  img, img_err := png.load_from_bytes(img_data, nil, context.temp_allocator)
-  if img_err != nil {
-    log.error(img_err)
-    return
-  }
+  img := load_image("assets/round_cat.png")
 
   // texture
   g.bind.images[IMG_tex] = sg.make_image(
-    {
-      width = i32(img.width),
-      height = i32(img.height),
-      data = {subimage = {0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(slice.size(img.pixels.buf[:]))}}}},
-    },
+    {width = i32(img.width), height = i32(img.height), data = {subimage = {0 = {0 = sg_range(img)}}}},
   )
 
   // sampler
@@ -91,7 +74,7 @@ game_frame :: proc() {
   vs_params := Vs_Params {
     transform = transform,
   }
-  sg.apply_uniforms(UB_vs_params, data = {ptr = &vs_params, size = size_of(vs_params)})
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
 
   sg.draw(0, 6, 1)
   sg.end_pass()
