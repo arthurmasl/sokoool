@@ -30,12 +30,6 @@ import sapp "sokol/app"
 import sg "sokol/gfx"
 import slog "sokol/log"
 
-Game_Memory :: struct {
-  pip:  sg.Pipeline,
-  bind: sg.Bindings,
-  pass: sg.Pass_Action,
-}
-
 g: ^Game_Memory
 
 @(export)
