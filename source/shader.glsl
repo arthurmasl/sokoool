@@ -26,7 +26,8 @@ in vec2 uvs;
 out vec4 frag_color;
 
 void main() {
-    frag_color = texture(sampler2D(tex, smp), uvs) * color;
+    // frag_color = texture(sampler2D(tex, smp), uvs) * color;
+    frag_color = texture(sampler2D(tex, smp), uvs) * vec4(0.8, 0, 1, 1);
 }
 #pragma sokol @end
 

@@ -161,8 +161,8 @@ def build_hot_reload():
 	if args.gl:
 		dll_extra_args += " -define:SOKOL_USE_GL=true"
 
-	if args.hard:
-		dll_extra_args += " -define:FORCE_HARD_RELOAD=true"
+	# if args.hard:
+	# 	dll_extra_args += " -define:FORCE_HARD_RELOAD=true"
 
 	game_running = process_exists(exe)
 
