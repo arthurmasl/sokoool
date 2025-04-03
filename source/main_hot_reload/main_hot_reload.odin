@@ -88,7 +88,8 @@ unload_game_api :: proc(api: ^Game_API) {
     }
   }
 
-  if os.remove(fmt.tprintf(GAME_DLL_DIR + "game_{0}" + DLL_EXT, api.api_version)) != nil {
+  if os.remove(fmt.tprintf(GAME_DLL_DIR + "game_{0}" + DLL_EXT, api.api_version)) !=
+     nil {
     fmt.printfln(
       "Failed to remove {0}game_{1}" + DLL_EXT + " copy",
       GAME_DLL_DIR,
@@ -124,7 +125,8 @@ frame :: proc "c" () {
     new_game_api, new_game_api_ok := load_game_api(game_api_version)
 
     if new_game_api_ok {
-      force_restart = force_restart || game_api.memory_size() != new_game_api.memory_size()
+      force_restart =
+        force_restart || game_api.memory_size() != new_game_api.memory_size()
 
       if !FORCE_HARD_RELOAD && !force_restart {
         // This does the normal hot reload

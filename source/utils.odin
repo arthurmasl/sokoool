@@ -32,7 +32,13 @@ read_entire_file :: proc(
   }
 }
 
-write_entire_file :: proc(name: string, data: []byte, truncate := true) -> (success: bool) {
+write_entire_file :: proc(
+  name: string,
+  data: []byte,
+  truncate := true,
+) -> (
+  success: bool,
+) {
   when IS_WEB {
     return web.write_entire_file(name, data, truncate)
   } else {

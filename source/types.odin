@@ -3,9 +3,10 @@ package game
 import sg "sokol/gfx"
 
 Game_Memory :: struct {
-  pip:  sg.Pipeline,
-  bind: sg.Bindings,
-  pass: sg.Pass_Action,
+  pip:       sg.Pipeline,
+  bind:      sg.Bindings,
+  pass:      sg.Pass_Action,
+  last_time: u64,
 }
 
 Vec2 :: [2]f32
