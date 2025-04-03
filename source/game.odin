@@ -1,78 +1,110 @@
-/*
-This file is the starting point of your game.
-
-Some importants procedures:
-- game_init: Initializes sokol_gfx and sets up the game state.
-- game_frame: Called one per frame, do your game logic and rendering in here.
-- game_cleanup: Called on shutdown of game, cleanup memory etc.
-
-The hot reload compiles the contents of this folder into a game DLL. A host
-application loads that DLL and calls the procedures of the DLL. 
-
-Special procedures that help facilitate the hot reload:
-- game_memory: Run just before a hot reload. The hot reload host application can
-	that way keep a pointer to the game's memory and feed it to the new game DLL
-	after the hot reload is complete.
-- game_hot_reloaded: Sets the `g` global variable in the new game DLL. The value
-	comes from the value the host application got from game_memory before the
-	hot reload.
-
-When release or web builds are made, then this whole package is just
-treated as a normal Odin package. No DLL is created.
-
-The hot applications use sokol_app to open the window. They use the settings
-returned by the `game_app_default_desc` procedure.
-*/
-
 package game
+
+import "core:math/linalg"
 
 import sapp "sokol/app"
 import sg "sokol/gfx"
+import sglue "sokol/glue"
 import slog "sokol/log"
-
-g: ^Game_Memory
+import stm "sokol/time"
 
 @(export)
-game_app_default_desc :: proc() -> sapp.Desc {
-  return {
-    width = 1280,
-    height = 720,
-    sample_count = 4,
-    window_title = "Odin + Sokol hot reload template",
-    icon = {sokol_default = true},
-    logger = {func = slog.func},
-    html5_update_document_title = true,
+game_init :: proc() {
+  g = new(Game_Memory)
+  game_hot_reloaded(g)
+
+  sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
+  stm.setup()
+
+  // vertex buffer
+  vertices := []Vertex {
+    {pos = {-0.5, -0.5, -0.5}, uvs = {0.0, 0.0}},
+    {pos = {0.5, -0.5, -0.5}, uvs = {1.0, 0.0}},
+    {pos = {0.5, 0.5, -0.5}, uvs = {1.0, 1.0}},
+    {pos = {0.5, 0.5, -0.5}, uvs = {1.0, 1.0}},
+    {pos = {-0.5, 0.5, -0.5}, uvs = {0.0, 1.0}},
+    {pos = {-0.5, -0.5, -0.5}, uvs = {0.0, 0.0}},
+    {pos = {-0.5, -0.5, 0.5}, uvs = {0.0, 0.0}},
+    {pos = {0.5, -0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {0.5, 0.5, 0.5}, uvs = {1.0, 1.0}},
+    {pos = {0.5, 0.5, 0.5}, uvs = {1.0, 1.0}},
+    {pos = {-0.5, 0.5, 0.5}, uvs = {0.0, 1.0}},
+    {pos = {-0.5, -0.5, 0.5}, uvs = {0.0, 0.0}},
+    {pos = {-0.5, 0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {-0.5, 0.5, -0.5}, uvs = {1.0, 1.0}},
+    {pos = {-0.5, -0.5, -0.5}, uvs = {0.0, 1.0}},
+    {pos = {-0.5, -0.5, -0.5}, uvs = {0.0, 1.0}},
+    {pos = {-0.5, -0.5, 0.5}, uvs = {0.0, 0.0}},
+    {pos = {-0.5, 0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {0.5, 0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {0.5, 0.5, -0.5}, uvs = {1.0, 1.0}},
+    {pos = {0.5, -0.5, -0.5}, uvs = {0.0, 1.0}},
+    {pos = {0.5, -0.5, -0.5}, uvs = {0.0, 1.0}},
+    {pos = {0.5, -0.5, 0.5}, uvs = {0.0, 0.0}},
+    {pos = {0.5, 0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {-0.5, -0.5, -0.5}, uvs = {0.0, 1.0}},
+    {pos = {0.5, -0.5, -0.5}, uvs = {1.0, 1.0}},
+    {pos = {0.5, -0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {0.5, -0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {-0.5, -0.5, 0.5}, uvs = {0.0, 0.0}},
+    {pos = {-0.5, -0.5, -0.5}, uvs = {0.0, 1.0}},
+    {pos = {-0.5, 0.5, -0.5}, uvs = {0.0, 1.0}},
+    {pos = {0.5, 0.5, -0.5}, uvs = {1.0, 1.0}},
+    {pos = {0.5, 0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {0.5, 0.5, 0.5}, uvs = {1.0, 0.0}},
+    {pos = {-0.5, 0.5, 0.5}, uvs = {0.0, 0.0}},
+    {pos = {-0.5, 0.5, -0.5}, uvs = {0.0, 1.0}},
+  }
+  g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
+
+  img := load_image("assets/round_cat.png")
+
+  // texture
+  g.bind.images[IMG_tex] = sg.make_image(
+    {width = i32(img.width), height = i32(img.height), data = {subimage = {0 = {0 = sg_range(img)}}}},
+  )
+
+  // sampler
+  g.bind.samplers[SMP_smp] = sg.make_sampler({})
+
+  // pipeline
+  g.pip = sg.make_pipeline(
+    {
+      shader = sg.make_shader(simple_shader_desc(sg.query_backend())),
+      layout = {attrs = {ATTR_simple_pos = {format = .FLOAT3}, ATTR_simple_uvs0 = {format = .FLOAT2}}},
+      depth = {compare = .LESS_EQUAL, write_enabled = true},
+      // primitive_type = .LINES,
+    },
+  )
+
+  // clear
+  g.pass = {
+    colors = {0 = {load_action = .CLEAR, clear_value = {0, 0, 0, 1}}},
   }
 }
 
 @(export)
-game_cleanup :: proc() {
-  sg.shutdown()
-  free(g)
-}
+game_frame :: proc() {
+  sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
+  sg.apply_pipeline(g.pip)
+  sg.apply_bindings(g.bind)
 
-@(export)
-game_memory :: proc() -> rawptr {
-  return g
-}
+  now := f32(stm.sec(stm.now()))
+  rxm := linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * -65 * now, {0, 1, 0})
+  rym := linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * -120, {0, 0, 1})
+  model := rxm * rym
 
-@(export)
-game_memory_size :: proc() -> int {
-  return size_of(Game_Memory)
-}
+  view := linalg.matrix4_translate_f32({0, 0, -3})
+  projection := linalg.matrix4_perspective(45, sapp.widthf() / sapp.heightf(), 0.1, 100.0)
 
-@(export)
-game_hot_reloaded :: proc(mem: rawptr) {
-  g = (^Game_Memory)(mem)
+  vs_params := Vs_Params {
+    model      = model,
+    view       = view,
+    projection = projection,
+  }
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
 
-  // Here you can also set your own global variables. A good idea is to make
-  // your global variables into pointers that point to something inside
-  // `g`. Then that state carries over between hot reloads.
-}
-
-force_reset: bool
-
-@(export)
-game_force_restart :: proc() -> bool {
-  return force_reset
+  sg.draw(0, 36, 1)
+  sg.end_pass()
+  sg.commit()
 }
