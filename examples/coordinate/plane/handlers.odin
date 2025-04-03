@@ -63,8 +63,7 @@ game_frame :: proc() {
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)
 
-  now := f32(stm.sec(stm.now()))
-  model := linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * -65 * now, {0, 1, 0})
+  model := linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * -65, {1, 0, 0})
   view := linalg.matrix4_translate_f32({0, 0, -2})
   projection := linalg.matrix4_perspective(45, sapp.widthf() / sapp.heightf(), 0.1, 100.0)
 
