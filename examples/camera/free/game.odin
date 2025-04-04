@@ -25,49 +25,8 @@ game_init :: proc() {
   stm.setup()
   sapp.show_mouse(false)
 
-  vertices := []Vertex {
-    {pos = {-1.0, -1.0, -1.0}, uvs = {0, 0}},
-    {pos = {1.0, -1.0, -1.0}, uvs = {1, 0}},
-    {pos = {1.0, 1.0, -1.0}, uvs = {1, 1}},
-    {pos = {-1.0, 1.0, -1.0}, uvs = {0, 1}},
-    {pos = {-1.0, -1.0, 1.0}, uvs = {0, 0}},
-    {pos = {1.0, -1.0, 1.0}, uvs = {1, 0}},
-    {pos = {1.0, 1.0, 1.0}, uvs = {1, 1}},
-    {pos = {-1.0, 1.0, 1.0}, uvs = {0, 1}},
-    {pos = {-1.0, -1.0, -1.0}, uvs = {0, 0}},
-    {pos = {-1.0, 1.0, -1.0}, uvs = {1, 0}},
-    {pos = {-1.0, 1.0, 1.0}, uvs = {1, 1}},
-    {pos = {-1.0, -1.0, 1.0}, uvs = {0, 1}},
-    {pos = {1.0, -1.0, -1.0}, uvs = {0, 0}},
-    {pos = {1.0, 1.0, -1.0}, uvs = {1, 0}},
-    {pos = {1.0, 1.0, 1.0}, uvs = {1, 1}},
-    {pos = {1.0, -1.0, 1.0}, uvs = {0, 1}},
-    {pos = {-1.0, -1.0, -1.0}, uvs = {0, 0}},
-    {pos = {-1.0, -1.0, 1.0}, uvs = {1, 0}},
-    {pos = {1.0, -1.0, 1.0}, uvs = {1, 1}},
-    {pos = {1.0, -1.0, -1.0}, uvs = {0, 1}},
-    {pos = {-1.0, 1.0, -1.0}, uvs = {0, 0}},
-    {pos = {-1.0, 1.0, 1.0}, uvs = {1, 0}},
-    {pos = {1.0, 1.0, 1.0}, uvs = {1, 1}},
-    {pos = {1.0, 1.0, -1.0}, uvs = {0, 1}},
-  }
-  
-  // odinfmt: disable
-  indices := [?]u16 {
-		0, 1, 2,  0, 2, 3,
-		6, 5, 4,  7, 6, 4,
-		8, 9, 10,  8, 10, 11,
-		14, 13, 12,  15, 14, 12,
-		16, 17, 18,  16, 18, 19,
-		22, 21, 20,  23, 22, 20,
-	}
-  // odinfmt: enable
-
-  g.bind.index_buffer = sg.make_buffer(
-    {type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}},
-  )
-
-  g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
+  g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_VERTICES)})
+  g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = sg_range(CUBE_INDICES)})
 
   img := load_image("assets/round_cat.png")
   g.bind.samplers[SMP_smp] = sg.make_sampler({})
