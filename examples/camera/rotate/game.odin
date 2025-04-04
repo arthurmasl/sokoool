@@ -14,16 +14,8 @@ game_init :: proc() {
   g = new(Game_Memory)
   game_hot_reloaded(g)
 
-  g.camera_pos = {0, 0, 30}
-  g.camera_front = {0, 0, -1}
-  g.camera_up = {0, 1, 0}
-  g.first_mouse = true
-  g.fov = 45
-  g.yaw = -90
-
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
   stm.setup()
-  sapp.show_mouse(false)
 
   vertices := []Vertex {
     {pos = {-1.0, -1.0, -1.0}, uvs = {0, 0}},
@@ -109,12 +101,17 @@ cubes_pos :: [?]Vec3 {
   {4, 1, -7},
 }
 
+RADIUS :: 30.0
+
 @(export)
 game_frame :: proc() {
-  g.delta_time = stm.laptime(&g.last_time)
+  now := f32(stm.sec(stm.now()))
 
-  view := linalg.matrix4_look_at_f32(g.camera_pos, g.camera_pos + g.camera_front, g.camera_up)
-  projection := linalg.matrix4_perspective_f32(g.fov, sapp.widthf() / sapp.heightf(), 0.1, 100.0)
+  camX := math.sin_f32(now) * RADIUS
+  camZ := math.cos_f32(now) * RADIUS
+
+  view := linalg.matrix4_look_at_f32(Vec3{camX, 0, camZ}, Vec3{}, Vec3{0, 1, 0})
+  projection := linalg.matrix4_perspective_f32(45, sapp.widthf() / sapp.heightf(), 0.1, 100.0)
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.pip)
@@ -125,7 +122,7 @@ game_frame :: proc() {
   for pos in cubes_pos {
     vs_params.model =
       linalg.matrix4_translate_f32(pos) *
-      linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * -65 * f32(stm.sec(stm.now())), pos)
+      linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * -65 * f32(now), pos)
 
     sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
 
@@ -136,62 +133,4 @@ game_frame :: proc() {
   sg.commit()
 
   free_all(context.temp_allocator)
-}
-
-SPEED :: 20
-SENSITIVITY :: 0.005
-
-@(export)
-game_event :: proc(e: ^sapp.Event) {
-  if e.type == .KEY_DOWN {
-    if e.key_code == .R do force_reset = true
-    if e.key_code == .Q do sapp.request_quit()
-
-    camera_speed := SPEED * f32(stm.sec(g.delta_time))
-
-    if e.key_code == .W {
-      offset := g.camera_front * camera_speed
-      g.camera_pos += offset
-    }
-    if e.key_code == .S {
-      offset := g.camera_front * camera_speed
-      g.camera_pos -= offset
-    }
-    if e.key_code == .A {
-      offset := linalg.normalize(linalg.cross(g.camera_front, g.camera_up)) * camera_speed
-      g.camera_pos -= offset
-    }
-    if e.key_code == .D {
-      offset := linalg.normalize(linalg.cross(g.camera_front, g.camera_up)) * camera_speed
-      g.camera_pos += offset
-    }
-  }
-
-  if e.type == .MOUSE_MOVE {
-    if g.first_mouse {
-      g.last_x = e.mouse_x
-      g.last_y = e.mouse_y
-      g.first_mouse = false
-    }
-
-    xoffset := e.mouse_x - g.last_x
-    yoffset := g.last_y - e.mouse_y
-    g.last_x = e.mouse_x
-    g.last_y = e.mouse_y
-
-    xoffset *= SENSITIVITY
-    yoffset *= SENSITIVITY
-
-    g.yaw += linalg.to_degrees(xoffset)
-    g.pitch += linalg.to_degrees(yoffset)
-
-    if g.pitch > 89.0 do g.pitch = 89.0
-    if g.pitch < -89.0 do g.pitch = -89.0
-
-    direction: Vec3
-    direction.x = math.cos(linalg.to_radians(g.yaw)) * math.cos(linalg.to_radians(g.pitch))
-    direction.y = math.sin(linalg.to_radians(g.pitch))
-    direction.z = math.sin(linalg.to_radians(g.yaw)) * math.cos(linalg.to_radians(g.pitch))
-    g.camera_front = linalg.normalize(direction)
-  }
 }

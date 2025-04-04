@@ -76,11 +76,3 @@ force_reset: bool
 game_force_restart :: proc() -> bool {
   return force_reset
 }
-
-@(export)
-game_event :: proc(e: ^sapp.Event) {
-  if e.type == .KEY_DOWN {
-    if e.key_code == .R do force_reset = true
-    if e.key_code == .Q do sapp.request_quit()
-  }
-}
