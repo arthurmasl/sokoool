@@ -1,5 +1,6 @@
 package game
 
+import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
