@@ -40,7 +40,7 @@ game_init :: proc() {
       index_type = .UINT16,
       cull_mode = .BACK,
       depth = {compare = .LESS_EQUAL, write_enabled = true},
-      primitive_type = .LINE_STRIP,
+      // primitive_type = .LINE_STRIP,
     },
   )
 

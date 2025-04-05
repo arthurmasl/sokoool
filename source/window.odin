@@ -39,6 +39,7 @@ game_app_default_desc :: proc() -> sapp.Desc {
     width = 1280,
     height = 720,
     sample_count = 4,
+    high_dpi = true,
     window_title = "Odin + Sokol hot reload template",
     icon = {sokol_default = true},
     logger = {func = slog.func},
