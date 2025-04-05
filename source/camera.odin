@@ -46,55 +46,57 @@ camera_update :: proc() -> (Mat4, Mat4) {
   return view, projection
 }
 
-camera_key_down :: proc(e: ^sapp.Event) {
-  camera_speed := SPEED * delta_time
+camera_process_input :: proc(e: ^sapp.Event) {
+  // keyboard
+  if e.type == .KEY_DOWN {
+    camera_speed := SPEED * delta_time
 
-  if e.key_code == .W {
-    offset := g.camera.front * camera_speed
-    g.camera.pos += offset
-  }
-  if e.key_code == .S {
-    offset := g.camera.front * camera_speed
-    g.camera.pos -= offset
-  }
-  if e.key_code == .A {
-    offset := linalg.normalize(linalg.cross(g.camera.front, g.camera.up)) * camera_speed
-    g.camera.pos -= offset
-  }
-  if e.key_code == .D {
-    offset := linalg.normalize(linalg.cross(g.camera.front, g.camera.up)) * camera_speed
-    g.camera.pos += offset
+    if e.key_code == .W {
+      offset := g.camera.front * camera_speed
+      g.camera.pos += offset
+    }
+    if e.key_code == .S {
+      offset := g.camera.front * camera_speed
+      g.camera.pos -= offset
+    }
+    if e.key_code == .A {
+      offset := linalg.normalize(linalg.cross(g.camera.front, g.camera.up)) * camera_speed
+      g.camera.pos -= offset
+    }
+    if e.key_code == .D {
+      offset := linalg.normalize(linalg.cross(g.camera.front, g.camera.up)) * camera_speed
+      g.camera.pos += offset
+    }
   }
 
-}
+  // mosue
+  if e.type == .MOUSE_MOVE {
+    if g.camera.init {
+      g.camera.last_x = e.mouse_x
+      g.camera.last_y = e.mouse_y
+      g.camera.init = false
+    }
 
-camera_mouse_move :: proc(e: ^sapp.Event) {
-  if g.camera.init {
+    xoffset := e.mouse_x - g.camera.last_x
+    yoffset := g.camera.last_y - e.mouse_y
     g.camera.last_x = e.mouse_x
     g.camera.last_y = e.mouse_y
-    g.camera.init = false
+
+    xoffset *= SENSITIVITY
+    yoffset *= SENSITIVITY
+
+    g.camera.yaw += linalg.to_degrees(xoffset)
+    g.camera.pitch += linalg.to_degrees(yoffset)
+
+    if g.camera.pitch > 89.0 do g.camera.pitch = 89.0
+    if g.camera.pitch < -89.0 do g.camera.pitch = -89.0
+
+    direction: Vec3
+    direction.x =
+      math.cos(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch))
+    direction.y = math.sin(linalg.to_radians(g.camera.pitch))
+    direction.z =
+      math.sin(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch))
+    g.camera.front = linalg.normalize(direction)
   }
-
-  xoffset := e.mouse_x - g.camera.last_x
-  yoffset := g.camera.last_y - e.mouse_y
-  g.camera.last_x = e.mouse_x
-  g.camera.last_y = e.mouse_y
-
-  xoffset *= SENSITIVITY
-  yoffset *= SENSITIVITY
-
-  g.camera.yaw += linalg.to_degrees(xoffset)
-  g.camera.pitch += linalg.to_degrees(yoffset)
-
-  if g.camera.pitch > 89.0 do g.camera.pitch = 89.0
-  if g.camera.pitch < -89.0 do g.camera.pitch = -89.0
-
-  direction: Vec3
-  direction.x =
-    math.cos(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch))
-  direction.y = math.sin(linalg.to_radians(g.camera.pitch))
-  direction.z =
-    math.sin(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch))
-  g.camera.front = linalg.normalize(direction)
-
 }

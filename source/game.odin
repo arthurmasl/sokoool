@@ -93,11 +93,7 @@ game_event :: proc(e: ^sapp.Event) {
   if e.type == .KEY_DOWN {
     if e.key_code == .R do force_reset = true
     if e.key_code == .Q do sapp.request_quit()
-
-    camera_key_down(e)
   }
 
-  if e.type == .MOUSE_MOVE {
-    camera_mouse_move(e)
-  }
+  camera_process_input(e)
 }
