@@ -1,5 +1,6 @@
 package game
 
+import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
@@ -17,7 +18,6 @@ game_init :: proc() {
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
   stm.setup()
-  sapp.show_mouse(false)
 
   g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_VERTICES)})
   g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = sg_range(CUBE_INDICES)})
@@ -64,8 +64,6 @@ cubes_pos :: [?]Vec3 {
 
 @(export)
 game_frame :: proc() {
-  g.delta_time = stm.laptime(&g.last_time)
-
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)
@@ -88,9 +86,6 @@ game_frame :: proc() {
 
   free_all(context.temp_allocator)
 }
-
-SPEED :: 20
-SENSITIVITY :: 0.005
 
 @(export)
 game_event :: proc(e: ^sapp.Event) {

@@ -4,7 +4,6 @@ import "core:math"
 import "core:math/linalg"
 
 import sapp "sokol/app"
-import stm "sokol/time"
 
 Camera :: struct {
   pos:    Vec3,
@@ -20,13 +19,19 @@ Camera :: struct {
   init:   bool,
 }
 
+SPEED :: 20
+SENSITIVITY :: 0.005
+
 camera_init :: proc() {
+  sapp.show_mouse(false)
+
   g.camera.pos = {0, 0, 30}
   g.camera.front = {0, 0, -1}
   g.camera.up = {0, 1, 0}
   g.camera.init = true
   g.camera.fov = 45
   g.camera.yaw = -90
+
 }
 
 camera_update :: proc() -> (Mat4, Mat4) {
@@ -42,7 +47,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
 }
 
 camera_key_down :: proc(e: ^sapp.Event) {
-  camera_speed := SPEED * f32(stm.sec(g.delta_time))
+  camera_speed := SPEED * f32(sapp.frame_duration())
 
   if e.key_code == .W {
     offset := g.camera.front * camera_speed
