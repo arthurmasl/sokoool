@@ -70,7 +70,7 @@ cubes_pos :: [?]Vec3 {
 
 @(export)
 game_frame :: proc() {
-  g.delta_time = stm.laptime(&g.last_time)
+  delta_time = stm.laptime(&g.last_time)
 
   view := linalg.matrix4_look_at_f32(g.camera_pos, g.camera_pos + g.camera_front, g.camera_up)
   projection := linalg.matrix4_perspective_f32(g.fov, sapp.widthf() / sapp.heightf(), 0.1, 100.0)

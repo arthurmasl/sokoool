@@ -31,6 +31,7 @@ import sg "sokol/gfx"
 import slog "sokol/log"
 
 g: ^Game_Memory
+delta_time: f32
 
 @(export)
 game_app_default_desc :: proc() -> sapp.Desc {

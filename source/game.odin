@@ -1,6 +1,5 @@
 package game
 
-import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
@@ -64,6 +63,8 @@ cubes_pos :: [?]Vec3 {
 
 @(export)
 game_frame :: proc() {
+  delta_time = f32(sapp.frame_duration())
+
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.pip)
   sg.apply_bindings(g.bind)

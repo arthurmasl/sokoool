@@ -19,7 +19,7 @@ Camera :: struct {
   init:   bool,
 }
 
-SPEED :: 20
+SPEED :: 30
 SENSITIVITY :: 0.005
 
 camera_init :: proc() {
@@ -47,7 +47,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
 }
 
 camera_key_down :: proc(e: ^sapp.Event) {
-  camera_speed := SPEED * f32(sapp.frame_duration())
+  camera_speed := SPEED * delta_time
 
   if e.key_code == .W {
     offset := g.camera.front * camera_speed
