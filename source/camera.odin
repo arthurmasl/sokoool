@@ -85,7 +85,7 @@ camera_process_input :: proc(e: ^sapp.Event) {
     if e.key_code == .F do g.camera.held_right = true
 
     if e.key_code == .SPACE do g.camera.held_up = true
-    if e.key_code == .C do g.camera.held_down = true
+    if e.key_code == .Z do g.camera.held_down = true
   }
 
   if e.type == .KEY_UP {
@@ -95,7 +95,7 @@ camera_process_input :: proc(e: ^sapp.Event) {
     if e.key_code == .F do g.camera.held_right = false
 
     if e.key_code == .SPACE do g.camera.held_up = false
-    if e.key_code == .C do g.camera.held_down = false
+    if e.key_code == .Z do g.camera.held_down = false
   }
 
   if e.type == .KEY_DOWN {
@@ -105,18 +105,10 @@ camera_process_input :: proc(e: ^sapp.Event) {
     front := g.camera.front
     right := linalg.cross(g.camera.front, g.camera.up)
 
-    if e.key_code == .E {
-      dir += front
-    }
-    if e.key_code == .D {
-      dir -= front
-    }
-    if e.key_code == .S {
-      dir -= right
-    }
-    if e.key_code == .F {
-      dir += right
-    }
+    if e.key_code == .E do dir += front
+    if e.key_code == .D do dir -= front
+    if e.key_code == .S do dir -= right
+    if e.key_code == .F do dir += right
 
     g.camera.pos += dir * vel
 

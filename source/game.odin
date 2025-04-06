@@ -14,11 +14,14 @@ game_init :: proc() {
   g = new(Game_Memory)
   game_hot_reloaded(g)
 
-  g.cube_pos = {0.5, 0, 0}
+  g.cube_pos = {0.5, -1, 0}
   g.cube_color = {1.0, 0.5, 0.8}
 
-  g.light_pos = {3.2, 2.0, 3.0}
+  g.light_pos = {3.2, 20.0, 3.0}
   g.light_color = {1.0, 1.0, 1.0}
+
+  g.ground_pos = {0, -2, 0}
+  g.ground_color = {1.0, 1.0, 0.2}
 
   camera_init()
 
@@ -51,7 +54,7 @@ game_init :: proc() {
   )
 
   g.pass = {
-    colors = {0 = {load_action = .CLEAR, clear_value = {0.1, 0.1, 0.1, 1.0}}},
+    colors = {0 = {load_action = .CLEAR, clear_value = {0.1, 0.1, 0.2, 1.0}}},
   }
 }
 
@@ -76,9 +79,7 @@ game_frame :: proc() {
   sg.apply_pipeline(g.pip_cube)
   sg.apply_bindings(g.bind)
 
-  vs_params.model =
-    linalg.matrix4_translate_f32(g.cube_pos) *
-    linalg.matrix4_rotate_f32(linalg.to_radians(f32(65)), {1, 1, 0})
+  vs_params.model = linalg.matrix4_translate_f32(g.cube_pos)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
 
   sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
@@ -88,9 +89,20 @@ game_frame :: proc() {
   sg.apply_pipeline(g.pip_light)
   sg.apply_bindings(g.bind)
 
-  vs_params.model =
-    linalg.matrix4_translate_f32(g.light_pos) * linalg.matrix4_scale_f32({0.2, 0.2, 0.2})
+  vs_params.model = linalg.matrix4_translate_f32(g.light_pos)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+  sg.draw(0, 36, 1)
+
+  // ground
+  sg.apply_pipeline(g.pip_cube)
+  sg.apply_bindings(g.bind)
+
+  vs_params.model =
+    linalg.matrix4_translate_f32(g.ground_pos) * linalg.matrix4_scale_f32({1000, 1, 1000})
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+  fs_params.objectColor = {0.2, 0.4, 0.2}
+
+  sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
   sg.draw(0, 36, 1)
 
   debug_process()
@@ -108,7 +120,6 @@ game_event :: proc(e: ^sapp.Event) {
   if e.type == .KEY_DOWN {
     if e.key_code == .R do force_reset = true
     if e.key_code == .Q do sapp.request_quit()
-    if e.key_code == .Z do FREE_CAMERA = !FREE_CAMERA
     if e.key_code == .T do DEBUG_TEXT = !DEBUG_TEXT
   }
 

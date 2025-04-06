@@ -3,18 +3,21 @@ package game
 import sg "sokol/gfx"
 
 Game_Memory :: struct {
-  pip_cube:    sg.Pipeline,
-  pip_light:   sg.Pipeline,
-  bind:        sg.Bindings,
-  pass:        sg.Pass_Action,
+  pip_cube:     sg.Pipeline,
+  pip_light:    sg.Pipeline,
+  bind:         sg.Bindings,
+  pass:         sg.Pass_Action,
   //
-  camera:      Camera,
+  camera:       Camera,
   //
-  cube_pos:    Vec3,
-  cube_color:  Vec3,
+  cube_pos:     Vec3,
+  cube_color:   Vec3,
   //
-  light_pos:   Vec3,
-  light_color: Vec3,
+  light_pos:    Vec3,
+  light_color:  Vec3,
+  //
+  ground_pos:   Vec3,
+  ground_color: Vec3,
 }
 
 Vec2 :: [2]f32
