@@ -55,19 +55,19 @@ camera_process_input :: proc(e: ^sapp.Event) {
   if e.type == .KEY_DOWN {
     camera_speed := SPEED * delta_time
 
-    if e.key_code == .E {
+    if e.key_code == .W {
       offset := g.camera.front * camera_speed
       g.camera.pos += offset
     }
-    if e.key_code == .D {
+    if e.key_code == .S {
       offset := g.camera.front * camera_speed
       g.camera.pos -= offset
     }
-    if e.key_code == .S {
+    if e.key_code == .A {
       offset := linalg.normalize(linalg.cross(g.camera.front, g.camera.up)) * camera_speed
       g.camera.pos -= offset
     }
-    if e.key_code == .F {
+    if e.key_code == .D {
       offset := linalg.normalize(linalg.cross(g.camera.front, g.camera.up)) * camera_speed
       g.camera.pos += offset
     }

@@ -25,16 +25,16 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  base_shader := base_shader_desc(sg.query_backend())
+  simple_shader := simple_shader_desc(sg.query_backend())
   light_shader := light_shader_desc(sg.query_backend())
 
   g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_NORMAL_VERTICES)})
 
   g.pip_cube = sg.make_pipeline(
   {
-    shader = sg.make_shader(base_shader),
+    shader = sg.make_shader(simple_shader),
     layout = {
-      attrs = {ATTR_base_pos = {format = .FLOAT3}, ATTR_base_normals_pos = {format = .FLOAT3}},
+      attrs = {ATTR_simple_pos = {format = .FLOAT3}, ATTR_simple_normals_pos = {format = .FLOAT3}},
     },
     // cull_mode = .BACK,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
@@ -43,7 +43,7 @@ game_init :: proc() {
   g.pip_light = sg.make_pipeline(
   {
     shader = sg.make_shader(light_shader),
-    layout = {attrs = {ATTR_base_pos = {format = .FLOAT3}}, buffers = {0 = {stride = 24}}},
+    layout = {attrs = {ATTR_simple_pos = {format = .FLOAT3}}, buffers = {0 = {stride = 24}}},
     // cull_mode = .BACK,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
   },
@@ -75,9 +75,7 @@ game_frame :: proc() {
   sg.apply_pipeline(g.pip_cube)
   sg.apply_bindings(g.bind)
 
-  vs_params.model =
-    linalg.matrix4_translate_f32(g.cube_pos) *
-    linalg.matrix4_rotate_f32(linalg.to_radians(f32(65)), {1, 1, 0})
+  vs_params.model = linalg.matrix4_translate_f32(g.cube_pos)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
 
   sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
@@ -104,7 +102,7 @@ game_event :: proc(e: ^sapp.Event) {
   if e.type == .KEY_DOWN {
     if e.key_code == .R do force_reset = true
     if e.key_code == .Q do sapp.request_quit()
-    if e.key_code == .SPACE do FREE_CAMERA = !FREE_CAMERA
+    if e.key_code == .F do FREE_CAMERA = !FREE_CAMERA
     if e.key_code == .T do DEBUG_TEXT = !DEBUG_TEXT
   }
 
