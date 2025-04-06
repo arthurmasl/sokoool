@@ -28,7 +28,7 @@ Camera :: struct {
 
 FREE_CAMERA := true
 
-SPEED :: 5
+SPEED :: 10
 SENSITIVITY :: 0.003
 
 camera_init :: proc() {
@@ -43,42 +43,11 @@ camera_init :: proc() {
 
 }
 
-camera_update :: proc() -> (Mat4, Mat4) {
-  vel := SPEED * delta_time
-  dir := Vec3{}
-
-  up := g.camera.up
-  front := g.camera.front
-  right := linalg.cross(g.camera.front, g.camera.up)
-
-  if g.camera.held_forward do dir += front
-  if g.camera.held_backward do dir -= front
-  if g.camera.held_left do dir -= right
-  if g.camera.held_right do dir += right
-
-  if g.camera.held_up do dir += up
-  if g.camera.held_down do dir -= up
-
-  g.camera.pos += linalg.normalize0(dir) * vel
-  g.camera.pos.y = max(g.camera.pos.y, 0)
-
-  view := linalg.matrix4_look_at_f32(g.camera.pos, g.camera.pos + g.camera.front, g.camera.up)
-  projection := linalg.matrix4_perspective_f32(
-    g.camera.fov,
-    sapp.widthf() / sapp.heightf(),
-    0.1,
-    100.0,
-  )
-
-  return view, projection
-}
-
 camera_process_input :: proc(e: ^sapp.Event) {
   if sapp.mouse_locked() do return
   if !FREE_CAMERA do return
 
   // keyboard
-
   if e.type == .KEY_DOWN {
     if e.key_code == .E do g.camera.held_forward = true
     if e.key_code == .D do g.camera.held_backward = true
@@ -97,28 +66,6 @@ camera_process_input :: proc(e: ^sapp.Event) {
 
     if e.key_code == .SPACE do g.camera.held_up = false
     if e.key_code == .Z do g.camera.held_down = false
-  }
-
-  if e.type == .KEY_DOWN {
-    vel := SPEED * delta_time
-    dir := Vec3{}
-
-    front := g.camera.front
-    right := linalg.cross(g.camera.front, g.camera.up)
-
-    if e.key_code == .E do dir += front
-    if e.key_code == .D do dir -= front
-    if e.key_code == .S do dir -= right
-    if e.key_code == .F do dir += right
-
-    g.camera.pos += dir * vel
-
-    if e.key_code == .SPACE {
-      g.camera.pos += g.camera.up * vel
-    }
-    if e.key_code == .C {
-      g.camera.pos -= g.camera.up * vel
-    }
   }
 
   // mosue
@@ -143,13 +90,42 @@ camera_process_input :: proc(e: ^sapp.Event) {
     if g.camera.pitch > 89.0 do g.camera.pitch = 89.0
     if g.camera.pitch < -89.0 do g.camera.pitch = -89.0
 
-    direction: Vec3
-    direction.x =
-      math.cos(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch))
-    direction.y = math.sin(linalg.to_radians(g.camera.pitch))
-    direction.z =
-      math.sin(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch))
+    direction := Vec3 {
+      math.cos(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch)),
+      math.sin(linalg.to_radians(g.camera.pitch)),
+      math.sin(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch)),
+    }
 
     g.camera.front = linalg.normalize(direction)
   }
+}
+
+camera_update :: proc() -> (Mat4, Mat4) {
+  vel := SPEED * delta_time
+  dir := Vec3{}
+
+  up := g.camera.up
+  front := g.camera.front
+  right := linalg.cross(g.camera.front, g.camera.up)
+
+  if g.camera.held_forward do dir += front
+  if g.camera.held_backward do dir -= front
+  if g.camera.held_left do dir -= right
+  if g.camera.held_right do dir += right
+
+  if g.camera.held_up do dir += up
+  if g.camera.held_down do dir -= up
+
+  g.camera.pos += linalg.normalize0(dir) * vel
+  g.camera.pos.y = max(g.camera.pos.y, -1)
+
+  view := linalg.matrix4_look_at_f32(g.camera.pos, g.camera.pos + g.camera.front, g.camera.up)
+  projection := linalg.matrix4_perspective_f32(
+    g.camera.fov,
+    sapp.widthf() / sapp.heightf(),
+    0.1,
+    100.0,
+  )
+
+  return view, projection
 }

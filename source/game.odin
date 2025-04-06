@@ -17,7 +17,7 @@ game_init :: proc() {
   g.cube_pos = {0.5, -1, 0}
   g.cube_color = {1.0, 0.5, 0.8}
 
-  g.light_pos = {3.2, 20.0, 3.0}
+  g.light_pos = {3.2, 10.0, 3.0}
   g.light_color = {1.0, 1.0, 1.0}
 
   g.ground_pos = {0, -2, 0}
