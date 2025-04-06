@@ -28,7 +28,7 @@ Camera :: struct {
 
 FREE_CAMERA := true
 
-SPEED :: 10
+SPEED :: 5
 SENSITIVITY :: 0.003
 
 camera_init :: proc() {
@@ -60,6 +60,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
   if g.camera.held_down do dir -= up
 
   g.camera.pos += linalg.normalize0(dir) * vel
+  g.camera.pos.y = max(g.camera.pos.y, 0)
 
   view := linalg.matrix4_look_at_f32(g.camera.pos, g.camera.pos + g.camera.front, g.camera.up)
   projection := linalg.matrix4_perspective_f32(
