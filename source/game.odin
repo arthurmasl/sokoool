@@ -75,8 +75,7 @@ game_frame :: proc() {
 
   for pos in cubes_pos {
     vs_params.model =
-      linalg.matrix4_translate_f32(pos) *
-      linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * -65 * f32(stm.sec(stm.now())), pos)
+      linalg.matrix4_translate_f32(pos) * linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * -65, pos)
 
     sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
 
@@ -96,6 +95,8 @@ game_event :: proc(e: ^sapp.Event) {
   if e.type == .KEY_DOWN {
     if e.key_code == .R do force_reset = true
     if e.key_code == .Q do sapp.request_quit()
+    if e.key_code == .F do FREE_CAMERA = !FREE_CAMERA
+    if e.key_code == .T do DEBUG_TEXT = !DEBUG_TEXT
   }
 
   camera_process_input(e)

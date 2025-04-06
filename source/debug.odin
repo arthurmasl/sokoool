@@ -6,7 +6,7 @@ import sapp "sokol/app"
 import sdtx "sokol/debugtext"
 import slog "sokol/log"
 
-DEBUG_TEXT :: false
+DEBUG_TEXT := false
 
 debug_init :: proc() {
   sdtx.setup({fonts = {0 = sdtx.font_oric()}, logger = {func = slog.func}})

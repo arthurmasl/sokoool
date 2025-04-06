@@ -19,7 +19,7 @@ Camera :: struct {
   init:   bool,
 }
 
-FREE_CAMERA :: false
+FREE_CAMERA := false
 
 SPEED :: 30
 SENSITIVITY :: 0.005
