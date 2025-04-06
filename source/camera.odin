@@ -19,7 +19,7 @@ Camera :: struct {
   init:   bool,
 }
 
-FREE_CAMERA := false
+FREE_CAMERA := true
 
 SPEED :: 30
 SENSITIVITY :: 0.005
@@ -70,6 +70,15 @@ camera_process_input :: proc(e: ^sapp.Event) {
     if e.key_code == .F {
       offset := linalg.normalize(linalg.cross(g.camera.front, g.camera.up)) * camera_speed
       g.camera.pos += offset
+    }
+
+    if e.key_code == .SPACE {
+      offset := g.camera.up * camera_speed
+      g.camera.pos += offset
+    }
+    if e.key_code == .C {
+      offset := g.camera.up * camera_speed
+      g.camera.pos -= offset
     }
   }
 

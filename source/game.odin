@@ -104,7 +104,7 @@ game_event :: proc(e: ^sapp.Event) {
   if e.type == .KEY_DOWN {
     if e.key_code == .R do force_reset = true
     if e.key_code == .Q do sapp.request_quit()
-    if e.key_code == .SPACE do FREE_CAMERA = !FREE_CAMERA
+    if e.key_code == .Z do FREE_CAMERA = !FREE_CAMERA
     if e.key_code == .T do DEBUG_TEXT = !DEBUG_TEXT
   }
 
