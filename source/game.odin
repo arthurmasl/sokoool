@@ -102,18 +102,14 @@ game_frame :: proc() {
 
 @(export)
 game_event :: proc(e: ^sapp.Event) {
+  if e.type == .FOCUSED do sapp.lock_mouse(false)
+  if e.type == .UNFOCUSED do sapp.lock_mouse(true)
+
   if e.type == .KEY_DOWN {
     if e.key_code == .R do force_reset = true
     if e.key_code == .Q do sapp.request_quit()
     if e.key_code == .Z do FREE_CAMERA = !FREE_CAMERA
     if e.key_code == .T do DEBUG_TEXT = !DEBUG_TEXT
-  }
-
-  if e.type == .FOCUSED {
-    sapp.lock_mouse(false)
-  }
-  if e.type == .UNFOCUSED {
-    sapp.lock_mouse(true)
   }
 
   camera_process_input(e)
