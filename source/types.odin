@@ -22,12 +22,3 @@ Vec3 :: [3]f32
 Vec4 :: [4]f32
 
 Mat4 :: matrix[4, 4]f32
-
-TexturedVertex :: struct {
-  pos: Vec3,
-  uvs: Vec2,
-}
-
-Vertex :: struct {
-  pos: Vec3,
-}

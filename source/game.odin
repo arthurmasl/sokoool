@@ -16,7 +16,7 @@ game_init :: proc() {
   g.cube_pos = {0.5, 0, 0}
   g.cube_color = {1.0, 0.5, 0.8}
 
-  g.light_pos = {3.2, 2.0, 0.0}
+  g.light_pos = {3.2, 2.0, 3.0}
   g.light_color = {1.0, 1.0, 1.0}
 
   camera_init()
@@ -28,26 +28,25 @@ game_init :: proc() {
   simple_shader := simple_shader_desc(sg.query_backend())
   light_shader := light_shader_desc(sg.query_backend())
 
-  g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_VERTICES)})
-  g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = sg_range(CUBE_INDICES)})
+  g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_NORMAL_VERTICES)})
 
   g.pip_cube = sg.make_pipeline(
-    {
-      shader = sg.make_shader(simple_shader),
-      layout = {attrs = {ATTR_simple_pos = {format = .FLOAT3}}},
-      index_type = .UINT16,
-      cull_mode = .BACK,
-      depth = {compare = .LESS_EQUAL, write_enabled = true},
+  {
+    shader = sg.make_shader(simple_shader),
+    layout = {
+      attrs = {ATTR_simple_pos = {format = .FLOAT3}, ATTR_simple_normals_pos = {format = .FLOAT3}},
     },
+    // cull_mode = .BACK,
+    depth = {compare = .LESS_EQUAL, write_enabled = true},
+  },
   )
   g.pip_light = sg.make_pipeline(
-    {
-      shader = sg.make_shader(light_shader),
-      layout = {attrs = {ATTR_simple_pos = {format = .FLOAT3}}},
-      index_type = .UINT16,
-      cull_mode = .BACK,
-      depth = {compare = .LESS_EQUAL, write_enabled = true},
-    },
+  {
+    shader = sg.make_shader(light_shader),
+    layout = {attrs = {ATTR_simple_pos = {format = .FLOAT3}}, buffers = {0 = {stride = 24}}},
+    // cull_mode = .BACK,
+    depth = {compare = .LESS_EQUAL, write_enabled = true},
+  },
   )
 
   g.pass = {
@@ -69,6 +68,7 @@ game_frame :: proc() {
   fs_params := Fs_Params {
     objectColor = g.cube_color,
     lightColor  = g.light_color,
+    lightPos    = g.light_pos,
   }
 
   // cube
