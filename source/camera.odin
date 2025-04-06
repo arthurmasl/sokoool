@@ -19,6 +19,8 @@ Camera :: struct {
   init:   bool,
 }
 
+FREE_CAMERA :: false
+
 SPEED :: 30
 SENSITIVITY :: 0.005
 
@@ -47,6 +49,8 @@ camera_update :: proc() -> (Mat4, Mat4) {
 }
 
 camera_process_input :: proc(e: ^sapp.Event) {
+  if !FREE_CAMERA do return
+
   // keyboard
   if e.type == .KEY_DOWN {
     camera_speed := SPEED * delta_time

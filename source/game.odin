@@ -17,6 +17,7 @@ game_init :: proc() {
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
   stm.setup()
+  debug_init()
 
   g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_VERTICES)})
   g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = sg_range(CUBE_INDICES)})
@@ -81,6 +82,8 @@ game_frame :: proc() {
 
     sg.draw(0, 36, 1)
   }
+
+  debug_process()
 
   sg.end_pass()
   sg.commit()
