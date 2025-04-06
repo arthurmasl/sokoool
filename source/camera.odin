@@ -49,6 +49,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
 }
 
 camera_process_input :: proc(e: ^sapp.Event) {
+  if sapp.mouse_locked() do return
   if !FREE_CAMERA do return
 
   // keyboard
