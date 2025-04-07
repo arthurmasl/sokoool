@@ -25,6 +25,7 @@ layout(binding = 1) uniform fs_params {
     vec3 objectColor;
     vec3 lightColor;
     vec3 lightPos;
+    vec3 viewPos;
 };
 
 in vec3 fs_pos;
@@ -40,7 +41,13 @@ void main() {
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
 
-    vec3 result = (ambient + diffuse) * objectColor;
+    float specularStrength = 0.5;
+    vec3 viewDir = normalize(viewPos - fs_pos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * lightColor;
+
+    vec3 result = (ambient + diffuse + specular) * objectColor;
     frag_color = vec4(result, 1.0);
 }
 #pragma sokol @end

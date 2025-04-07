@@ -1,6 +1,5 @@
 package game
 
-import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
@@ -73,6 +72,7 @@ game_frame :: proc() {
     objectColor = g.cube_color,
     lightColor  = g.light_color,
     lightPos    = g.light_pos,
+    viewPos     = g.camera.pos,
   }
 
   // cube
@@ -81,7 +81,6 @@ game_frame :: proc() {
 
   vs_params.model = linalg.matrix4_translate_f32(g.cube_pos)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-
   sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
   sg.draw(0, 36, 1)
 
@@ -99,9 +98,8 @@ game_frame :: proc() {
 
   vs_params.model =
     linalg.matrix4_translate_f32(g.ground_pos) * linalg.matrix4_scale_f32({1000, 1, 1000})
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   fs_params.objectColor = {0.2, 0.4, 0.2}
-
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
   sg.draw(0, 36, 1)
 
