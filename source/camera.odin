@@ -10,13 +10,10 @@ Camera :: struct {
   front:         Vec3,
   up:            Vec3,
   //
-  last_x:        f32,
-  last_y:        f32,
+  first_mouse:   bool,
   yaw:           f32,
   pitch:         f32,
   fov:           f32,
-  //
-  init:          bool,
   //
   held_forward:  bool,
   held_backward: bool,
@@ -26,26 +23,26 @@ Camera :: struct {
   held_down:     bool,
 }
 
-FREE_CAMERA := true
-
 SPEED :: 10
-SENSITIVITY :: 0.003
+SENSITIVITY :: 0.2
 
 camera_init :: proc() {
   sapp.show_mouse(false)
 
+  g.camera.first_mouse = true
   g.camera.pos = {0, 0, 10}
   g.camera.front = {0, 0, -1}
   g.camera.up = {0, 1, 0}
-  g.camera.init = true
   g.camera.fov = 45
   g.camera.yaw = -90
 
 }
 
 camera_process_input :: proc(e: ^sapp.Event) {
-  if sapp.mouse_locked() do return
-  if !FREE_CAMERA do return
+  if e.type == .FOCUSED || e.type == .RESIZED do sapp.lock_mouse(true)
+  if e.type == .UNFOCUSED do sapp.lock_mouse(false)
+
+  if !sapp.mouse_locked() do return
 
   // keyboard
   if e.type == .KEY_DOWN {
@@ -70,22 +67,13 @@ camera_process_input :: proc(e: ^sapp.Event) {
 
   // mosue
   if e.type == .MOUSE_MOVE {
-    if g.camera.init {
-      g.camera.last_x = e.mouse_x
-      g.camera.last_y = e.mouse_y
-      g.camera.init = false
+    if g.camera.first_mouse {
+      g.camera.first_mouse = false
+      return
     }
 
-    xoffset := e.mouse_x - g.camera.last_x
-    yoffset := g.camera.last_y - e.mouse_y
-    g.camera.last_x = e.mouse_x
-    g.camera.last_y = e.mouse_y
-
-    xoffset *= SENSITIVITY
-    yoffset *= SENSITIVITY
-
-    g.camera.yaw += linalg.to_degrees(xoffset)
-    g.camera.pitch += linalg.to_degrees(yoffset)
+    g.camera.yaw += e.mouse_dx * SENSITIVITY
+    g.camera.pitch -= e.mouse_dy * SENSITIVITY
 
     if g.camera.pitch > 89.0 do g.camera.pitch = 89.0
     if g.camera.pitch < -89.0 do g.camera.pitch = -89.0
@@ -97,6 +85,7 @@ camera_process_input :: proc(e: ^sapp.Event) {
     }
 
     g.camera.front = linalg.normalize(direction)
+
   }
 }
 

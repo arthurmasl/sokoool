@@ -126,22 +126,8 @@ game_event :: proc(e: ^sapp.Event) {
   }
 
   if e.type == .MOUSE_MOVE {
-    if g.first_mouse {
-      g.last_x = e.mouse_x
-      g.last_y = e.mouse_y
-      g.first_mouse = false
-    }
-
-    xoffset := e.mouse_x - g.last_x
-    yoffset := g.last_y - e.mouse_y
-    g.last_x = e.mouse_x
-    g.last_y = e.mouse_y
-
-    xoffset *= SENSITIVITY
-    yoffset *= SENSITIVITY
-
-    g.yaw += linalg.to_degrees(xoffset)
-    g.pitch += linalg.to_degrees(yoffset)
+    g.yaw += linalg.to_degrees(e.mouse_dx * SENSITIVITY)
+    g.pitch += linalg.to_degrees(-e.mouse_dy * SENSITIVITY)
 
     if g.pitch > 89.0 do g.pitch = 89.0
     if g.pitch < -89.0 do g.pitch = -89.0
