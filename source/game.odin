@@ -110,7 +110,11 @@ game_frame :: proc() {
 
   vs_params.model =
     linalg.matrix4_translate_f32(g.ground_pos) * linalg.matrix4_scale_f32({1000, 1, 1000})
+
   fs_material.ambient = {0.2, 0.4, 0.2}
+  fs_material.diffuse = {0.1, 0.1, 0.1}
+  fs_material.specular = {0.1, 0.1, 0.1}
+
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
   sg.apply_uniforms(UB_fs_material, data = sg_range(&fs_material))
