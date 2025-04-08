@@ -69,10 +69,20 @@ game_frame :: proc() {
     projection = projection,
   }
   fs_params := Fs_Params {
-    objectColor = g.cube_color,
-    lightColor  = g.light_color,
-    lightPos    = g.light_pos,
-    viewPos     = g.camera.pos,
+    viewPos = g.camera.pos,
+  }
+  fs_material := Fs_Material {
+    ambient   = g.cube_color,
+    diffuse   = {1.0, 0.5, 0.3},
+    specular  = {0.5, 0.5, 0.5},
+    shininess = 32.0,
+  }
+
+  fs_light := Fs_Light {
+    ambient  = g.light_color,
+    diffuse  = {0.5, 0.5, 0.5},
+    specular = {1.0, 1.0, 1.0},
+    position = g.light_pos,
   }
 
   // cube
@@ -82,6 +92,8 @@ game_frame :: proc() {
   vs_params.model = linalg.matrix4_translate_f32(g.cube_pos)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
+  sg.apply_uniforms(UB_fs_material, data = sg_range(&fs_material))
+  sg.apply_uniforms(UB_fs_light, data = sg_range(&fs_light))
   sg.draw(0, 36, 1)
 
   // light
@@ -98,9 +110,11 @@ game_frame :: proc() {
 
   vs_params.model =
     linalg.matrix4_translate_f32(g.ground_pos) * linalg.matrix4_scale_f32({1000, 1, 1000})
-  fs_params.objectColor = {0.2, 0.4, 0.2}
+  fs_material.ambient = {0.2, 0.4, 0.2}
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
+  sg.apply_uniforms(UB_fs_material, data = sg_range(&fs_material))
+  sg.apply_uniforms(UB_fs_light, data = sg_range(&fs_light))
   sg.draw(0, 36, 1)
 
   debug_process()
