@@ -29,31 +29,8 @@ game_init :: proc() {
   debug_init()
 
   base_shader := base_shader_desc(sg.query_backend())
-  light_shader := light_shader_desc(sg.query_backend())
 
   g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_NORMALS_UVS_VERTICES)})
-
-  img := load_image("assets/box.png")
-  img_specular := load_image("assets/box_specular2.png")
-
-  g.bind.samplers[SMP_diffuse_texture_smp] = sg.make_sampler({})
-  g.bind.samplers[SMP_specular_texture_smp] = sg.make_sampler({})
-
-  g.bind.images[IMG__diffuse_texture] = sg.make_image(
-    {
-      width = i32(img.width),
-      height = i32(img.height),
-      data = {subimage = {0 = {0 = sg_range(img)}}},
-    },
-  )
-
-  g.bind.images[IMG__specular_texture] = sg.make_image(
-    {
-      width = i32(img_specular.width),
-      height = i32(img_specular.height),
-      data = {subimage = {0 = {0 = sg_range(img_specular)}}},
-    },
-  )
 
   g.pip_cube = sg.make_pipeline(
     {
@@ -61,20 +38,15 @@ game_init :: proc() {
       layout = {
         attrs = {
           ATTR_base_pos = {format = .FLOAT3},
-          ATTR_base_normals_pos = {format = .FLOAT3},
-          ATTR_base_texture_coords = {format = .FLOAT2},
+          ATTR_base_texture_coords = {format = .FLOAT2, offset = 24},
         },
+        buffers = {0 = {stride = 32}},
       },
       depth = {compare = .LESS_EQUAL, write_enabled = true},
     },
   )
-  g.pip_light = sg.make_pipeline(
-    {
-      shader = sg.make_shader(light_shader),
-      layout = {attrs = {ATTR_base_pos = {format = .FLOAT3}}, buffers = {0 = {stride = 32}}},
-      depth = {compare = .LESS_EQUAL, write_enabled = true},
-    },
-  )
+
+  load_object("./assets/pigman.glb")
 
   g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.1, 0.1, 0.2, 1.0}}},
@@ -92,40 +64,13 @@ game_frame :: proc() {
     view       = view,
     projection = projection,
   }
-  fs_params := Fs_Params {
-    viewPos = g.camera.pos,
-  }
-  fs_material := Fs_Material {
-    shininess = 32.0,
-  }
-
-  fs_light := Fs_Light {
-    direction = {10.0, -10.0, 0},
-    ambient   = {0.5, 0.5, 0.5},
-    diffuse   = {0.5, 0.5, 0.5},
-    specular  = {1.0, 1.0, 1.0},
-  }
 
   // cube
-  sg.apply_pipeline(g.pip_cube)
-  sg.apply_bindings(g.bind)
+  // sg.apply_pipeline(g.pip_cube)
+  // sg.apply_bindings(g.bind)
 
-  vs_params.model =
-    linalg.matrix4_translate_f32(g.cube_pos) * linalg.matrix4_scale_f32({10, 10, 10})
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
-  sg.apply_uniforms(UB_fs_material, data = sg_range(&fs_material))
-  sg.apply_uniforms(UB_fs_light, data = sg_range(&fs_light))
-  sg.draw(0, 36, 1)
-
-  // ground
   // vs_params.model =
-  //   linalg.matrix4_translate_f32(g.ground_pos) * linalg.matrix4_scale_f32({1000, 1, 1000})
-  //
-  // fs_light.ambient = {0.2, 0.4, 0.2}
-  // fs_light.diffuse = {0.1, 0.1, 0.1}
-  // fs_light.specular = {0.1, 0.1, 0.1}
-  //
+  //   linalg.matrix4_translate_f32(g.cube_pos) * linalg.matrix4_scale_f32({10, 10, 10})
   // sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   // sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
   // sg.apply_uniforms(UB_fs_material, data = sg_range(&fs_material))

@@ -1,10 +1,13 @@
 package game
 
 import "base:intrinsics"
+import "core:fmt"
 import "core:image/png"
 import "core:log"
 import "core:os"
 import "core:slice"
+import "core:strings"
+import "vendor:cgltf"
 
 import "web"
 
@@ -52,6 +55,17 @@ load_image :: proc(name: string) -> ^png.Image {
   }
 
   return img
+}
+
+load_object :: proc(name: string) {
+  data, result := cgltf.parse_file({}, strings.unsafe_string_to_cstring(name))
+  if result != .success {
+    fmt.println(result)
+  }
+  defer cgltf.free(data)
+
+  fmt.println(data.meshes[0].name)
+
 }
 
 sg_range :: proc {
