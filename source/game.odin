@@ -1,5 +1,6 @@
 package game
 
+import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
@@ -13,40 +14,31 @@ game_init :: proc() {
   g = new(Game_Memory)
   game_hot_reloaded(g)
 
-  g.cube_pos = {0.5, -1, 0}
-  g.cube_color = {1.0, 0.5, 0.8}
-
-  g.light_pos = {20, 5.0, 5.0}
-  g.light_color = {1.0, 1.0, 1.0}
-
-  g.ground_pos = {0, -2, 0}
-  g.ground_color = {1.0, 1.0, 0.2}
-
   camera_init()
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
   stm.setup()
   debug_init()
 
+  load_object("./assets/cube.glb")
+
   base_shader := base_shader_desc(sg.query_backend())
 
-  g.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_NORMALS_UVS_VERTICES)})
-
-  g.pip_cube = sg.make_pipeline(
-    {
-      shader = sg.make_shader(base_shader),
-      layout = {
-        attrs = {
-          ATTR_base_pos = {format = .FLOAT3},
-          ATTR_base_texture_coords = {format = .FLOAT2, offset = 24},
-        },
-        buffers = {0 = {stride = 32}},
+  g.mesh.pipeline = sg.make_pipeline(
+  {
+    shader = sg.make_shader(base_shader),
+    layout = {
+      attrs = {
+        ATTR_base_position = {format = .FLOAT3},
+        ATTR_base_normal = {format = .FLOAT3},
+        ATTR_base_texcoord = {format = .FLOAT2},
       },
-      depth = {compare = .LESS_EQUAL, write_enabled = true},
+      // buffers = {0 = {stride = 36}},
     },
+    index_type = .UINT16,
+    depth = {compare = .LESS_EQUAL, write_enabled = true},
+  },
   )
-
-  load_object("./assets/pigman.glb")
 
   g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.1, 0.1, 0.2, 1.0}}},
@@ -64,18 +56,15 @@ game_frame :: proc() {
     view       = view,
     projection = projection,
   }
+  vs_params.model = linalg.matrix4_translate_f32({0, 0, 0})
 
-  // cube
-  // sg.apply_pipeline(g.pip_cube)
-  // sg.apply_bindings(g.bind)
+  // mesh
+  sg.apply_pipeline(g.mesh.pipeline)
+  sg.apply_bindings(g.mesh.bindings)
 
-  // vs_params.model =
-  //   linalg.matrix4_translate_f32(g.cube_pos) * linalg.matrix4_scale_f32({10, 10, 10})
-  // sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  // sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
-  // sg.apply_uniforms(UB_fs_material, data = sg_range(&fs_material))
-  // sg.apply_uniforms(UB_fs_light, data = sg_range(&fs_light))
-  // sg.draw(0, 36, 1)
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+
+  sg.draw(0, g.mesh.face_count, 1)
 
   debug_process()
   sg.end_pass()

@@ -23,7 +23,7 @@ Camera :: struct {
   held_down:     bool,
 }
 
-SPEED :: 30
+SPEED :: 10
 SENSITIVITY :: 0.2
 
 camera_init :: proc() {

@@ -58,14 +58,75 @@ load_image :: proc(name: string) -> ^png.Image {
 }
 
 load_object :: proc(name: string) {
-  data, result := cgltf.parse_file({}, strings.unsafe_string_to_cstring(name))
+  options: cgltf.options
+  path := strings.unsafe_string_to_cstring(name)
+
+  data, result := cgltf.parse_file(options, path)
   if result != .success {
-    fmt.println(result)
+    fmt.println("Failed to parse file", result)
   }
   defer cgltf.free(data)
 
-  fmt.println(data.meshes[0].name)
+  result = cgltf.load_buffers(options, data, path)
+  if result != .success {
+    fmt.println("Failed to load buffers")
+    return
+  }
 
+  for mesh in data.meshes {
+    for p in mesh.primitives {
+      position_arr: []f32
+      normal_arr: []f32
+      texcoord_arr: []f32
+
+      for a in p.attributes {
+        num_floats := cgltf.accessor_unpack_floats(a.data, nil, 0)
+        if a.type == .position {
+          position_arr = make([]f32, num_floats, context.temp_allocator)
+          _ = cgltf.accessor_unpack_floats(a.data, &position_arr[0], num_floats)
+        }
+        if a.type == .normal {
+          normal_arr = make([]f32, num_floats, context.temp_allocator)
+          _ = cgltf.accessor_unpack_floats(a.data, &normal_arr[0], num_floats)
+        }
+        if a.type == .texcoord {
+          texcoord_arr = make([]f32, num_floats, context.temp_allocator)
+          _ = cgltf.accessor_unpack_floats(a.data, &texcoord_arr[0], num_floats)
+        }
+      }
+
+      vertices := make([dynamic]f32, context.temp_allocator)
+      vertices_count := (len(position_arr) + len(normal_arr) + len(texcoord_arr)) / 8
+
+      for i in 0 ..< vertices_count {
+        j := i * 3
+        j2 := i * 2
+
+        append(&vertices, ..position_arr[j:j + 3])
+        append(&vertices, ..normal_arr[j:j + 3])
+        append(&vertices, ..texcoord_arr[j2:j2 + 2])
+      }
+
+      g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
+        {data = {ptr = &vertices[0], size = uint(size_of(f32) * 8 * vertices_count)}},
+      )
+
+      indices_count := cgltf.accessor_unpack_indices(p.indices, nil, 0, 0)
+      indices := make([]u16, indices_count, context.temp_allocator)
+      _ = cgltf.accessor_unpack_indices(p.indices, &indices[0], size_of(u16), indices_count)
+
+      g.mesh.bindings.index_buffer = sg.make_buffer(
+        {
+          type = .INDEXBUFFER,
+          data = {ptr = &indices[0], size = uint(size_of(u16) * indices_count)},
+        },
+      )
+
+      g.mesh.face_count = len(indices)
+    }
+  }
+
+  free_all(context.temp_allocator)
 }
 
 sg_range :: proc {
