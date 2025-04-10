@@ -19,7 +19,7 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  load_object("./assets/cube.glb")
+  load_object("./assets/pigman.glb")
 
   base_shader := base_shader_desc(sg.query_backend())
 
