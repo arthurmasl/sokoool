@@ -98,22 +98,18 @@ load_object :: proc(name: string) {
       vertices_count := (len(position_arr) + len(normal_arr) + len(texcoord_arr)) / 8
 
       for i in 0 ..< vertices_count {
-        j := i * 3
-        j2 := i * 2
-
-        append(&vertices, ..position_arr[j:j + 3])
-        append(&vertices, ..normal_arr[j:j + 3])
-        append(&vertices, ..texcoord_arr[j2:j2 + 2])
+        append(&vertices, ..position_arr[i * 3:(i * 3) + 3])
+        append(&vertices, ..normal_arr[i * 3:(i * 3) + 3])
+        append(&vertices, ..texcoord_arr[i * 2:(i * 2) + 2])
       }
-
-      g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
-        {data = {ptr = &vertices[0], size = uint(size_of(f32) * 8 * vertices_count)}},
-      )
 
       indices_count := cgltf.accessor_unpack_indices(p.indices, nil, 0, 0)
       indices := make([]u16, indices_count, context.temp_allocator)
       _ = cgltf.accessor_unpack_indices(p.indices, &indices[0], size_of(u16), indices_count)
 
+      g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
+        {data = {ptr = &vertices[0], size = uint(size_of(f32) * 8 * vertices_count)}},
+      )
       g.mesh.bindings.index_buffer = sg.make_buffer(
         {
           type = .INDEXBUFFER,

@@ -54,7 +54,7 @@ game_frame :: proc() {
     view       = view,
     projection = projection,
   }
-  vs_params.model = linalg.matrix4_translate_f32({0, 0, 0})
+  vs_params.model = linalg.matrix4_translate_f32({0, -4, 0})
 
   // mesh
   sg.apply_pipeline(g.mesh.pipeline)
