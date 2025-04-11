@@ -1,10 +1,6 @@
 package game
 
-import "core:fmt"
-import "core:image/png"
 import "core:math/linalg"
-import "core:mem"
-import "core:slice"
 
 import sapp "sokol/app"
 import sg "sokol/gfx"
@@ -25,29 +21,7 @@ game_init :: proc() {
 
   load_object("./assets/rigbody.glb")
 
-  // TODO: buffer size?
-  texture_bytes := mem.slice_ptr(g.mesh.texture, 28 * 28)
-  img, img_err := png.load_from_bytes(texture_bytes, nil, context.temp_allocator)
-  if img_err != nil {
-    fmt.println(img_err)
-    return
-  }
-  fmt.println(img, "\nsize", slice.size(img.pixels.buf[:]))
-
-  g.mesh.bindings.images[IMG_tex] = sg.make_image(
-    {
-      width = i32(img.width),
-      height = i32(img.height),
-      data = {
-        subimage = {
-          0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(img.width * img.height * 4)}},
-        },
-      },
-    },
-  )
-
-  g.mesh.bindings.samplers[SMP_smp] = sg.make_sampler({})
-
+  // update camera
   g.mesh.pipeline = sg.make_pipeline(
     {
       shader = sg.make_shader(base_shader_desc(sg.query_backend())),
