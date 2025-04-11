@@ -1,6 +1,5 @@
 package game
 
-import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
@@ -43,7 +42,7 @@ game_init :: proc() {
   }
 
   g.pass = {
-    colors = {0 = {load_action = .CLEAR, clear_value = {0.8, 0.8, 0.8, 1.0}}},
+    colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
   }
 }
 

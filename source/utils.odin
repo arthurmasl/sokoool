@@ -4,7 +4,6 @@ import "base:intrinsics"
 import "core:fmt"
 import "core:image/png"
 import "core:log"
-import "core:mem"
 import "core:os"
 import "core:strings"
 import "vendor:cgltf"
@@ -72,8 +71,6 @@ load_object :: proc(name: string) {
     fmt.println("Failed to load buffers")
     return
   }
-
-  fmt.println(data.skins[0].joints[0])
 
   global_meshes := make([dynamic]Mesh, context.allocator)
 
