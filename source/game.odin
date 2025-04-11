@@ -1,5 +1,6 @@
 package game
 
+import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
@@ -19,27 +20,30 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  load_object("./assets/pigman.glb")
+  load_object("./assets/pigman-anim.glb")
 
   base_shader := base_shader_desc(sg.query_backend())
 
-  g.mesh.pipeline = sg.make_pipeline(
-    {
-      shader = sg.make_shader(base_shader),
-      layout = {
-        attrs = {
-          ATTR_base_position = {format = .FLOAT3},
-          ATTR_base_normal = {format = .FLOAT3},
-          ATTR_base_texcoord = {format = .FLOAT2},
+  for &mesh in g.meshes {
+    mesh.pipeline = sg.make_pipeline(
+      {
+        shader = sg.make_shader(base_shader),
+        layout = {
+          attrs = {
+            ATTR_base_position = {format = .FLOAT3},
+            ATTR_base_normal = {format = .FLOAT3},
+            ATTR_base_texcoord = {format = .FLOAT2},
+          },
         },
+        index_type = .UINT16,
+        depth = {compare = .LESS_EQUAL, write_enabled = true},
       },
-      index_type = .UINT16,
-      depth = {compare = .LESS_EQUAL, write_enabled = true},
-    },
-  )
+    )
+
+  }
 
   g.pass = {
-    colors = {0 = {load_action = .CLEAR, clear_value = {0.1, 0.1, 0.2, 1.0}}},
+    colors = {0 = {load_action = .CLEAR, clear_value = {0.8, 0.8, 0.8, 1.0}}},
   }
 }
 
@@ -55,14 +59,20 @@ game_frame :: proc() {
     projection = projection,
   }
   vs_params.model = linalg.matrix4_translate_f32({0, -4, 0})
+  fs_params := Fs_Params{}
 
-  // mesh
-  sg.apply_pipeline(g.mesh.pipeline)
-  sg.apply_bindings(g.mesh.bindings)
+  // meshes
+  for mesh in g.meshes {
+    sg.apply_pipeline(mesh.pipeline)
+    sg.apply_bindings(mesh.bindings)
 
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+    fs_params.color = mesh.color
 
-  sg.draw(0, g.mesh.face_count, 1)
+    sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
+    sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+
+    sg.draw(0, mesh.face_count, 1)
+  }
 
   debug_process()
   sg.end_pass()

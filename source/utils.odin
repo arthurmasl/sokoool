@@ -4,6 +4,7 @@ import "base:intrinsics"
 import "core:fmt"
 import "core:image/png"
 import "core:log"
+import "core:mem"
 import "core:os"
 import "core:strings"
 import "vendor:cgltf"
@@ -72,7 +73,13 @@ load_object :: proc(name: string) {
     return
   }
 
+  fmt.println(data.skins[0].joints[0])
+
+  global_meshes := make([dynamic]Mesh, context.allocator)
+
   for mesh in data.meshes {
+    local_mesh: Mesh
+
     for p in mesh.primitives {
       position_arr: []f32
       normal_arr: []f32
@@ -92,6 +99,8 @@ load_object :: proc(name: string) {
           texcoord_arr = make([]f32, num_floats, context.temp_allocator)
           _ = cgltf.accessor_unpack_floats(a.data, &texcoord_arr[0], num_floats)
         }
+
+        local_mesh.color = p.material.pbr_metallic_roughness.base_color_factor
       }
 
       vertices := make([dynamic]f32, context.temp_allocator)
@@ -107,19 +116,23 @@ load_object :: proc(name: string) {
       indices := make([]u16, indices_count, context.temp_allocator)
       _ = cgltf.accessor_unpack_indices(p.indices, &indices[0], size_of(u16), indices_count)
 
-      g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
+      local_mesh.bindings.vertex_buffers[0] = sg.make_buffer(
         {data = {ptr = &vertices[0], size = uint(size_of(f32) * 8 * vertices_count)}},
       )
-      g.mesh.bindings.index_buffer = sg.make_buffer(
+      local_mesh.bindings.index_buffer = sg.make_buffer(
         {
           type = .INDEXBUFFER,
           data = {ptr = &indices[0], size = uint(size_of(u16) * indices_count)},
         },
       )
 
-      g.mesh.face_count = len(indices)
+      local_mesh.face_count = len(indices)
+
+      append(&global_meshes, local_mesh)
     }
   }
+
+  g.meshes = global_meshes[:]
 
   free_all(context.temp_allocator)
 }

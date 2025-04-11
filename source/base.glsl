@@ -7,7 +7,6 @@ in vec3 position;
 in vec3 normal;
 in vec2 texcoord;
 
-// out vec2 fs_texture_coords;
 out vec3 fs_pos;
 out vec3 fs_normal;
 
@@ -21,39 +20,42 @@ void main() {
     gl_Position = projection * view * model * vec4(position, 1.0);
     fs_pos = vec3(model * vec4(position, 1.0));
     fs_normal = normal;
-    // fs_texture_coords = texcoord;
 }
 #pragma sokol @end
 
 #pragma sokol @fs fs
-// in vec2 fs_texture_coords;
-
 in vec3 fs_pos;
 in vec3 fs_normal;
 
 out vec4 frag_color;
-
-// layout(binding = 0) uniform texture2D _diffuse_texture;
-// layout(binding = 0) uniform sampler diffuse_texture_smp;
-// #define diffuse_texture sampler2D(_diffuse_texture, diffuse_texture_smp)
+layout(binding = 1) uniform fs_params {
+    vec4 color;
+};
 
 void main() {
-    // frag_color = texture(diffuse_texture, fs_texture_coords);
-    // frag_color = vec4(1.0, 0.5, 0.5, 1.0);
+    // direction = {0.5, -5.0, -1.5},
+    // ambient   = {0.5, 0.5, 0.5},
+    // diffuse   = {0.5, 0.5, 0.5},
+    // specular  = {0.2, 0.2, 0.2},
 
-    float ambientStrength = 0.1;
-    vec3 lightPos = vec3(25.0, 5.0, 5.0);
-    vec3 lightColor = vec3(1.0, 1.0, 1.0);
-    vec3 objectColor = vec3(1.0, 0.5, 0.5);
-
-    vec3 ambient = ambientStrength * lightColor;
+    vec3 viewPos = vec3(0, 0, 0);
+    vec3 lightDirection = vec3(2, 5, 0);
+    vec3 lightAmbient = vec3(0.5, 0.5, 0.5);
+    vec3 lightDiffuse = vec3(0.5, 0.5, 0.5);
+    vec3 lightSpecular = vec3(0.2, 0.2, 0.2);
 
     vec3 norm = normalize(fs_normal);
-    vec3 lightDir = normalize(lightPos - fs_pos);
+    vec3 lightDir = normalize(-lightDirection);
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    vec3 diffuse = lightDiffuse * diff;
 
-    vec3 result = (ambient + diffuse) * objectColor;
+    vec3 viewDir = normalize(viewPos - fs_pos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 10.0);
+    vec3 specular = lightSpecular * spec;
+
+    vec3 result = (lightAmbient + diffuse + specular) * color.xyz;
+
     frag_color = vec4(result, 1.0);
 }
 #pragma sokol @end

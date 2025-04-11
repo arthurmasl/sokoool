@@ -6,15 +6,18 @@ Mesh :: struct {
   pipeline:   sg.Pipeline,
   bindings:   sg.Bindings,
   face_count: uint,
+  color:      Vec4,
 }
 
 Game_Memory :: struct {
-  mesh:   Mesh,
+  // mesh:   Mesh,
+  meshes: []Mesh,
   pass:   sg.Pass_Action,
   // pip_cube:     sg.Pipeline,
   // bind:         sg.Bindings,
   //
   camera: Camera,
+  //
 }
 
 Vec2 :: [2]f32
