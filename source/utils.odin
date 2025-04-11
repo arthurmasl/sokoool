@@ -143,7 +143,7 @@ sg_range_from_slice :: proc(sl: []$T) -> sg.Range {
 
 sg_range_from_struct :: proc(st: ^$T) -> sg.Range where intrinsics.type_is_struct(T) {
   when T == png.Image {
-    return {ptr = raw_data(st.pixels.buf), size = uint(slice.size(st.pixels.buf[:]))}
+    return {ptr = raw_data(st.pixels.buf), size = uint(st.width * st.height * 4)}
   }
 
   return {ptr = st, size = size_of(T)}

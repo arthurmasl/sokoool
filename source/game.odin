@@ -25,7 +25,7 @@ game_init :: proc() {
 
   load_object("./assets/rigbody.glb")
 
-  // maybe just past pointer?
+  // TODO: buffer size?
   texture_bytes := mem.slice_ptr(g.mesh.texture, 28 * 28)
   img, img_err := png.load_from_bytes(texture_bytes, nil, context.temp_allocator)
   if img_err != nil {
@@ -40,7 +40,7 @@ game_init :: proc() {
       height = i32(img.height),
       data = {
         subimage = {
-          0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(slice.size(img.pixels.buf[:]))}},
+          0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(img.width * img.height * 4)}},
         },
       },
     },
