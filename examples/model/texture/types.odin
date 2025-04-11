@@ -6,8 +6,6 @@ Mesh :: struct {
   pipeline:   sg.Pipeline,
   bindings:   sg.Bindings,
   face_count: uint,
-  color:      Vec4,
-  texture:    [^]byte,
 }
 
 Game_Memory :: struct {

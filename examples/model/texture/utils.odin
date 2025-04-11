@@ -74,7 +74,6 @@ load_object :: proc(name: string) {
 
   // tm: [16]f32
   // cgltf.node_transform_world(data.animations[0].channels[1].target_node, &tm[0])
-  // fmt.println("===", tm)
 
   for mesh in data.meshes {
     for p in mesh.primitives {
@@ -96,8 +95,6 @@ load_object :: proc(name: string) {
           texcoord_arr = make([]f32, num_floats, context.temp_allocator)
           _ = cgltf.accessor_unpack_floats(a.data, &texcoord_arr[0], num_floats)
         }
-
-        g.mesh.color = p.material.pbr_metallic_roughness.base_color_factor
       }
 
       vertices := make([dynamic]f32, context.temp_allocator)
@@ -113,6 +110,16 @@ load_object :: proc(name: string) {
       indices := make([]u16, indices_count, context.temp_allocator)
       _ = cgltf.accessor_unpack_indices(p.indices, &indices[0], size_of(u16), indices_count)
 
+      image_buffer := data.textures[0].image_.buffer_view
+      texture_bytes := cgltf.buffer_view_data(image_buffer)
+      texture := ([]byte)(texture_bytes[:image_buffer.size])
+
+      img, img_err := png.load_from_bytes(texture, nil, context.temp_allocator)
+      if img_err != nil {
+        fmt.println(img_err)
+        return
+      }
+
       g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
         {data = {ptr = &vertices[0], size = uint(size_of(f32) * 8 * vertices_count)}},
       )
@@ -122,10 +129,20 @@ load_object :: proc(name: string) {
           data = {ptr = &indices[0], size = uint(size_of(u16) * indices_count)},
         },
       )
+      g.mesh.bindings.images[IMG_tex] = sg.make_image(
+        {
+          width = i32(img.width),
+          height = i32(img.height),
+          data = {
+            subimage = {
+              0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(img.width * img.height * 4)}},
+            },
+          },
+        },
+      )
+      g.mesh.bindings.samplers[SMP_smp] = sg.make_sampler({})
 
       g.mesh.face_count = len(indices)
-      texture_bytes := cgltf.buffer_view_data(data.textures[0].image_.buffer_view)
-      g.mesh.texture = texture_bytes
     }
   }
 
