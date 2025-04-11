@@ -7,11 +7,11 @@ Mesh :: struct {
   bindings:   sg.Bindings,
   face_count: uint,
   color:      Vec4,
+  texture:    [^]byte,
 }
 
 Game_Memory :: struct {
-  // mesh:   Mesh,
-  meshes: []Mesh,
+  mesh:   Mesh,
   pass:   sg.Pass_Action,
   // pip_cube:     sg.Pipeline,
   // bind:         sg.Bindings,
