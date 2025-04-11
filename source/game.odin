@@ -38,7 +38,6 @@ game_init :: proc() {
         depth = {compare = .LESS_EQUAL, write_enabled = true},
       },
     )
-
   }
 
   g.pass = {

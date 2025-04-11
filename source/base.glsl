@@ -40,8 +40,8 @@ void main() {
 
     vec3 viewPos = vec3(0, 0, 0);
     vec3 lightDirection = vec3(2, 5, 0);
-    vec3 lightAmbient = vec3(0.5, 0.5, 0.5);
-    vec3 lightDiffuse = vec3(0.5, 0.5, 0.5);
+    vec3 lightAmbient = vec3(0.4, 0.4, 0.4);
+    vec3 lightDiffuse = vec3(0.7, 0.7, 0.7);
     vec3 lightSpecular = vec3(0.2, 0.2, 0.2);
 
     vec3 norm = normalize(fs_normal);

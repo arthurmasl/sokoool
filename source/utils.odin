@@ -74,6 +74,20 @@ load_object :: proc(name: string) {
 
   global_meshes := make([dynamic]Mesh, context.allocator)
 
+  fmt.println(data.animations[0].name)
+  fmt.println(data.animations[0].channels[0].target_node.name)
+  fmt.println(data.animations[0].channels[1].target_path)
+  fmt.println(data.animations[0].channels[1].target_node.rotation)
+
+  // fmt.println()
+  fmt.println(data.animations[0].samplers[0].input.type)
+  fmt.println(data.animations[0].samplers[0].output.type)
+  fmt.println(data.animations[0].samplers[0].interpolation)
+
+  tm: [16]f32
+  cgltf.node_transform_world(data.animations[0].channels[1].target_node, &tm[0])
+  fmt.println("===", tm)
+
   for mesh in data.meshes {
     local_mesh: Mesh
 
