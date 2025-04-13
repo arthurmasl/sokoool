@@ -9,19 +9,17 @@ Mesh :: struct {
 }
 
 Game_Memory :: struct {
-  mesh:   Mesh,
-  pass:   sg.Pass_Action,
-  // pip_cube:     sg.Pipeline,
-  // bind:         sg.Bindings,
-  //
-  camera: Camera,
-  //
+  mesh:            Mesh,
+  pass:            sg.Pass_Action,
+  light_positions: []Vec4,
+  camera:          Camera,
 }
 
 Vec2 :: [2]f32
 Vec3 :: [3]f32
 Vec4 :: [4]f32
 
+Mat3 :: matrix[3, 3]f32
 Mat4 :: matrix[4, 4]f32
 
 Vertex :: struct {

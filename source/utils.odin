@@ -129,7 +129,7 @@ load_object :: proc(name: string) {
           data = {ptr = &indices[0], size = uint(size_of(u16) * indices_count)},
         },
       )
-      g.mesh.bindings.images[IMG_tex] = sg.make_image(
+      g.mesh.bindings.images[IMG_uTexture] = sg.make_image(
         {
           width = i32(img.width),
           height = i32(img.height),
@@ -140,7 +140,7 @@ load_object :: proc(name: string) {
           },
         },
       )
-      g.mesh.bindings.samplers[SMP_smp] = sg.make_sampler({})
+      g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
 
       g.mesh.face_count = len(indices)
     }

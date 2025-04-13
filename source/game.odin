@@ -19,6 +19,8 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
+  g.light_positions = {{0.7, 0.2, 2.0, 1.0}}
+
   load_object("./assets/rigbody.glb")
 
   // update camera
@@ -27,9 +29,9 @@ game_init :: proc() {
       shader = sg.make_shader(base_shader_desc(sg.query_backend())),
       layout = {
         attrs = {
-          ATTR_base_position = {format = .FLOAT3},
-          ATTR_base_normal = {format = .FLOAT3},
-          ATTR_base_texcoord = {format = .FLOAT2},
+          ATTR_base_aPosition = {format = .FLOAT3},
+          ATTR_base_aNormal = {format = .FLOAT3},
+          ATTR_base_aTexCoord = {format = .FLOAT2},
         },
       },
       index_type = .UINT16,
@@ -50,16 +52,36 @@ game_frame :: proc() {
 
   view, projection := camera_update()
   vs_params := Vs_Params {
-    view       = view,
-    projection = projection,
+    uModel      = linalg.matrix4_translate_f32({0, -4, 0}),
+    uView       = view,
+    uProjection = projection,
   }
-  vs_params.model = linalg.matrix4_translate_f32({0, -4, 0})
+  fs_params := Fs_Params {
+    uViewPos           = g.camera.pos,
+    uMaterialShininess = 32.0,
+  }
+  fs_dir_light := Fs_Dir_Light {
+    uDirection = {-0.2, -1.0, -0.3},
+    uAmbient   = {0.05, 0.05, 0.05},
+    uDiffuse   = {0.4, 0.4, 0.4},
+    uSpecular  = {0.5, 0.5, 0.5},
+  }
+  fs_point_lights := Fs_Point_Lights {
+    uPosition    = {g.light_positions[0]},
+    uAmbient     = {{0.05, 0.05, 0.05, 0.0}},
+    uDiffuse     = {{0.8, 0.8, 0.8, 0.0}},
+    uSpecular    = {{1.0, 1.0, 1.0, 0.0}},
+    uAttenuation = {{1.0, 0.09, 0.032, 0.0}},
+  }
 
   // mesh
   sg.apply_pipeline(g.mesh.pipeline)
   sg.apply_bindings(g.mesh.bindings)
 
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+  sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
+  sg.apply_uniforms(UB_fs_dir_light, data = sg_range(&fs_dir_light))
+  sg.apply_uniforms(UB_fs_point_lights, data = sg_range(&fs_point_lights))
 
   sg.draw(0, g.mesh.face_count, 1)
 
