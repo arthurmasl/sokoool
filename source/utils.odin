@@ -7,6 +7,7 @@ import "core:log"
 import "core:os"
 import "core:strings"
 import "vendor:cgltf"
+import stbi "vendor:stb/image"
 
 import "web"
 
@@ -112,13 +113,21 @@ load_object :: proc(name: string) {
 
       image_buffer := data.textures[0].image_.buffer_view
       texture_bytes := cgltf.buffer_view_data(image_buffer)
-      texture := ([]byte)(texture_bytes[:image_buffer.size])
 
-      img, img_err := png.load_from_bytes(texture, nil, context.temp_allocator)
-      if img_err != nil {
-        fmt.println(img_err)
+      width, height, channels: i32
+      pixels := stbi.load_from_memory(
+        texture_bytes,
+        i32(image_buffer.size),
+        &width,
+        &height,
+        &channels,
+        0,
+      )
+      if pixels == nil {
+        fmt.println("Failed to load texture")
         return
       }
+      defer stbi.image_free(pixels)
 
       g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
         {data = {ptr = &vertices[0], size = uint(size_of(f32) * 8 * vertices_count)}},
@@ -131,13 +140,10 @@ load_object :: proc(name: string) {
       )
       g.mesh.bindings.images[IMG_uTexture] = sg.make_image(
         {
-          width = i32(img.width),
-          height = i32(img.height),
-          data = {
-            subimage = {
-              0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(img.width * img.height * 4)}},
-            },
-          },
+          width = i32(width),
+          height = i32(height),
+          pixel_format = .RGBA8,
+          data = {subimage = {0 = {0 = {ptr = pixels, size = uint(width * height * 4)}}}},
         },
       )
       g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
