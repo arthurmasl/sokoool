@@ -26,7 +26,7 @@ Camera :: struct {
 }
 
 SPEED :: 15
-SENSITIVITY :: 0.10
+SENSITIVITY :: 0.2
 
 camera_init :: proc() {
   sapp.show_mouse(false)

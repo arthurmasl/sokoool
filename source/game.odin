@@ -57,16 +57,16 @@ game_frame :: proc() {
   }
   fs_params := Fs_Params {
     uViewPos           = g.camera.pos,
-    uMaterialShininess = 32.0,
+    uMaterialShininess = 0.0,
   }
   fs_dir_light := Fs_Dir_Light {
-    uDirection = {-0.5, -5.0, -1.5},
-    uAmbient   = {0.05, 0.05, 0.05},
+    uDirection = {0.5, -5.0, -1.5},
+    uAmbient   = {0.5, 0.5, 0.5},
     uDiffuse   = {0.4, 0.4, 0.4},
-    uSpecular  = {0.5, 0.5, 0.5},
+    uSpecular  = {0.2, 0.2, 0.2},
   }
   fs_point_lights := Fs_Point_Lights {
-    uPosition    = {{0.0, 0.0, 0.0, 1.0}},
+    uPosition    = {{0.0, -5.0, 0.0, 1.0}},
     uAmbient     = {{0.05, 0.05, 0.05, 0.0}},
     uDiffuse     = {{0.8, 0.8, 0.8, 0.0}},
     uSpecular    = {{1.0, 1.0, 1.0, 0.0}},
