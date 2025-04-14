@@ -6,23 +6,18 @@ import "core:math/linalg"
 import sapp "sokol/app"
 
 Camera :: struct {
-  pos:           Vec3,
-  front:         Vec3,
-  up:            Vec3,
+  pos:         Vec3,
+  front:       Vec3,
+  up:          Vec3,
   //
-  first_mouse:   bool,
-  mouse_x:       f32,
-  mouse_y:       f32,
-  yaw:           f32,
-  pitch:         f32,
-  fov:           f32,
+  first_mouse: bool,
+  mouse_x:     f32,
+  mouse_y:     f32,
+  yaw:         f32,
+  pitch:       f32,
+  fov:         f32,
   //
-  held_forward:  bool,
-  held_backward: bool,
-  held_left:     bool,
-  held_right:    bool,
-  held_up:       bool,
-  held_down:     bool,
+  key_down:    #sparse[sapp.Keycode]bool,
 }
 
 SPEED :: 15
@@ -47,25 +42,8 @@ camera_process_input :: proc(e: ^sapp.Event) {
   if !sapp.mouse_locked() do return
 
   // keyboard
-  if e.type == .KEY_DOWN {
-    if e.key_code == .E do g.camera.held_forward = true
-    if e.key_code == .D do g.camera.held_backward = true
-    if e.key_code == .S do g.camera.held_left = true
-    if e.key_code == .F do g.camera.held_right = true
-
-    if e.key_code == .SPACE do g.camera.held_up = true
-    if e.key_code == .Z do g.camera.held_down = true
-  }
-
-  if e.type == .KEY_UP {
-    if e.key_code == .E do g.camera.held_forward = false
-    if e.key_code == .D do g.camera.held_backward = false
-    if e.key_code == .S do g.camera.held_left = false
-    if e.key_code == .F do g.camera.held_right = false
-
-    if e.key_code == .SPACE do g.camera.held_up = false
-    if e.key_code == .Z do g.camera.held_down = false
-  }
+  if e.type == .KEY_DOWN do g.camera.key_down[e.key_code] = true
+  if e.type == .KEY_UP do g.camera.key_down[e.key_code] = false
 
   // mosue
   if e.type == .MOUSE_MOVE {
@@ -80,14 +58,14 @@ camera_process_input :: proc(e: ^sapp.Event) {
 }
 
 camera_update :: proc() -> (Mat4, Mat4) {
+  // camera
   g.camera.yaw += g.camera.mouse_x * SENSITIVITY
   g.camera.pitch -= g.camera.mouse_y * SENSITIVITY
 
   g.camera.mouse_x = 0
   g.camera.mouse_y = 0
 
-  if g.camera.pitch > 89.0 do g.camera.pitch = 89.0
-  if g.camera.pitch < -89.0 do g.camera.pitch = -89.0
+  g.camera.pitch = math.clamp(g.camera.pitch, -89, 89)
 
   direction := Vec3 {
     math.cos(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch)),
@@ -97,6 +75,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
 
   g.camera.front = linalg.normalize(direction)
 
+  // movement
   vel := SPEED * delta_time
   dir := Vec3{}
 
@@ -104,13 +83,13 @@ camera_update :: proc() -> (Mat4, Mat4) {
   front := g.camera.front
   right := linalg.cross(g.camera.front, g.camera.up)
 
-  if g.camera.held_forward do dir += front
-  if g.camera.held_backward do dir -= front
-  if g.camera.held_left do dir -= right
-  if g.camera.held_right do dir += right
+  if g.camera.key_down[.E] do dir += front
+  if g.camera.key_down[.D] do dir -= front
+  if g.camera.key_down[.S] do dir -= right
+  if g.camera.key_down[.F] do dir += right
 
-  if g.camera.held_up do dir += up
-  if g.camera.held_down do dir -= up
+  if g.camera.key_down[.SPACE] do dir += up
+  if g.camera.key_down[.Z] do dir -= up
 
   g.camera.pos += linalg.normalize0(dir) * vel
   g.camera.pos.y = max(g.camera.pos.y, 1)
