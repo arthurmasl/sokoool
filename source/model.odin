@@ -26,17 +26,31 @@ load_object :: proc(name: string) {
   // tm: [16]f32
   // cgltf.node_transform_world(data.animations[0].channels[1].target_node, &tm[0])
   // fmt.println(len(data.animations[0].channels[1]))
-  fmt.println(data.animations[0].channels[0].target_node.name)
-  fmt.println(data.animations[0].channels[0].target_path)
-  fmt.println(data.animations[0].samplers[0].interpolation)
+  // fmt.println(data.animations[0].channels[0].target_node.name)
+  // fmt.println(data.animations[0].channels[0].target_path)
+  // fmt.println(data.animations[0].samplers[0].interpolation)
 
   for chan in data.animations[0].channels {
     if chan.sampler.interpolation != .step {
-      fmt.println(chan.target_path, chan.target_node.name, chan.sampler.interpolation)
-      tm: [16]f32
-      cgltf.node_transform_local(chan.target_node, &tm[0])
-      fmt.println(tm)
+      // fmt.println(chan.target_path, chan.target_node.name, chan.sampler.interpolation)
+      // tm: [16]f32
+      // cgltf.node_transform_local(chan.target_node, &tm[0])
+      // fmt.println(tm)
+
     }
+  }
+
+  parse_node :: proc(node: ^cgltf.node) {
+    fmt.println(node.name, node.weights)
+    for children in node.children {
+      parse_node(children)
+    }
+  }
+
+  fmt.println("skin:", data.skins[0].name)
+  fmt.println("joints:", len(data.skins[0].joints))
+  for joint in data.skins[0].joints {
+    fmt.println(joint.name)
   }
 
   // fmt.println(len(data.animations[0].channels))
