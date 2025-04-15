@@ -40,18 +40,11 @@ load_object :: proc(name: string) {
     }
   }
 
-  parse_node :: proc(node: ^cgltf.node) {
-    fmt.println(node.name, node.weights)
-    for children in node.children {
-      parse_node(children)
-    }
-  }
-
-  fmt.println("skin:", data.skins[0].name)
-  fmt.println("joints:", len(data.skins[0].joints))
-  for joint in data.skins[0].joints {
-    fmt.println(joint.name)
-  }
+  // fmt.println("skin:", data.skins[0].name)
+  // fmt.println("joints:", len(data.skins[0].joints))
+  // for joint in data.skins[0].joints {
+  // fmt.println(joint.name, joint.weights, joint.mesh)
+  // }
 
   // fmt.println(len(data.animations[0].channels))
   // fmt.println(data.skins[0].joints[0])
@@ -61,9 +54,12 @@ load_object :: proc(name: string) {
       position_arr: []f32
       normal_arr: []f32
       texcoord_arr: []f32
+      joint_arr: []f32
+      weight_arr: []f32
 
       for a in p.attributes {
         num_floats := cgltf.accessor_unpack_floats(a.data, nil, 0)
+
         if a.type == .position {
           position_arr = make([]f32, num_floats, context.temp_allocator)
           _ = cgltf.accessor_unpack_floats(a.data, &position_arr[0], num_floats)
@@ -76,15 +72,33 @@ load_object :: proc(name: string) {
           texcoord_arr = make([]f32, num_floats, context.temp_allocator)
           _ = cgltf.accessor_unpack_floats(a.data, &texcoord_arr[0], num_floats)
         }
+
+        if a.type == .joints {
+          joint_arr = make([]f32, num_floats, context.temp_allocator)
+          _ = cgltf.accessor_unpack_floats(a.data, &joint_arr[0], num_floats)
+        }
+        if a.type == .weights {
+          weight_arr = make([]f32, num_floats, context.temp_allocator)
+          _ = cgltf.accessor_unpack_floats(a.data, &weight_arr[0], num_floats)
+        }
       }
 
       vertices := make([dynamic]f32, context.temp_allocator)
-      vertices_count := (len(position_arr) + len(normal_arr) + len(texcoord_arr)) / 8
+      vertices_count :=
+        (len(position_arr) +
+          len(normal_arr) +
+          len(texcoord_arr) +
+          len(joint_arr) +
+          len(weight_arr)) /
+        16
 
       for i in 0 ..< vertices_count {
         append(&vertices, ..position_arr[i * 3:(i * 3) + 3])
         append(&vertices, ..normal_arr[i * 3:(i * 3) + 3])
         append(&vertices, ..texcoord_arr[i * 2:(i * 2) + 2])
+
+        append(&vertices, ..joint_arr[i * 4:(i * 4) + 4])
+        append(&vertices, ..weight_arr[i * 4:(i * 4) + 4])
       }
 
       indices_count := cgltf.accessor_unpack_indices(p.indices, nil, 0, 0)
@@ -110,7 +124,7 @@ load_object :: proc(name: string) {
       defer stbi.image_free(pixels)
 
       g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
-        {data = {ptr = &vertices[0], size = uint(size_of(f32) * 8 * vertices_count)}},
+        {data = {ptr = &vertices[0], size = uint(size_of(f32) * 16 * vertices_count)}},
       )
       g.mesh.bindings.index_buffer = sg.make_buffer(
         {

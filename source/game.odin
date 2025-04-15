@@ -30,6 +30,8 @@ game_init :: proc() {
           ATTR_base_aPosition = {format = .FLOAT3},
           ATTR_base_aNormal = {format = .FLOAT3},
           ATTR_base_aTexCoord = {format = .FLOAT2},
+          ATTR_base_aJoint = {format = .INT4},
+          ATTR_base_aWeight = {format = .FLOAT4},
         },
       },
       index_type = .UINT16,

@@ -10,6 +10,8 @@
 in vec3 aPosition;
 in vec3 aNormal;
 in vec2 aTexCoord;
+in ivec4 aJoint;
+in vec4 aWeight;
 
 out vec3 vPosition;
 out vec3 vNormal;
