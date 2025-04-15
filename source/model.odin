@@ -2,14 +2,15 @@ package game
 
 import "base:intrinsics"
 import "core:fmt"
+
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
 import stbi "vendor:stb/image"
 
-load_object :: proc(name: string) {
+load_mesh :: proc(file_name: string) {
   options: cgltf.options
-  path := strings.unsafe_string_to_cstring(name)
+  path := strings.unsafe_string_to_cstring(file_name)
 
   data, result := cgltf.parse_file(options, path)
   if result != .success {
@@ -23,19 +24,13 @@ load_object :: proc(name: string) {
     return
   }
 
-  // tm: [16]f32
-  // cgltf.node_transform_world(data.animations[0].channels[1].target_node, &tm[0])
-
   assert(len(data.meshes) == 1)
   assert(len(data.meshes[0].primitives) == 1)
 
-  for mesh in data.meshes {
-    for &primitive in mesh.primitives {
-      parse_vertices(&primitive)
-      parse_indices(&primitive)
-      parse_texture(&data.textures[0])
-    }
-  }
+  parse_vertices(&data.meshes[0].primitives[0])
+  parse_indices(&data.meshes[0].primitives[0])
+  parse_texture(&data.textures[0])
+  parse_animation(&data.animations[0])
 
   free_all(context.temp_allocator)
 }
@@ -119,4 +114,31 @@ parse_texture :: proc(texture: ^cgltf.texture) {
   )
 
   g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
+}
+
+parse_animation :: proc(animation: ^cgltf.animation) {
+  transforms := make(map[string][dynamic]Mat4)
+  defer delete(transforms)
+
+  for channel in animation.channels {
+    // TODO: remove cont?
+    lerp_type := channel.sampler.interpolation
+    if lerp_type == .step do continue
+
+    flat_matrix: [16]f32
+    cgltf.node_transform_world(channel.target_node, &flat_matrix[0])
+
+    transform := transmute(Mat4)(flat_matrix)
+
+    // fmt.println(string(channel.target_node.name))
+    bone_name := string(channel.target_node.name)
+    if _, ok := transforms[bone_name]; !ok {
+      transforms[bone_name] = make([dynamic]Mat4, context.temp_allocator)
+    }
+    append(&transforms[string(channel.target_node.name)], transform)
+  }
+
+  for t in transforms {
+    fmt.println(t, len(t))
+  }
 }

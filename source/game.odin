@@ -19,7 +19,7 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  load_object("./assets/rigbody.glb")
+  load_mesh("./assets/rigbody.glb")
 
   // update camera
   g.mesh.pipeline = sg.make_pipeline(
