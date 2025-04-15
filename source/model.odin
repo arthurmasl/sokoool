@@ -25,126 +25,98 @@ load_object :: proc(name: string) {
 
   // tm: [16]f32
   // cgltf.node_transform_world(data.animations[0].channels[1].target_node, &tm[0])
-  // fmt.println(len(data.animations[0].channels[1]))
-  // fmt.println(data.animations[0].channels[0].target_node.name)
-  // fmt.println(data.animations[0].channels[0].target_path)
-  // fmt.println(data.animations[0].samplers[0].interpolation)
 
-  for chan in data.animations[0].channels {
-    if chan.sampler.interpolation != .step {
-      // fmt.println(chan.target_path, chan.target_node.name, chan.sampler.interpolation)
-      // tm: [16]f32
-      // cgltf.node_transform_local(chan.target_node, &tm[0])
-      // fmt.println(tm)
-
-    }
-  }
-
-  // fmt.println("skin:", data.skins[0].name)
-  // fmt.println("joints:", len(data.skins[0].joints))
-  // for joint in data.skins[0].joints {
-  // fmt.println(joint.name, joint.weights, joint.mesh)
-  // }
-
-  // fmt.println(len(data.animations[0].channels))
-  // fmt.println(data.skins[0].joints[0])
+  assert(len(data.meshes) == 1)
+  assert(len(data.meshes[0].primitives) == 1)
 
   for mesh in data.meshes {
-    for p in mesh.primitives {
-      position_arr: []f32
-      normal_arr: []f32
-      texcoord_arr: []f32
-      joint_arr: []f32
-      weight_arr: []f32
-
-      for a in p.attributes {
-        num_floats := cgltf.accessor_unpack_floats(a.data, nil, 0)
-
-        if a.type == .position {
-          position_arr = make([]f32, num_floats, context.temp_allocator)
-          _ = cgltf.accessor_unpack_floats(a.data, &position_arr[0], num_floats)
-        }
-        if a.type == .normal {
-          normal_arr = make([]f32, num_floats, context.temp_allocator)
-          _ = cgltf.accessor_unpack_floats(a.data, &normal_arr[0], num_floats)
-        }
-        if a.type == .texcoord {
-          texcoord_arr = make([]f32, num_floats, context.temp_allocator)
-          _ = cgltf.accessor_unpack_floats(a.data, &texcoord_arr[0], num_floats)
-        }
-
-        if a.type == .joints {
-          joint_arr = make([]f32, num_floats, context.temp_allocator)
-          _ = cgltf.accessor_unpack_floats(a.data, &joint_arr[0], num_floats)
-        }
-        if a.type == .weights {
-          weight_arr = make([]f32, num_floats, context.temp_allocator)
-          _ = cgltf.accessor_unpack_floats(a.data, &weight_arr[0], num_floats)
-        }
-      }
-
-      vertices := make([dynamic]f32, context.temp_allocator)
-      vertices_count :=
-        (len(position_arr) +
-          len(normal_arr) +
-          len(texcoord_arr) +
-          len(joint_arr) +
-          len(weight_arr)) /
-        16
-
-      for i in 0 ..< vertices_count {
-        append(&vertices, ..position_arr[i * 3:(i * 3) + 3])
-        append(&vertices, ..normal_arr[i * 3:(i * 3) + 3])
-        append(&vertices, ..texcoord_arr[i * 2:(i * 2) + 2])
-
-        append(&vertices, ..joint_arr[i * 4:(i * 4) + 4])
-        append(&vertices, ..weight_arr[i * 4:(i * 4) + 4])
-      }
-
-      indices_count := cgltf.accessor_unpack_indices(p.indices, nil, 0, 0)
-      indices := make([]u16, indices_count, context.temp_allocator)
-      _ = cgltf.accessor_unpack_indices(p.indices, &indices[0], size_of(u16), indices_count)
-
-      image_buffer := data.textures[0].image_.buffer_view
-      texture_bytes := cgltf.buffer_view_data(image_buffer)
-
-      width, height, channels: i32
-      pixels := stbi.load_from_memory(
-        texture_bytes,
-        i32(image_buffer.size),
-        &width,
-        &height,
-        &channels,
-        0,
-      )
-      if pixels == nil {
-        fmt.println("Failed to load texture")
-        return
-      }
-      defer stbi.image_free(pixels)
-
-      g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
-        {data = {ptr = &vertices[0], size = uint(size_of(f32) * 16 * vertices_count)}},
-      )
-      g.mesh.bindings.index_buffer = sg.make_buffer(
-        {
-          type = .INDEXBUFFER,
-          data = {ptr = &indices[0], size = uint(size_of(u16) * indices_count)},
-        },
-      )
-      g.mesh.bindings.images[IMG_uTexture] = sg.make_image(
-        {
-          width = i32(width),
-          height = i32(height),
-          pixel_format = .RGBA8,
-          data = {subimage = {0 = {0 = {ptr = pixels, size = uint(width * height * 4)}}}},
-        },
-      )
-      g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
-
-      g.mesh.face_count = len(indices)
+    for &primitive in mesh.primitives {
+      parse_vertices(&primitive)
+      parse_indices(&primitive)
+      parse_texture(&data.textures[0])
     }
   }
 
   free_all(context.temp_allocator)
+}
+
+parse_vertices :: proc(primitive: ^cgltf.primitive) {
+  attribute_arrays: [5]struct {
+    data: []f32,
+    size: uint,
+  }
+
+  for a, i in primitive.attributes {
+    floats_count := cgltf.accessor_unpack_floats(a.data, nil, 0)
+    size := a.data.stride / (a.type == .joints ? 1 : 4)
+    data := make([]f32, floats_count, context.temp_allocator)
+
+    _ = cgltf.accessor_unpack_floats(a.data, &data[0], floats_count)
+
+    attribute_arrays[i] = {data, size}
+  }
+
+  vertices_count: uint
+  stride: uint
+  vertices := make([dynamic]f32, context.temp_allocator)
+
+  for arr in attribute_arrays {
+    vertices_count += len(arr.data)
+    stride += arr.size
+  }
+
+  data_count := vertices_count / stride
+
+  for i in 0 ..< data_count {
+    for arr in attribute_arrays {
+      append(&vertices, ..arr.data[i * arr.size:(i * arr.size) + arr.size])
+    }
+  }
+
+  g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
+    {data = {ptr = &vertices[0], size = uint(size_of(f32) * vertices_count)}},
+  )
+}
+
+parse_indices :: proc(primitve: ^cgltf.primitive) {
+  indices_count := cgltf.accessor_unpack_indices(primitve.indices, nil, 0, 0)
+  indices := make([]u16, indices_count, context.temp_allocator)
+  _ = cgltf.accessor_unpack_indices(primitve.indices, &indices[0], size_of(u16), indices_count)
+
+  g.mesh.bindings.index_buffer = sg.make_buffer(
+    {type = .INDEXBUFFER, data = {ptr = &indices[0], size = uint(size_of(u16) * indices_count)}},
+  )
+
+  g.mesh.face_count = indices_count
+}
+
+parse_texture :: proc(texture: ^cgltf.texture) {
+  image_buffer := texture.image_.buffer_view
+  texture_bytes := cgltf.buffer_view_data(image_buffer)
+
+  width, height, channels: i32
+  pixels := stbi.load_from_memory(
+    texture_bytes,
+    i32(image_buffer.size),
+    &width,
+    &height,
+    &channels,
+    0,
+  )
+  if pixels == nil {
+    fmt.println("Failed to load texture")
+    return
+  }
+  defer stbi.image_free(pixels)
+
+  g.mesh.bindings.images[IMG_uTexture] = sg.make_image(
+    {
+      width = i32(width),
+      height = i32(height),
+      pixel_format = .RGBA8,
+      data = {subimage = {0 = {0 = {ptr = pixels, size = uint(width * height * 4)}}}},
+    },
+  )
+
+  g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
 }
