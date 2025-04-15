@@ -30,7 +30,7 @@ load_mesh :: proc(file_name: string) {
   parse_vertices(&data.meshes[0].primitives[0])
   parse_indices(&data.meshes[0].primitives[0])
   parse_texture(&data.textures[0])
-  parse_animation(&data.animations[0])
+  parse_animation(&data.animations[0], &data.skins[0])
 
   free_all(context.temp_allocator)
 }
@@ -116,29 +116,22 @@ parse_texture :: proc(texture: ^cgltf.texture) {
   g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
 }
 
-parse_animation :: proc(animation: ^cgltf.animation) {
-  transforms := make(map[string][dynamic]Mat4)
-  defer delete(transforms)
+parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
+  MAX_BONES :: 50
+  bones: [MAX_BONES]Mat4
 
   for channel in animation.channels {
-    // TODO: remove cont?
-    lerp_type := channel.sampler.interpolation
-    if lerp_type == .step do continue
-
-    flat_matrix: [16]f32
+    flat_matrix: [4 * 4]f32
     cgltf.node_transform_world(channel.target_node, &flat_matrix[0])
 
     transform := transmute(Mat4)(flat_matrix)
 
-    // fmt.println(string(channel.target_node.name))
-    bone_name := string(channel.target_node.name)
-    if _, ok := transforms[bone_name]; !ok {
-      transforms[bone_name] = make([dynamic]Mat4, context.temp_allocator)
-    }
-    append(&transforms[string(channel.target_node.name)], transform)
+    index: int
+    for joint, i in skin.joints do if channel.target_node.name == joint.name do index = i
+
+    bones[index] = transform
   }
 
-  for t in transforms {
-    fmt.println(t, len(t))
-  }
+  g.mesh.bones = bones
+
 }

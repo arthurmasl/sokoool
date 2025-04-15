@@ -17,16 +17,24 @@ out vec3 vPosition;
 out vec3 vNormal;
 out vec2 vTexCoord;
 
+#define MAX_BONES 50
 layout(binding = 0) uniform vs_params {
     mat4 uModel;
     mat4 uView;
     mat4 uProjection;
+    mat4 uBones[MAX_BONES];
 };
 
 void main() {
-    gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
+    mat4 skinMatrix = aWeight.x * uBones[aJoint.x] +
+            aWeight.y * uBones[aJoint.y] +
+            aWeight.z * uBones[aJoint.z] +
+            aWeight.w * uBones[aJoint.w];
+    vec4 skinnedPos = skinMatrix * vec4(aPosition, 1.0);
 
-    vPosition = vec3(uModel * vec4(aPosition, 1.0));
+    gl_Position = uProjection * uView * uModel * skinnedPos;
+
+    vPosition = vec3(uModel * skinnedPos);
     vNormal = mat3(uModel) * aNormal;
     vTexCoord = aTexCoord;
 }

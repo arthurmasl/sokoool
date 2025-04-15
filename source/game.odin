@@ -2,6 +2,7 @@ package game
 
 import "core:math/linalg"
 
+import "core:fmt"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
@@ -56,6 +57,7 @@ game_frame :: proc() {
     uModel      = linalg.matrix4_translate_f32({0, 0, 0}),
     uView       = view,
     uProjection = projection,
+    uBones      = g.mesh.bones,
   }
   fs_params := Fs_Params {
     uViewPos           = g.camera.pos,

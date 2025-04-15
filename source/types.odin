@@ -6,6 +6,7 @@ Mesh :: struct {
   pipeline:   sg.Pipeline,
   bindings:   sg.Bindings,
   face_count: uint,
+  bones:      [50]Mat4,
 }
 
 Game_Memory :: struct {
