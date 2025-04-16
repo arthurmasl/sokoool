@@ -85,7 +85,7 @@ game_frame :: proc() {
   sg.apply_uniforms(UB_fs_dir_light, data = sg_range(&fs_dir_light))
   sg.apply_uniforms(UB_fs_point_lights, data = sg_range(&fs_point_lights))
 
-  sg.draw(0, g.mesh.face_count, 1)
+  sg.draw(0, g.mesh.indices_count, 1)
 
   debug_process()
   sg.end_pass()

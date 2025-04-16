@@ -79,7 +79,7 @@ parse_indices :: proc(primitve: ^cgltf.primitive) {
     {type = .INDEXBUFFER, data = {ptr = &indices[0], size = uint(size_of(u16) * indices_count)}},
   )
 
-  g.mesh.face_count = indices_count
+  g.mesh.indices_count = indices_count
 }
 
 parse_texture :: proc(texture: ^cgltf.texture) {

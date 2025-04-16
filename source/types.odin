@@ -3,10 +3,10 @@ package game
 import sg "sokol/gfx"
 
 Mesh :: struct {
-  pipeline:   sg.Pipeline,
-  bindings:   sg.Bindings,
-  face_count: uint,
-  bones:      [50]Mat4,
+  pipeline:      sg.Pipeline,
+  bindings:      sg.Bindings,
+  indices_count: uint,
+  bones:         [50]Mat4,
 }
 
 Game_Memory :: struct {
