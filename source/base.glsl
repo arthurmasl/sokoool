@@ -10,7 +10,8 @@
 in vec3 aPosition;
 in vec3 aNormal;
 in vec2 aTexCoord;
-in ivec4 aJoint;
+
+in ivec4 aJointIndices;
 in vec4 aWeight;
 
 out vec3 vPosition;
@@ -26,10 +27,10 @@ layout(binding = 0) uniform vs_params {
 };
 
 void main() {
-    mat4 skinMatrix = aWeight.x * uBones[aJoint.x] +
-            aWeight.y * uBones[aJoint.y] +
-            aWeight.z * uBones[aJoint.z] +
-            aWeight.w * uBones[aJoint.w];
+    mat4 skinMatrix = aWeight.x * uBones[aJointIndices[0]] +
+            aWeight.y * uBones[aJointIndices[1]] +
+            aWeight.z * uBones[aJointIndices[2]] +
+            aWeight.w * uBones[aJointIndices[3]];
     vec4 skinnedPos = skinMatrix * vec4(aPosition, 1.0);
 
     gl_Position = uProjection * uView * uModel * skinnedPos;

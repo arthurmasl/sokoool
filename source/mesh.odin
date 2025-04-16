@@ -2,7 +2,7 @@ package game
 
 import "base:intrinsics"
 import "core:fmt"
-
+import "core:slice"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
@@ -115,8 +115,7 @@ parse_texture :: proc(texture: ^cgltf.texture) {
 }
 
 parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
-  MAX_BONES :: 50
-  bones: [MAX_BONES]Mat4
+  bones: [50]Mat4
 
   for channel in animation.channels {
     flat_matrix: [4 * 4]f32
@@ -124,10 +123,11 @@ parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
 
     transform := transmute(Mat4)(flat_matrix)
 
-    index: int
-    for joint, i in skin.joints do if channel.target_node.name == joint.name do index = i
-
-    bones[index] = transform
+    for joint, i in skin.joints {
+      if channel.target_node.name == joint.name {
+        bones[i] = transform
+      }
+    }
   }
 
   g.mesh.bones = bones
