@@ -2,7 +2,6 @@ package game
 
 import "base:intrinsics"
 import "core:fmt"
-import "core:slice"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
@@ -31,10 +30,6 @@ load_mesh :: proc(file_name: string) {
   parse_indices(&data.meshes[0].primitives[0])
   parse_texture(&data.textures[0])
   parse_animation(&data.animations[0], &data.skins[0])
-
-  for j in data.skins[0].joints {
-    fmt.println(j.name)
-  }
 }
 
 parse_vertices :: proc(primitive: ^cgltf.primitive) {
@@ -49,10 +44,6 @@ parse_vertices :: proc(primitive: ^cgltf.primitive) {
     data := make([]f32, floats_count, context.temp_allocator)
 
     _ = cgltf.accessor_unpack_floats(a.data, &data[0], floats_count)
-
-    if a.type == .joints {
-      fmt.println(data[:4])
-    }
 
     attribute_arrays[i] = {data, size}
   }
