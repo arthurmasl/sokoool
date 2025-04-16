@@ -31,8 +31,6 @@ load_mesh :: proc(file_name: string) {
   parse_indices(&data.meshes[0].primitives[0])
   parse_texture(&data.textures[0])
   parse_animation(&data.animations[0], &data.skins[0])
-
-  free_all(context.temp_allocator)
 }
 
 parse_vertices :: proc(primitive: ^cgltf.primitive) {

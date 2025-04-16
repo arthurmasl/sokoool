@@ -2,7 +2,6 @@ package game
 
 import "core:math/linalg"
 
-import "core:fmt"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
