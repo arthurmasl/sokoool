@@ -11,12 +11,15 @@ in vec3 aPosition;
 in vec3 aNormal;
 in vec2 aTexCoord;
 
-in ivec4 aJointIndices;
+in vec4 aJointIndices; // TODO: change to ivec4
 in vec4 aWeight;
 
 out vec3 vPosition;
 out vec3 vNormal;
 out vec2 vTexCoord;
+
+out vec4 vJointIndices;
+out vec4 vWeight;
 
 #define MAX_BONES 50
 layout(binding = 0) uniform vs_params {
@@ -27,17 +30,21 @@ layout(binding = 0) uniform vs_params {
 };
 
 void main() {
-    mat4 skinMatrix = aWeight.x * uBones[aJointIndices[0]] +
-            aWeight.y * uBones[aJointIndices[1]] +
-            aWeight.z * uBones[aJointIndices[2]] +
-            aWeight.w * uBones[aJointIndices[3]];
-    vec4 skinnedPos = skinMatrix * vec4(aPosition, 1.0);
+    // mat4 skinMatrix = aWeight.x * uBones[int(aJointIndices[0])] +
+    //         aWeight.y * uBones[int(aJointIndices[1])] +
+    //         aWeight.z * uBones[int(aJointIndices[2])] +
+    //         aWeight.w * uBones[int(aJointIndices[3])];
+    // vec4 skinnedPos = skinMatrix * vec4(aPosition, 1.0);
+    vec4 skinnedPos = vec4(aPosition, 1.0);
 
     gl_Position = uProjection * uView * uModel * skinnedPos;
 
     vPosition = vec3(uModel * skinnedPos);
     vNormal = mat3(uModel) * aNormal;
     vTexCoord = aTexCoord;
+
+    vJointIndices = aJointIndices;
+    vWeight = aWeight;
 }
 #pragma sokol @end
 
@@ -46,6 +53,9 @@ void main() {
 in vec3 vPosition;
 in vec3 vNormal;
 in vec2 vTexCoord;
+
+flat in vec4 vJointIndices;
+in vec4 vWeight;
 
 out vec4 frag_color;
 
@@ -113,7 +123,26 @@ void main() {
         result += calc_point_light(get_point_light(i), norm, vPosition, view_dir);
     }
 
-    frag_color = vec4(result, 1.0);
+    const uint boneId = 6;
+    bool found = false;
+
+    for (int i = 0; i < 4; i++) {
+        if (vJointIndices[i] == boneId) {
+            if (vWeight[i] >= 0.7) {
+                frag_color = vec4(1.0, 0.0, 0.0, 1.0) * vWeight[i];
+            } else if (vWeight[i] >= 0.4 && vWeight[i] <= 0.6) {
+                frag_color = vec4(0.0, 1.0, 0.0, 1.0) * vWeight[i];
+            } else if (vWeight[i] >= 0.1) {
+                frag_color = vec4(1.0, 1.0, 0.0, 1.0) * vWeight[i];
+            }
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        frag_color = vec4(result, 1.0);
+    }
 }
 
 dir_light_t get_directional_light() {
