@@ -2,6 +2,7 @@ package game
 
 import "base:intrinsics"
 import "core:fmt"
+import "core:math/linalg"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
@@ -115,12 +116,48 @@ parse_texture :: proc(texture: ^cgltf.texture) {
 
 parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
   bones: [50]Mat4
+  // ibm: [50]Mat4
+  //
+  // floats_count := cgltf.accessor_unpack_floats(skin.inverse_bind_matrices, nil, 0)
+  // data := make([]f32, floats_count, context.temp_allocator)
+  //
+  // _ = cgltf.accessor_unpack_floats(skin.inverse_bind_matrices, &data[0], floats_count)
+  //
+  // for i in 0 ..< floats_count / 16 {
+  //   flat_matrix: []f32
+  //   flat_matrix = data[i * 16:(i * 16) + 16]
+  //
+  //   inverse_matrix: Mat4
+  //   inverse_matrix[0, 0] = flat_matrix[0]
+  //   inverse_matrix[1, 0] = flat_matrix[1]
+  //   inverse_matrix[2, 0] = flat_matrix[2]
+  //   inverse_matrix[3, 0] = flat_matrix[3]
+  //
+  //   inverse_matrix[0, 1] = flat_matrix[4]
+  //   inverse_matrix[1, 1] = flat_matrix[5]
+  //   inverse_matrix[2, 1] = flat_matrix[6]
+  //   inverse_matrix[3, 1] = flat_matrix[7]
+  //
+  //   inverse_matrix[0, 2] = flat_matrix[8]
+  //   inverse_matrix[1, 2] = flat_matrix[9]
+  //   inverse_matrix[2, 2] = flat_matrix[10]
+  //   inverse_matrix[3, 2] = flat_matrix[11]
+  //
+  //   inverse_matrix[0, 3] = flat_matrix[12]
+  //   inverse_matrix[1, 3] = flat_matrix[13]
+  //   inverse_matrix[2, 3] = flat_matrix[14]
+  //   inverse_matrix[3, 3] = flat_matrix[15]
+  //
+  //   ibm[i] = inverse_matrix
+  // }
 
   for joint, i in skin.joints {
     flat_matrix: [4 * 4]f32
     cgltf.node_transform_world(joint, &flat_matrix[0])
 
     transform := transmute(Mat4)(flat_matrix)
+
+    // bones[i] = transform * ibm[i]
     bones[i] = transform
   }
 

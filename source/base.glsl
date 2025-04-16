@@ -29,13 +29,22 @@ layout(binding = 0) uniform vs_params {
     mat4 uBones[MAX_BONES];
 };
 
+vec4 applyBoneTransform(vec4 p) {
+    vec4 result = vec4(0.0);
+    for (int i = 0; i < 4; ++i) {
+        mat4 boneTransform = uBones[int(aJointIndices[i])];
+        result += aWeight[i] * (boneTransform * p);
+    }
+    return result;
+}
+
 void main() {
-    // mat4 skinMatrix = aWeight.x * uBones[int(aJointIndices[0])] +
-    //         aWeight.y * uBones[int(aJointIndices[1])] +
-    //         aWeight.z * uBones[int(aJointIndices[2])] +
-    //         aWeight.w * uBones[int(aJointIndices[3])];
-    // vec4 skinnedPos = skinMatrix * vec4(aPosition, 1.0);
-    vec4 skinnedPos = vec4(aPosition, 1.0);
+    mat4 skinMatrix = aWeight.x * uBones[int(aJointIndices[0])] +
+            aWeight.y * uBones[int(aJointIndices[1])] +
+            aWeight.z * uBones[int(aJointIndices[2])] +
+            aWeight.w * uBones[int(aJointIndices[3])];
+    vec4 skinnedPos = skinMatrix * vec4(aPosition, 1.0);
+    // vec4 skinnedPos = vec4(aPosition, 1.0);
 
     gl_Position = uProjection * uView * uModel * skinnedPos;
 
