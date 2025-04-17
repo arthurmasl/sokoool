@@ -2,7 +2,6 @@ package game
 
 import "base:intrinsics"
 import "core:fmt"
-import "core:math/linalg"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
@@ -41,7 +40,7 @@ parse_vertices :: proc(primitive: ^cgltf.primitive) {
 
   for a, i in primitive.attributes {
     floats_count := cgltf.accessor_unpack_floats(a.data, nil, 0)
-    size := a.data.stride / (a.type == .joints ? 1 : 4)
+    size := a.data.stride / cgltf.component_size(a.data.component_type)
     data := make([]f32, floats_count, context.temp_allocator)
 
     _ = cgltf.accessor_unpack_floats(a.data, &data[0], floats_count)
