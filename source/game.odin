@@ -1,6 +1,5 @@
 package game
 
-import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
@@ -20,7 +19,7 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  load_mesh("./assets/rigbody.glb")
+  load_mesh("./assets/simple.glb")
 
   // update camera
   g.mesh.pipeline = sg.make_pipeline(

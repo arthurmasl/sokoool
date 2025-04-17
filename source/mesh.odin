@@ -139,6 +139,8 @@ parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
     fmt.println(input_data, output_data)
     fmt.println()
   }
+
+  fmt.println(len(animation.channels))
 }
 
 get_unpacked_data :: proc(accessor: ^cgltf.accessor) -> []f32 {
