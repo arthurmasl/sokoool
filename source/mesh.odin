@@ -162,7 +162,7 @@ get_inverse_matrices :: proc(skin: ^cgltf.skin) -> []Mat4 {
   matrices_count := len(flat_inverse_matrices) / 16
   inverse_matrices := make([]Mat4, matrices_count, context.temp_allocator)
 
-  for m in 0 ..< len(flat_inverse_matrices) / 16 {
+  for m in 0 ..< matrices_count {
     for i in 0 ..< 4 {
       for j in 0 ..< 4 {
         inverse_matrices[m][i][j] = flat_inverse_matrices[m * 16 + i * 4 + j]
