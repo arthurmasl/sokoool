@@ -33,35 +33,34 @@ load_mesh :: proc(file_name: string) {
 }
 
 parse_vertices :: proc(primitive: ^cgltf.primitive) {
-  attribute_arrays: [5]struct {
+  attribute_packs: [5]struct {
     data: []f32,
     size: uint,
   }
 
-  for a, i in primitive.attributes {
-    floats_count := cgltf.accessor_unpack_floats(a.data, nil, 0)
-    size := a.data.stride / cgltf.component_size(a.data.component_type)
+  for attribute, i in primitive.attributes {
+    floats_count := cgltf.accessor_unpack_floats(attribute.data, nil, 0)
+    size := attribute.data.stride / cgltf.component_size(attribute.data.component_type)
     data := make([]f32, floats_count, context.temp_allocator)
 
-    _ = cgltf.accessor_unpack_floats(a.data, &data[0], floats_count)
+    _ = cgltf.accessor_unpack_floats(attribute.data, &data[0], floats_count)
 
-    attribute_arrays[i] = {data, size}
+    attribute_packs[i] = {data, size}
   }
 
   vertices_count: uint
   stride: uint
-  vertices := make([dynamic]f32, context.temp_allocator)
-
-  for arr in attribute_arrays {
-    vertices_count += len(arr.data)
-    stride += arr.size
+  for pack in attribute_packs {
+    vertices_count += len(pack.data)
+    stride += pack.size
   }
 
-  data_count := vertices_count / stride
+  vertices := make([dynamic]f32, context.temp_allocator)
+  blocks_count := vertices_count / stride
 
-  for i in 0 ..< data_count {
-    for arr in attribute_arrays {
-      append(&vertices, ..arr.data[i * arr.size:(i * arr.size) + arr.size])
+  for i in 0 ..< blocks_count {
+    for pack in attribute_packs {
+      append(&vertices, ..pack.data[i * pack.size:(i * pack.size) + pack.size])
     }
   }
 
