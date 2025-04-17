@@ -108,17 +108,18 @@ parse_texture :: proc(texture: ^cgltf.texture) {
 }
 
 parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
-  bones: [50]Mat4
+  joint_matrices: [50]Mat4
+  inverse_matrices := get_inverse_matrices(skin)
 
   for joint, i in skin.joints {
     flat_matrix: [4 * 4]f32
     cgltf.node_transform_world(joint, &flat_matrix[0])
 
     transform := transmute(Mat4)(flat_matrix)
-    bones[i] = transform
+    joint_matrices[i] = transform * inverse_matrices[i]
   }
 
-  g.mesh.bones = bones
+  g.mesh.bones = joint_matrices
 
   // TODO: interpolate frames
   for channel in animation.channels {
@@ -154,6 +155,22 @@ get_unpacked_indices :: proc(accessor: ^cgltf.accessor) -> ([]u16, uint) {
   _ = cgltf.accessor_unpack_indices(accessor, &indices[0], size_of(u16), indices_count)
 
   return indices, indices_count
+}
+
+get_inverse_matrices :: proc(skin: ^cgltf.skin) -> []Mat4 {
+  flat_inverse_matrices := get_unpacked_data(skin.inverse_bind_matrices)
+  matrices_count := len(flat_inverse_matrices) / 16
+  inverse_matrices := make([]Mat4, matrices_count, context.temp_allocator)
+
+  for m in 0 ..< len(flat_inverse_matrices) / 16 {
+    for i in 0 ..< 4 {
+      for j in 0 ..< 4 {
+        inverse_matrices[m][i][j] = flat_inverse_matrices[m * 16 + i * 4 + j]
+      }
+    }
+  }
+
+  return inverse_matrices
 }
 
 get_component_size :: proc(accessor: ^cgltf.accessor) -> uint {
