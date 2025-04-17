@@ -39,13 +39,10 @@ parse_vertices :: proc(primitive: ^cgltf.primitive) {
   }
 
   for attribute, i in primitive.attributes {
-    floats_count := cgltf.accessor_unpack_floats(attribute.data, nil, 0)
-    size := attribute.data.stride / cgltf.component_size(attribute.data.component_type)
-    data := make([]f32, floats_count, context.temp_allocator)
-
-    _ = cgltf.accessor_unpack_floats(attribute.data, &data[0], floats_count)
-
-    attribute_packs[i] = {data, size}
+    attribute_packs[i] = {
+      data = get_unpacked_data(attribute.data),
+      size = get_component_size(attribute.data),
+    }
   }
 
   vertices_count: uint
@@ -70,9 +67,7 @@ parse_vertices :: proc(primitive: ^cgltf.primitive) {
 }
 
 parse_indices :: proc(primitve: ^cgltf.primitive) {
-  indices_count := cgltf.accessor_unpack_indices(primitve.indices, nil, 0, 0)
-  indices := make([]u16, indices_count, context.temp_allocator)
-  _ = cgltf.accessor_unpack_indices(primitve.indices, &indices[0], size_of(u16), indices_count)
+  indices, indices_count := get_unpacked_indices(primitve.indices)
 
   g.mesh.bindings.index_buffer = sg.make_buffer(
     {type = .INDEXBUFFER, data = {ptr = &indices[0], size = uint(size_of(u16) * indices_count)}},
@@ -129,16 +124,38 @@ parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
   for channel in animation.channels {
     sampler := channel.sampler
 
-    input_count := cgltf.accessor_unpack_floats(sampler.input, nil, 0)
-    input_data := make([]f32, input_count, context.temp_allocator)
+    input_data := get_unpacked_data(sampler.input)
+    output_data := get_unpacked_data(sampler.output)
 
-    _ = cgltf.accessor_unpack_floats(sampler.input, &input_data[0], input_count)
     // fmt.println(input_data)
-
-    output_count := cgltf.accessor_unpack_floats(sampler.output, nil, 0)
-    output_data := make([]f32, output_count, context.temp_allocator)
-
-    _ = cgltf.accessor_unpack_floats(sampler.output, &output_data[0], output_count)
-    // fmt.println(output_data)
+    fmt.println(
+      channel.target_node.name,
+      sampler.interpolation,
+      channel.target_path,
+      sampler.output.type,
+      sampler.output.component_type,
+    )
+    fmt.println(input_data, output_data)
+    fmt.println()
   }
+}
+
+get_unpacked_data :: proc(accessor: ^cgltf.accessor) -> []f32 {
+  data_count := cgltf.accessor_unpack_floats(accessor, nil, 0)
+  data := make([]f32, data_count, context.temp_allocator)
+  _ = cgltf.accessor_unpack_floats(accessor, &data[0], data_count)
+
+  return data
+}
+
+get_unpacked_indices :: proc(accessor: ^cgltf.accessor) -> ([]u16, uint) {
+  indices_count := cgltf.accessor_unpack_indices(accessor, nil, 0, 0)
+  indices := make([]u16, indices_count, context.temp_allocator)
+  _ = cgltf.accessor_unpack_indices(accessor, &indices[0], size_of(u16), indices_count)
+
+  return indices, indices_count
+}
+
+get_component_size :: proc(accessor: ^cgltf.accessor) -> uint {
+  return accessor.stride / cgltf.component_size(accessor.component_type)
 }
