@@ -126,4 +126,21 @@ parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
   }
 
   g.mesh.bones = bones
+
+  // TODO: interpolate frames
+  for channel in animation.channels {
+    sampler := channel.sampler
+
+    input_count := cgltf.accessor_unpack_floats(sampler.input, nil, 0)
+    input_data := make([]f32, input_count, context.temp_allocator)
+
+    _ = cgltf.accessor_unpack_floats(sampler.input, &input_data[0], input_count)
+    // fmt.println(input_data)
+
+    output_count := cgltf.accessor_unpack_floats(sampler.output, nil, 0)
+    output_data := make([]f32, output_count, context.temp_allocator)
+
+    _ = cgltf.accessor_unpack_floats(sampler.output, &output_data[0], output_count)
+    // fmt.println(output_data)
+  }
 }
