@@ -3,6 +3,7 @@ package game
 import "base:intrinsics"
 import "core:fmt"
 import "core:math/linalg"
+import "core:slice"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
@@ -116,16 +117,16 @@ parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
     input_data := get_unpacked_data(sampler.input)
     output_data := get_unpacked_data(sampler.output)
 
-    prop_num := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
-    transform_vec := output_data[len(output_data) - int(prop_num):]
+    vec_n := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
+    transform_vec := output_data[len(output_data) - int(vec_n):]
 
     #partial switch channel.target_path {
     case .rotation:
-      for n in 0 ..< prop_num do channel.target_node.rotation[n] = transform_vec[n]
+      for n in 0 ..< vec_n do channel.target_node.rotation[n] = transform_vec[n]
     case .scale:
-      for n in 0 ..< prop_num do channel.target_node.scale[n] = transform_vec[n]
+      for n in 0 ..< vec_n do channel.target_node.scale[n] = transform_vec[n]
     case .translation:
-      for n in 0 ..< prop_num do channel.target_node.translation[n] = transform_vec[n]
+      for n in 0 ..< vec_n do channel.target_node.translation[n] = transform_vec[n]
     }
   }
 
