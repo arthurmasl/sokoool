@@ -7,7 +7,10 @@ Mesh :: struct {
   pipeline:      sg.Pipeline,
   bindings:      sg.Bindings,
   indices_count: uint,
+  //
   bones:         [50]Mat4,
+  animation:     ^cgltf.animation,
+  skin:          ^cgltf.skin,
 }
 
 Game_Memory :: struct {

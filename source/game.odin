@@ -49,8 +49,9 @@ game_init :: proc() {
 @(export)
 game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
+  now := f32(stm.sec(stm.now()))
 
-  now := stm.sec(stm.now())
+  parse_animation(now, g.mesh.animation, g.mesh.skin)
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
 

@@ -3,7 +3,6 @@ package game
 import "base:intrinsics"
 import "core:fmt"
 import "core:math/linalg"
-import "core:slice"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
@@ -17,7 +16,7 @@ load_mesh :: proc(file_name: string) {
   if result != .success {
     fmt.println("Failed to parse file", result)
   }
-  defer cgltf.free(data)
+  // defer cgltf.free(data)
 
   result = cgltf.load_buffers(options, data, path)
   if result != .success {
@@ -31,8 +30,10 @@ load_mesh :: proc(file_name: string) {
   parse_vertices(&data.meshes[0].primitives[0])
   parse_indices(&data.meshes[0].primitives[0])
   parse_texture(&data.textures[0])
-  parse_animation(&data.animations[0], &data.skins[0])
+  // parse_animation(&data.animations[0], &data.skins[0])
 
+  g.mesh.animation = &data.animations[0]
+  g.mesh.skin = &data.skins[0]
 }
 
 parse_vertices :: proc(primitive: ^cgltf.primitive) {
@@ -110,7 +111,9 @@ parse_texture :: proc(texture: ^cgltf.texture) {
   g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
 }
 
-parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
+parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.skin) {
+  if time >= 1.1 do return
+
   for channel in animation.channels {
     sampler := channel.sampler
 
@@ -118,15 +121,50 @@ parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
     output_data := get_unpacked_data(sampler.output)
 
     vec_n := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
-    transform_vec := output_data[len(output_data) - int(vec_n):]
+
+    from_vec := output_data[:int(vec_n)]
+    to_vec := output_data[len(output_data) - int(vec_n):]
 
     #partial switch channel.target_path {
     case .rotation:
-      for n in 0 ..< vec_n do channel.target_node.rotation[n] = transform_vec[n]
+      transform_from_quat := quaternion(
+        x = from_vec[0],
+        y = from_vec[1],
+        z = from_vec[2],
+        w = from_vec[3],
+      )
+      transform_to_quat := quaternion(x = to_vec[0], y = to_vec[1], z = to_vec[2], w = to_vec[3])
+
+      interpolated_transform := linalg.quaternion_slerp(
+        transform_from_quat,
+        transform_to_quat,
+        time,
+      )
+      interpolated_transform_vec := Vec4 {
+        interpolated_transform.x,
+        interpolated_transform.y,
+        interpolated_transform.z,
+        interpolated_transform.w,
+      }
+      channel.target_node.rotation = interpolated_transform_vec
     case .scale:
-      for n in 0 ..< vec_n do channel.target_node.scale[n] = transform_vec[n]
+      transform_from_vec: Vec3
+      transform_to_vec: Vec3
+
+      for n in 0 ..< vec_n do transform_from_vec[n] = from_vec[n]
+      for n in 0 ..< vec_n do transform_to_vec[n] = to_vec[n]
+
+      interpolated_transform := linalg.lerp(transform_from_vec, transform_to_vec, time)
+      channel.target_node.scale = interpolated_transform
     case .translation:
-      for n in 0 ..< vec_n do channel.target_node.translation[n] = transform_vec[n]
+      transform_from_vec: Vec3
+      transform_to_vec: Vec3
+
+      for n in 0 ..< vec_n do transform_from_vec[n] = from_vec[n]
+      for n in 0 ..< vec_n do transform_to_vec[n] = to_vec[n]
+
+      interpolated_transform := linalg.lerp(transform_from_vec, transform_to_vec, time)
+      channel.target_node.translation = interpolated_transform
     }
   }
 
