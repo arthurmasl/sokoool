@@ -1,5 +1,6 @@
 package game
 
+import "core:fmt"
 import "core:math/linalg"
 
 import sapp "sokol/app"
@@ -19,7 +20,7 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  load_mesh("./assets/simple.glb")
+  load_mesh("./assets/rigbody.glb")
 
   // update camera
   g.mesh.pipeline = sg.make_pipeline(
@@ -48,6 +49,8 @@ game_init :: proc() {
 @(export)
 game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
+
+  now := stm.sec(stm.now())
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
 

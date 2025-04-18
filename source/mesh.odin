@@ -2,6 +2,7 @@ package game
 
 import "base:intrinsics"
 import "core:fmt"
+import "core:math/linalg"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
@@ -30,6 +31,7 @@ load_mesh :: proc(file_name: string) {
   parse_indices(&data.meshes[0].primitives[0])
   parse_texture(&data.textures[0])
   parse_animation(&data.animations[0], &data.skins[0])
+
 }
 
 parse_vertices :: proc(primitive: ^cgltf.primitive) {
@@ -108,6 +110,25 @@ parse_texture :: proc(texture: ^cgltf.texture) {
 }
 
 parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
+  for channel in animation.channels {
+    sampler := channel.sampler
+
+    input_data := get_unpacked_data(sampler.input)
+    output_data := get_unpacked_data(sampler.output)
+
+    prop_num := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
+    transform_vec := output_data[len(output_data) - int(prop_num):]
+
+    #partial switch channel.target_path {
+    case .rotation:
+      for n in 0 ..< prop_num do channel.target_node.rotation[n] = transform_vec[n]
+    case .scale:
+      for n in 0 ..< prop_num do channel.target_node.scale[n] = transform_vec[n]
+    case .translation:
+      for n in 0 ..< prop_num do channel.target_node.translation[n] = transform_vec[n]
+    }
+  }
+
   joint_matrices: [50]Mat4
   inverse_matrices := get_inverse_matrices(skin)
 
@@ -120,27 +141,6 @@ parse_animation :: proc(animation: ^cgltf.animation, skin: ^cgltf.skin) {
   }
 
   g.mesh.bones = joint_matrices
-
-  // TODO: interpolate frames
-  for channel in animation.channels {
-    sampler := channel.sampler
-
-    input_data := get_unpacked_data(sampler.input)
-    output_data := get_unpacked_data(sampler.output)
-
-    // fmt.println(input_data)
-    fmt.println(
-      channel.target_node.name,
-      sampler.interpolation,
-      channel.target_path,
-      sampler.output.type,
-      sampler.output.component_type,
-    )
-    fmt.println(input_data, output_data)
-    fmt.println()
-  }
-
-  fmt.println(len(animation.channels))
 }
 
 get_unpacked_data :: proc(accessor: ^cgltf.accessor) -> []f32 {

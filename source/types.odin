@@ -1,6 +1,7 @@
 package game
 
 import sg "sokol/gfx"
+import "vendor:cgltf"
 
 Mesh :: struct {
   pipeline:      sg.Pipeline,
