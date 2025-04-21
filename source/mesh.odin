@@ -114,24 +114,22 @@ parse_texture :: proc(texture: ^cgltf.texture) {
 parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.skin) {
   if time >= 1.1 do return
 
+  // apply transforms
   for channel in animation.channels {
     sampler := channel.sampler
-
     input_data := get_unpacked_data(sampler.input)
     output_data := get_unpacked_data(sampler.output)
 
-    vec_n := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
+    values_count := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
+    raw_from := output_data[:int(values_count)]
+    raw_to := output_data[len(output_data) - int(values_count):]
 
-    raw_from := output_data[:int(vec_n)]
-    raw_to := output_data[len(output_data) - int(vec_n):]
+    if sampler.interpolation != .linear do continue
 
     #partial switch channel.target_path {
     case .scale, .translation:
-      from, to: Vec3
-      for n in 0 ..< vec_n {
-        from[n] = raw_from[n]
-        to[n] = raw_to[n]
-      }
+      from := Vec3{raw_from[0], raw_from[1], raw_from[2]}
+      to := Vec3{raw_to[0], raw_to[1], raw_to[2]}
 
       interpolated := linalg.lerp(from, to, time)
 
@@ -146,17 +144,14 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
       from := quaternion(x = raw_from[0], y = raw_from[1], z = raw_from[2], w = raw_from[3])
       to := quaternion(x = raw_to[0], y = raw_to[1], z = raw_to[2], w = raw_to[3])
 
-      interpolated_quat := linalg.quaternion_slerp(from, to, time)
+      quat := linalg.quaternion_slerp(from, to, time)
+      interpolated := Vec4{quat.x, quat.y, quat.z, quat.w}
 
-      channel.target_node.rotation = {
-        interpolated_quat.x,
-        interpolated_quat.y,
-        interpolated_quat.z,
-        interpolated_quat.w,
-      }
+      channel.target_node.rotation = interpolated
     }
   }
 
+  // apply matrices
   joint_matrices: [50]Mat4
   inverse_matrices := get_inverse_matrices(skin)
 
