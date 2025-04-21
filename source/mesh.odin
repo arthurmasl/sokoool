@@ -122,49 +122,38 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
 
     vec_n := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
 
-    from_vec := output_data[:int(vec_n)]
-    to_vec := output_data[len(output_data) - int(vec_n):]
+    raw_from := output_data[:int(vec_n)]
+    raw_to := output_data[len(output_data) - int(vec_n):]
 
     #partial switch channel.target_path {
-    case .rotation:
-      transform_from_quat := quaternion(
-        x = from_vec[0],
-        y = from_vec[1],
-        z = from_vec[2],
-        w = from_vec[3],
-      )
-      transform_to_quat := quaternion(x = to_vec[0], y = to_vec[1], z = to_vec[2], w = to_vec[3])
-
-      interpolated_transform := linalg.quaternion_slerp(
-        transform_from_quat,
-        transform_to_quat,
-        time,
-      )
-      interpolated_transform_vec := Vec4 {
-        interpolated_transform.x,
-        interpolated_transform.y,
-        interpolated_transform.z,
-        interpolated_transform.w,
+    case .scale, .translation:
+      from, to: Vec3
+      for n in 0 ..< vec_n {
+        from[n] = raw_from[n]
+        to[n] = raw_to[n]
       }
-      channel.target_node.rotation = interpolated_transform_vec
-    case .scale:
-      transform_from_vec: Vec3
-      transform_to_vec: Vec3
 
-      for n in 0 ..< vec_n do transform_from_vec[n] = from_vec[n]
-      for n in 0 ..< vec_n do transform_to_vec[n] = to_vec[n]
+      interpolated := linalg.lerp(from, to, time)
 
-      interpolated_transform := linalg.lerp(transform_from_vec, transform_to_vec, time)
-      channel.target_node.scale = interpolated_transform
-    case .translation:
-      transform_from_vec: Vec3
-      transform_to_vec: Vec3
+      #partial switch channel.target_path {
+      case .translation:
+        channel.target_node.translation = interpolated
+      case .scale:
+        channel.target_node.scale = interpolated
+      }
 
-      for n in 0 ..< vec_n do transform_from_vec[n] = from_vec[n]
-      for n in 0 ..< vec_n do transform_to_vec[n] = to_vec[n]
+    case .rotation:
+      from := quaternion(x = raw_from[0], y = raw_from[1], z = raw_from[2], w = raw_from[3])
+      to := quaternion(x = raw_to[0], y = raw_to[1], z = raw_to[2], w = raw_to[3])
 
-      interpolated_transform := linalg.lerp(transform_from_vec, transform_to_vec, time)
-      channel.target_node.translation = interpolated_transform
+      interpolated_quat := linalg.quaternion_slerp(from, to, time)
+
+      channel.target_node.rotation = {
+        interpolated_quat.x,
+        interpolated_quat.y,
+        interpolated_quat.z,
+        interpolated_quat.w,
+      }
     }
   }
 
