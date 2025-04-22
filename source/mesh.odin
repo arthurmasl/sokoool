@@ -121,8 +121,10 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
     output_data := get_unpacked_data(sampler.output)
 
     values_count := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
-    raw_from := output_data[:int(values_count)]
-    raw_to := output_data[len(output_data) - int(values_count):]
+    filtered_output_data := filter_zero_vectors(output_data, values_count)
+
+    raw_from := filtered_output_data[:int(values_count)]
+    raw_to := filtered_output_data[len(filtered_output_data) - int(values_count):]
 
     // if sampler.interpolation != .linear do continue
     fmt.println(
@@ -134,7 +136,7 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
     )
     // fmt.println(len(input_data))
     fmt.println(len(input_data), input_data)
-    fmt.println(len(output_data), output_data)
+    fmt.println(len(filtered_output_data), filtered_output_data)
     fmt.println()
 
     #partial switch channel.target_path {
@@ -213,4 +215,26 @@ get_inverse_matrices :: proc(skin: ^cgltf.skin) -> []Mat4 {
 
 get_component_size :: proc(accessor: ^cgltf.accessor) -> uint {
   return accessor.stride / cgltf.component_size(accessor.component_type)
+}
+
+filter_zero_vectors :: proc(data: []f32, values_count: uint) -> []f32 {
+  filtered_output_data := make([dynamic]f32, context.temp_allocator)
+
+  for i in 0 ..< uint(len(data)) / values_count {
+    vec := data[i * values_count:i * values_count + values_count]
+
+    allZeroes := true
+    for v in vec {
+      if v != 0 {
+        allZeroes = false
+        break
+      }
+    }
+
+    if !allZeroes {
+      append(&filtered_output_data, ..vec)
+    }
+  }
+
+  return filtered_output_data[:]
 }
