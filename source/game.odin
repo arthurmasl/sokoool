@@ -44,6 +44,9 @@ game_init :: proc() {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
     depth = {load_action = .CLEAR, clear_value = 1.0},
   }
+
+  // TODO: move to draw
+  parse_animation(0, g.mesh.animation, g.mesh.skin)
 }
 
 @(export)
@@ -51,7 +54,7 @@ game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
   now := f32(stm.sec(stm.now()))
 
-  parse_animation(now, g.mesh.animation, g.mesh.skin)
+  // parse_animation(now, g.mesh.animation, g.mesh.skin)
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
 

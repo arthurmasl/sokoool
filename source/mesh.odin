@@ -124,7 +124,18 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
     raw_from := output_data[:int(values_count)]
     raw_to := output_data[len(output_data) - int(values_count):]
 
-    if sampler.interpolation != .linear do continue
+    // if sampler.interpolation != .linear do continue
+    fmt.println(
+      "vec",
+      values_count,
+      channel.target_path,
+      sampler.interpolation,
+      channel.target_node.name,
+    )
+    // fmt.println(len(input_data))
+    fmt.println(len(input_data), input_data)
+    fmt.println(len(output_data), output_data)
+    fmt.println()
 
     #partial switch channel.target_path {
     case .scale, .translation:
@@ -150,6 +161,8 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
       channel.target_node.rotation = interpolated
     }
   }
+
+  fmt.println(len(animation.channels))
 
   // apply matrices
   joint_matrices: [50]Mat4
