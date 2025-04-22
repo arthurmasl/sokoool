@@ -111,8 +111,23 @@ parse_texture :: proc(texture: ^cgltf.texture) {
   g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
 }
 
+animation_started := false
+animation_finished := false
+start_time: f32
+
 parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.skin) {
-  if time >= 1.1 do return
+  if animation_finished {
+    return
+  }
+
+  if !animation_started {
+    start_time = time
+    animation_started = true
+  }
+
+  currentTime := time - start_time
+
+  fmt.println(currentTime)
 
   // apply transforms
   for channel in animation.channels {
@@ -120,11 +135,33 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
     input_data := get_unpacked_data(sampler.input)
     output_data := get_unpacked_data(sampler.output)
 
+    frame_index := 0
+    for time_value, time_index in input_data {
+      if currentTime >= time_value {
+        frame_index = time_index
+      }
+    }
+
+    fmt.println("@@", frame_index)
+
     values_count := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
     filtered_output_data := filter_zero_vectors(output_data, values_count)
 
-    raw_from := filtered_output_data[:int(values_count)]
-    raw_to := filtered_output_data[len(filtered_output_data) - int(values_count):]
+    // raw_from := filtered_output_data[:frame_index * int(values_count)]
+    raw_from := filtered_output_data[frame_index *
+    int(values_count):frame_index * int(values_count) +
+    int(values_count)]
+    // raw_to := filtered_output_data[len(filtered_output_data) - int(values_count):]
+    raw_to := filtered_output_data[frame_index +
+    1 * int(values_count):frame_index +
+    1 * int(values_count) +
+    int(values_count)]
+
+    if currentTime >= input_data[len(input_data) - 1] {
+      animation_started = false
+      animation_finished = true
+      start_time = -1
+    }
 
     // if sampler.interpolation != .linear do continue
     fmt.println(
@@ -144,7 +181,7 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
       from := Vec3{raw_from[0], raw_from[1], raw_from[2]}
       to := Vec3{raw_to[0], raw_to[1], raw_to[2]}
 
-      interpolated := linalg.lerp(from, to, time)
+      interpolated := linalg.lerp(from, to, currentTime)
 
       #partial switch channel.target_path {
       case .translation:
@@ -157,14 +194,14 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
       from := quaternion(x = raw_from[0], y = raw_from[1], z = raw_from[2], w = raw_from[3])
       to := quaternion(x = raw_to[0], y = raw_to[1], z = raw_to[2], w = raw_to[3])
 
-      quat := linalg.quaternion_slerp(from, to, time)
+      quat := linalg.quaternion_slerp(from, to, currentTime)
       interpolated := Vec4{quat.x, quat.y, quat.z, quat.w}
 
       channel.target_node.rotation = interpolated
     }
   }
 
-  fmt.println(len(animation.channels))
+  fmt.println("animation channels:", len(animation.channels))
 
   // apply matrices
   joint_matrices: [50]Mat4
