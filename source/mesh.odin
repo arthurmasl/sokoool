@@ -158,7 +158,6 @@ parse_animation :: proc(current_time: f32, animation: ^cgltf.animation, skin: ^c
   }
 
   // apply matrices
-  joint_matrices: [50]Mat4
   inverse_matrices := get_inverse_matrices(skin)
 
   for joint, i in skin.joints {
@@ -166,10 +165,8 @@ parse_animation :: proc(current_time: f32, animation: ^cgltf.animation, skin: ^c
     cgltf.node_transform_world(joint, &flat_matrix[0])
 
     transform := transmute(Mat4)(flat_matrix)
-    joint_matrices[i] = transform * inverse_matrices[i]
+    g.mesh.bones[i] = transform * inverse_matrices[i]
   }
-
-  g.mesh.bones = joint_matrices
 }
 
 get_unpacked_data :: proc(accessor: ^cgltf.accessor) -> []f32 {

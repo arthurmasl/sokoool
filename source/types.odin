@@ -9,8 +9,22 @@ Mesh :: struct {
   indices_count: uint,
   //
   bones:         [50]Mat4,
+  animations:    []Animation,
+  //
   animation:     ^cgltf.animation,
   skin:          ^cgltf.skin,
+}
+
+Animation :: struct {
+  start_time:       f32,
+  inverse_matrices: []Mat4,
+  channels:         []Channel,
+}
+
+Channel :: struct {
+  target_node:      ^cgltf.node,
+  time_indices:     []f32,
+  transform_values: []f32,
 }
 
 Game_Memory :: struct {
