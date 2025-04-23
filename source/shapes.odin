@@ -1,8 +1,10 @@
 package game
 
+import "types"
+
 CUBE_UVS_VERTICES :: []struct {
-  pos: Vec3,
-  uvs: Vec2,
+  pos: types.Vec3,
+  uvs: types.Vec2,
 } {
   {pos = {-1.0, -1.0, -1.0}, uvs = {0, 0}},
   {pos = {1.0, -1.0, -1.0}, uvs = {1, 0}},
@@ -31,7 +33,7 @@ CUBE_UVS_VERTICES :: []struct {
 }
 
 CUBE_VERTICES :: []struct {
-  pos: Vec3,
+  pos: types.Vec3,
 } {
   {pos = {-1.0, -1.0, -1.0}},
   {pos = {1.0, -1.0, -1.0}},
@@ -60,8 +62,8 @@ CUBE_VERTICES :: []struct {
 }
 
 CUBE_NORMAL_VERTICES :: []struct {
-  pos:     Vec3,
-  normals: Vec3,
+  pos:     types.Vec3,
+  normals: types.Vec3,
 } {
   {pos = {-0.5, -0.5, -0.5}, normals = {0.0, 0.0, -1.0}},
   {pos = {0.5, -0.5, -0.5}, normals = {0.0, 0.0, -1.0}},
@@ -113,9 +115,9 @@ CUBE_INDICES := []u16 {
 // odinfmt: enable
 
 CUBE_NORMALS_UVS_VERTICES :: []struct {
-  pos:     Vec3,
-  normals: Vec3,
-  uvs:     Vec2,
+  pos:     types.Vec3,
+  normals: types.Vec3,
+  uvs:     types.Vec2,
 } {
   {pos = {-0.5, -0.5, -0.5}, normals = {0.0, 0.0, -1.0}, uvs = {0.0, 0.0}},
   {pos = {0.5, -0.5, -0.5}, normals = {0.0, 0.0, -1.0}, uvs = {1.0, 0.0}},

@@ -1,9 +1,12 @@
 #pragma sokol @header package game
+
 #pragma sokol @header import sg "sokol/gfx"
-#pragma sokol @ctype mat3 Mat3
-#pragma sokol @ctype mat4 Mat4
-#pragma sokol @ctype vec3 Vec3
-#pragma sokol @ctype vec4 Vec4
+#pragma sokol @header import "types"
+
+#pragma sokol @ctype mat3 types.Mat3
+#pragma sokol @ctype mat4 types.Mat4
+#pragma sokol @ctype vec3 types.Vec3
+#pragma sokol @ctype vec4 types.Vec4
 
 // VERTEX SHADER
 #pragma sokol @vs vs

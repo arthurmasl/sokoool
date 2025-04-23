@@ -1,13 +1,18 @@
 package game
 
-import "core:fmt"
 import "core:math/linalg"
-
+import "mesh"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
 import slog "sokol/log"
 import stm "sokol/time"
+
+Game_Memory :: struct {
+  mesh:   mesh.Mesh,
+  pass:   sg.Pass_Action,
+  camera: Camera,
+}
 
 @(export)
 game_init :: proc() {
@@ -20,9 +25,8 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  load_mesh("./assets/rigbody.glb")
+  g.mesh = mesh.load("./assets/rigbody.glb")
 
-  // update camera
   g.mesh.pipeline = sg.make_pipeline(
     {
       shader = sg.make_shader(base_shader_desc(sg.query_backend())),
@@ -51,7 +55,7 @@ game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
   now := f32(stm.sec(stm.now()))
 
-  parse_animation(now, 0)
+  mesh.parse_animation(now, 0, &g.mesh)
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
 
@@ -60,7 +64,7 @@ game_frame :: proc() {
     uModel      = linalg.matrix4_translate_f32({0, 0, 0}),
     uView       = view,
     uProjection = projection,
-    uBones      = g.mesh.bones,
+    uBones      = g.mesh.joints,
   }
   fs_params := Fs_Params {
     uViewPos           = g.camera.pos,

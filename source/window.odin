@@ -26,6 +26,7 @@ returned by the `game_app_default_desc` procedure.
 
 package game
 
+import "mesh"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import slog "sokol/log"
@@ -50,8 +51,7 @@ game_app_default_desc :: proc() -> sapp.Desc {
 @(export)
 game_cleanup :: proc() {
   sg.shutdown()
-
-  free_mesh()
+  mesh.free_memory(&g.mesh)
   free(g)
 }
 
