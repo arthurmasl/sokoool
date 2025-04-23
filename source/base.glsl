@@ -132,26 +132,27 @@ void main() {
         result += calc_point_light(get_point_light(i), norm, vPosition, view_dir);
     }
 
-    const uint boneId = 6;
-    bool found = false;
-
-    for (int i = 0; i < 4; i++) {
-        if (vJointIndices[i] == boneId) {
-            if (vWeight[i] >= 0.7) {
-                frag_color = vec4(1.0, 0.0, 0.0, 1.0) * vWeight[i];
-            } else if (vWeight[i] >= 0.4 && vWeight[i] <= 0.6) {
-                frag_color = vec4(0.0, 1.0, 0.0, 1.0) * vWeight[i];
-            } else if (vWeight[i] >= 0.1) {
-                frag_color = vec4(1.0, 1.0, 0.0, 1.0) * vWeight[i];
-            }
-            found = true;
-            break;
-        }
-    }
-
-    if (!found) {
-        frag_color = vec4(result, 1.0);
-    }
+    // const uint boneId = 6;
+    // bool found = false;
+    //
+    // for (int i = 0; i < 4; i++) {
+    //     if (vJointIndices[i] == boneId) {
+    //         if (vWeight[i] >= 0.7) {
+    //             frag_color = vec4(1.0, 0.0, 0.0, 1.0) * vWeight[i];
+    //         } else if (vWeight[i] >= 0.4 && vWeight[i] <= 0.6) {
+    //             frag_color = vec4(0.0, 1.0, 0.0, 1.0) * vWeight[i];
+    //         } else if (vWeight[i] >= 0.1) {
+    //             frag_color = vec4(1.0, 1.0, 0.0, 1.0) * vWeight[i];
+    //         }
+    //         found = true;
+    //         break;
+    //     }
+    // }
+    //
+    // if (!found) {
+    //     frag_color = vec4(result, 1.0);
+    // }
+    frag_color = vec4(result, 1.0);
 }
 
 dir_light_t get_directional_light() {

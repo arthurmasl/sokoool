@@ -112,76 +112,43 @@ parse_texture :: proc(texture: ^cgltf.texture) {
 }
 
 animation_started := false
-animation_finished := false
 start_time: f32
 
 parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.skin) {
-  if animation_finished {
-    return
-  }
-
   if !animation_started {
     start_time = time
     animation_started = true
   }
 
-  currentTime := time - start_time
-
-  fmt.println(currentTime)
+  animation_time := time - start_time
 
   // apply transforms
   for channel in animation.channels {
     sampler := channel.sampler
-    input_data := get_unpacked_data(sampler.input)
-    output_data := get_unpacked_data(sampler.output)
-
-    frame_index := 0
-    for time_value, time_index in input_data {
-      if currentTime >= time_value {
-        frame_index = time_index
-      }
-    }
-
-    fmt.println("@@", frame_index)
-
     values_count := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
-    filtered_output_data := filter_zero_vectors(output_data, values_count)
 
-    // raw_from := filtered_output_data[:frame_index * int(values_count)]
-    raw_from := filtered_output_data[frame_index *
-    int(values_count):frame_index * int(values_count) +
-    int(values_count)]
-    // raw_to := filtered_output_data[len(filtered_output_data) - int(values_count):]
-    raw_to := filtered_output_data[frame_index +
-    1 * int(values_count):frame_index +
-    1 * int(values_count) +
-    int(values_count)]
+    time_indices := get_unpacked_data(sampler.input)
+    transform_values := filter_zero_vectors(get_unpacked_data(sampler.output), values_count)
 
-    if currentTime >= input_data[len(input_data) - 1] {
+    frame_from, frame_to, interpolation_time := get_interplation_values(
+      time_indices,
+      animation_time,
+    )
+
+    raw_from := get_raw_vector(transform_values, frame_from, int(values_count))
+    raw_to := get_raw_vector(transform_values, frame_to, int(values_count))
+
+    if animation_time >= time_indices[len(time_indices) - 1] {
       animation_started = false
-      animation_finished = true
       start_time = -1
     }
-
-    // if sampler.interpolation != .linear do continue
-    fmt.println(
-      "vec",
-      values_count,
-      channel.target_path,
-      sampler.interpolation,
-      channel.target_node.name,
-    )
-    // fmt.println(len(input_data))
-    fmt.println(len(input_data), input_data)
-    fmt.println(len(filtered_output_data), filtered_output_data)
-    fmt.println()
 
     #partial switch channel.target_path {
     case .scale, .translation:
       from := Vec3{raw_from[0], raw_from[1], raw_from[2]}
       to := Vec3{raw_to[0], raw_to[1], raw_to[2]}
 
-      interpolated := linalg.lerp(from, to, currentTime)
+      interpolated := linalg.lerp(from, to, interpolation_time)
 
       #partial switch channel.target_path {
       case .translation:
@@ -194,14 +161,14 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
       from := quaternion(x = raw_from[0], y = raw_from[1], z = raw_from[2], w = raw_from[3])
       to := quaternion(x = raw_to[0], y = raw_to[1], z = raw_to[2], w = raw_to[3])
 
-      quat := linalg.quaternion_slerp(from, to, currentTime)
+      quat := linalg.quaternion_slerp(from, to, interpolation_time)
       interpolated := Vec4{quat.x, quat.y, quat.z, quat.w}
 
       channel.target_node.rotation = interpolated
     }
   }
 
-  fmt.println("animation channels:", len(animation.channels))
+  // fmt.println("animation channels:", len(animation.channels))
 
   // apply matrices
   joint_matrices: [50]Mat4
@@ -255,7 +222,7 @@ get_component_size :: proc(accessor: ^cgltf.accessor) -> uint {
 }
 
 filter_zero_vectors :: proc(data: []f32, values_count: uint) -> []f32 {
-  filtered_output_data := make([dynamic]f32, context.temp_allocator)
+  transform_values := make([dynamic]f32, context.temp_allocator)
 
   for i in 0 ..< uint(len(data)) / values_count {
     vec := data[i * values_count:i * values_count + values_count]
@@ -269,9 +236,26 @@ filter_zero_vectors :: proc(data: []f32, values_count: uint) -> []f32 {
     }
 
     if !allZeroes {
-      append(&filtered_output_data, ..vec)
+      append(&transform_values, ..vec)
     }
   }
 
-  return filtered_output_data[:]
+  return transform_values[:]
+}
+
+get_interplation_values :: proc(times: []f32, time: f32) -> (int, int, f32) {
+  for i in 0 ..< len(times) - 1 {
+    next_time := times[i + 1]
+    if time < next_time {
+      prev_time := times[i]
+      t := (time - prev_time) / (next_time - prev_time)
+      return i, i + 1, t
+    }
+  }
+
+  return len(times) - 2, len(times) - 1, 1.0
+}
+
+get_raw_vector :: proc(raw_arr: []f32, from_index: int, values_count: int) -> []f32 {
+  return raw_arr[from_index * values_count:from_index * values_count + values_count]
 }
