@@ -3,21 +3,36 @@ package game
 import "base:intrinsics"
 import "core:fmt"
 import "core:math/linalg"
-import "core:slice"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
 import stbi "vendor:stb/image"
+
+mesh_data: ^cgltf.data
+
+free_mesh :: proc() {
+  for animation in g.mesh.animations {
+    for channel in animation.channels {
+      delete(channel.time_indices)
+      delete(channel.transform_values)
+    }
+    delete(animation.channels)
+  }
+  delete(g.mesh.animations)
+  delete(g.mesh.inverse_matrices)
+
+  cgltf.free(mesh_data)
+}
 
 load_mesh :: proc(file_name: string) {
   options: cgltf.options
   path := strings.unsafe_string_to_cstring(file_name)
 
   data, result := cgltf.parse_file(options, path)
+  mesh_data = data
   if result != .success {
     fmt.println("Failed to parse file", result)
   }
-  // defer cgltf.free(data)
 
   result = cgltf.load_buffers(options, data, path)
   if result != .success {
@@ -48,6 +63,7 @@ parse_vertices :: proc(primitive: ^cgltf.primitive) {
       size = get_component_size(attribute.data),
     }
   }
+  defer for attribute in attribute_packs do delete(attribute.data)
 
   vertices_count: uint
   stride: uint
@@ -68,6 +84,10 @@ parse_vertices :: proc(primitive: ^cgltf.primitive) {
   g.mesh.bindings.vertex_buffers[0] = sg.make_buffer(
     {data = {ptr = &vertices[0], size = uint(size_of(f32) * vertices_count)}},
   )
+
+  // for attribute in attribute_packs {
+  //   delete(attribute.data)
+  // }
 }
 
 parse_indices :: proc(primitve: ^cgltf.primitive) {
@@ -148,7 +168,6 @@ init_animations :: proc(animations: []cgltf.animation, skin: ^cgltf.skin) {
         current_channel.target_path = channel.target_path
         current_channel.values_count = values_count
       }
-
     }
   }
 }
@@ -212,7 +231,7 @@ get_unpacked_data :: proc(accessor: ^cgltf.accessor) -> []f32 {
 
 get_unpacked_indices :: proc(accessor: ^cgltf.accessor) -> ([]u16, uint) {
   indices_count := cgltf.accessor_unpack_indices(accessor, nil, 0, 0)
-  indices := make([]u16, indices_count, context.allocator)
+  indices := make([]u16, indices_count, context.temp_allocator)
   _ = cgltf.accessor_unpack_indices(accessor, &indices[0], size_of(u16), indices_count)
 
   return indices, indices_count
@@ -220,6 +239,7 @@ get_unpacked_indices :: proc(accessor: ^cgltf.accessor) -> ([]u16, uint) {
 
 get_inverse_matrices :: proc(skin: ^cgltf.skin) -> []Mat4 {
   flat_inverse_matrices := get_unpacked_data(skin.inverse_bind_matrices)
+  defer delete(flat_inverse_matrices)
   matrices_count := len(flat_inverse_matrices) / 16
   inverse_matrices := make([]Mat4, matrices_count, context.allocator)
 

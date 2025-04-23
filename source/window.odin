@@ -50,6 +50,8 @@ game_app_default_desc :: proc() -> sapp.Desc {
 @(export)
 game_cleanup :: proc() {
   sg.shutdown()
+
+  free_mesh()
   free(g)
 }
 
