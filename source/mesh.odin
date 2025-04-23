@@ -200,8 +200,6 @@ parse_animation :: proc(current_time: f32, animation_index: uint) {
     transform := transmute(Mat4)(flat_matrix)
     g.mesh.bones[i] = transform * g.mesh.inverse_matrices[i]
   }
-
-  // fmt.println(g.mesh.bones[12])
 }
 
 get_unpacked_data :: proc(accessor: ^cgltf.accessor) -> []f32 {

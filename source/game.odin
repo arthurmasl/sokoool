@@ -73,7 +73,7 @@ game_frame :: proc() {
     uSpecular  = {0.2, 0.2, 0.2},
   }
   fs_point_lights := Fs_Point_Lights {
-    uPosition    = {{0.0, -5.0, 0.0, 1.0}},
+    uPosition    = {{0.0, -25.0, 0.0, 1.0}},
     uAmbient     = {{0.05, 0.05, 0.05, 0.0}},
     uDiffuse     = {{0.8, 0.8, 0.8, 0.0}},
     uSpecular    = {{1.0, 1.0, 1.0, 0.0}},
