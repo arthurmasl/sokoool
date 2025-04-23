@@ -3,6 +3,7 @@ package game
 import "base:intrinsics"
 import "core:fmt"
 import "core:math/linalg"
+import "core:slice"
 import "core:strings"
 import sg "sokol/gfx"
 import "vendor:cgltf"
@@ -30,10 +31,9 @@ load_mesh :: proc(file_name: string) {
   parse_vertices(&data.meshes[0].primitives[0])
   parse_indices(&data.meshes[0].primitives[0])
   parse_texture(&data.textures[0])
-  // parse_animation(&data.animations[0], &data.skins[0])
 
-  g.mesh.animation = &data.animations[0]
-  g.mesh.skin = &data.skins[0]
+  init_skin(&data.skins[0])
+  init_animations(data.animations, &data.skins[0])
 }
 
 parse_vertices :: proc(primitive: ^cgltf.primitive) {
@@ -111,26 +111,65 @@ parse_texture :: proc(texture: ^cgltf.texture) {
   g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
 }
 
-start_time: f32
-parse_animation :: proc(current_time: f32, animation: ^cgltf.animation, skin: ^cgltf.skin) {
-  animation_time := current_time - start_time
-  if animation_time > 2.1 do start_time = current_time // TODO: temp loop
+init_skin :: proc(skin: ^cgltf.skin) {
+  inverse_matrices := get_inverse_matrices(skin)
+
+  for joint, i in skin.joints {
+    flat_matrix: [4 * 4]f32
+    cgltf.node_transform_world(joint, &flat_matrix[0])
+
+    transform := transmute(Mat4)(flat_matrix)
+    g.mesh.bones[i] = transform * inverse_matrices[i]
+  }
+
+  g.mesh.inverse_matrices = inverse_matrices
+}
+
+init_animations :: proc(animations: []cgltf.animation, skin: ^cgltf.skin) {
+  g.mesh.animations = make([]Animation, len(animations), context.allocator)
+
+  for animation, animation_index in animations {
+    current_animation := &g.mesh.animations[animation_index]
+    current_animation.channels = make([]Channel, len(skin.joints), context.allocator)
+
+    for joint, joint_index in skin.joints {
+      for channel in animation.channels {
+        if joint != channel.target_node do continue
+
+        current_channel := &current_animation.channels[joint_index]
+
+        sampler := channel.sampler
+        values_count := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
+
+        current_channel.time_indices = get_unpacked_data(channel.sampler.input)
+        current_channel.transform_values = get_unpacked_data(channel.sampler.output)
+
+        current_channel.target_node = channel.target_node
+        current_channel.target_path = channel.target_path
+        current_channel.values_count = values_count
+      }
+
+    }
+  }
+}
+
+parse_animation :: proc(current_time: f32, animation_index: uint) {
+  animation := &g.mesh.animations[animation_index]
+
+  animation_time := current_time - animation.start_time
+  if animation_time > 2.1 do animation.start_time = current_time // TODO: temp loop
 
   // apply transforms
-  for channel in animation.channels {
-    sampler := channel.sampler
-    values_count := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
-
-    time_indices := get_unpacked_data(sampler.input)
-    transform_values := get_unpacked_data(sampler.output)
+  for channel, i in animation.channels {
+    if channel.target_node == nil do continue
 
     frame_from, frame_to, interpolation_time := get_interplation_values(
-      time_indices,
+      channel.time_indices,
       animation_time,
     )
 
-    raw_from := get_raw_vector(transform_values, frame_from, int(values_count))
-    raw_to := get_raw_vector(transform_values, frame_to, int(values_count))
+    raw_from := get_raw_vector(channel.transform_values, frame_from, int(channel.values_count))
+    raw_to := get_raw_vector(channel.transform_values, frame_to, int(channel.values_count))
 
     #partial switch channel.target_path {
     case .scale, .translation:
@@ -155,23 +194,19 @@ parse_animation :: proc(current_time: f32, animation: ^cgltf.animation, skin: ^c
 
       channel.target_node.rotation = interpolated
     }
-  }
 
-  // apply matrices
-  inverse_matrices := get_inverse_matrices(skin)
-
-  for joint, i in skin.joints {
     flat_matrix: [4 * 4]f32
-    cgltf.node_transform_world(joint, &flat_matrix[0])
-
+    cgltf.node_transform_world(channel.target_node, &flat_matrix[0])
     transform := transmute(Mat4)(flat_matrix)
-    g.mesh.bones[i] = transform * inverse_matrices[i]
+    g.mesh.bones[i] = transform * g.mesh.inverse_matrices[i]
   }
+
+  // fmt.println(g.mesh.bones[12])
 }
 
 get_unpacked_data :: proc(accessor: ^cgltf.accessor) -> []f32 {
   data_count := cgltf.accessor_unpack_floats(accessor, nil, 0)
-  data := make([]f32, data_count, context.temp_allocator)
+  data := make([]f32, data_count, context.allocator)
   _ = cgltf.accessor_unpack_floats(accessor, &data[0], data_count)
 
   return data
@@ -179,7 +214,7 @@ get_unpacked_data :: proc(accessor: ^cgltf.accessor) -> []f32 {
 
 get_unpacked_indices :: proc(accessor: ^cgltf.accessor) -> ([]u16, uint) {
   indices_count := cgltf.accessor_unpack_indices(accessor, nil, 0, 0)
-  indices := make([]u16, indices_count, context.temp_allocator)
+  indices := make([]u16, indices_count, context.allocator)
   _ = cgltf.accessor_unpack_indices(accessor, &indices[0], size_of(u16), indices_count)
 
   return indices, indices_count
@@ -188,7 +223,7 @@ get_unpacked_indices :: proc(accessor: ^cgltf.accessor) -> ([]u16, uint) {
 get_inverse_matrices :: proc(skin: ^cgltf.skin) -> []Mat4 {
   flat_inverse_matrices := get_unpacked_data(skin.inverse_bind_matrices)
   matrices_count := len(flat_inverse_matrices) / 16
-  inverse_matrices := make([]Mat4, matrices_count, context.temp_allocator)
+  inverse_matrices := make([]Mat4, matrices_count, context.allocator)
 
   for m in 0 ..< matrices_count {
     for i in 0 ..< 4 {

@@ -3,28 +3,28 @@ package game
 import sg "sokol/gfx"
 import "vendor:cgltf"
 
-Mesh :: struct {
-  pipeline:      sg.Pipeline,
-  bindings:      sg.Bindings,
-  indices_count: uint,
+Mesh :: struct #packed {
+  pipeline:         sg.Pipeline,
+  bindings:         sg.Bindings,
+  indices_count:    uint,
   //
-  bones:         [50]Mat4,
-  animations:    []Animation,
-  //
-  animation:     ^cgltf.animation,
-  skin:          ^cgltf.skin,
-}
-
-Animation :: struct {
-  start_time:       f32,
+  bones:            [50]Mat4,
   inverse_matrices: []Mat4,
-  channels:         []Channel,
+  animations:       []Animation,
 }
 
-Channel :: struct {
-  target_node:      ^cgltf.node,
+Animation :: struct #packed {
+  channels:   []Channel,
+  start_time: f32,
+}
+
+Channel :: struct #packed {
   time_indices:     []f32,
   transform_values: []f32,
+  //
+  target_node:      ^cgltf.node,
+  target_path:      cgltf.animation_path_type,
+  values_count:     uint,
 }
 
 Game_Memory :: struct {
