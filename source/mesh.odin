@@ -48,7 +48,7 @@ load_mesh :: proc(file_name: string) {
   parse_texture(&data.textures[0])
 
   init_skin(&data.skins[0])
-  init_animations(data.animations, &data.skins[0])
+  init_animations(data.animations[:], &data.skins[0])
 }
 
 parse_vertices :: proc(primitive: ^cgltf.primitive) {
@@ -183,12 +183,12 @@ parse_animation :: proc(current_time: f32, animation_index: uint) {
     if channel.target_node == nil do continue
 
     frame_from, frame_to, interpolation_time := get_interplation_values(
-      channel.time_indices,
+      channel.time_indices[:],
       animation_time,
     )
 
-    raw_from := get_raw_vector(channel.transform_values, frame_from, int(channel.values_count))
-    raw_to := get_raw_vector(channel.transform_values, frame_to, int(channel.values_count))
+    raw_from := get_raw_vector(channel.transform_values[:], frame_from, int(channel.values_count))
+    raw_to := get_raw_vector(channel.transform_values[:], frame_to, int(channel.values_count))
 
     #partial switch channel.target_path {
     case .scale, .translation:
