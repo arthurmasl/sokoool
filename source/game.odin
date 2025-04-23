@@ -44,9 +44,6 @@ game_init :: proc() {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
     depth = {load_action = .CLEAR, clear_value = 1.0},
   }
-
-  // TODO: move to draw
-  // parse_animation(0, g.mesh.animation, g.mesh.skin)
 }
 
 @(export)

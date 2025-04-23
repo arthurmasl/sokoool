@@ -111,16 +111,10 @@ parse_texture :: proc(texture: ^cgltf.texture) {
   g.mesh.bindings.samplers[SMP_uTextureSmp] = sg.make_sampler({})
 }
 
-animation_started := false
 start_time: f32
-
-parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.skin) {
-  if !animation_started {
-    start_time = time
-    animation_started = true
-  }
-
-  animation_time := time - start_time
+parse_animation :: proc(current_time: f32, animation: ^cgltf.animation, skin: ^cgltf.skin) {
+  animation_time := current_time - start_time
+  if animation_time > 2.1 do start_time = current_time // TODO: temp loop
 
   // apply transforms
   for channel in animation.channels {
@@ -128,7 +122,7 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
     values_count := sampler.output.stride / cgltf.component_size(sampler.output.component_type)
 
     time_indices := get_unpacked_data(sampler.input)
-    transform_values := filter_zero_vectors(get_unpacked_data(sampler.output), values_count)
+    transform_values := get_unpacked_data(sampler.output)
 
     frame_from, frame_to, interpolation_time := get_interplation_values(
       time_indices,
@@ -137,11 +131,6 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
 
     raw_from := get_raw_vector(transform_values, frame_from, int(values_count))
     raw_to := get_raw_vector(transform_values, frame_to, int(values_count))
-
-    if animation_time >= time_indices[len(time_indices) - 1] {
-      animation_started = false
-      start_time = -1
-    }
 
     #partial switch channel.target_path {
     case .scale, .translation:
@@ -167,8 +156,6 @@ parse_animation :: proc(time: f32, animation: ^cgltf.animation, skin: ^cgltf.ski
       channel.target_node.rotation = interpolated
     }
   }
-
-  // fmt.println("animation channels:", len(animation.channels))
 
   // apply matrices
   joint_matrices: [50]Mat4
@@ -219,28 +206,6 @@ get_inverse_matrices :: proc(skin: ^cgltf.skin) -> []Mat4 {
 
 get_component_size :: proc(accessor: ^cgltf.accessor) -> uint {
   return accessor.stride / cgltf.component_size(accessor.component_type)
-}
-
-filter_zero_vectors :: proc(data: []f32, values_count: uint) -> []f32 {
-  transform_values := make([dynamic]f32, context.temp_allocator)
-
-  for i in 0 ..< uint(len(data)) / values_count {
-    vec := data[i * values_count:i * values_count + values_count]
-
-    allZeroes := true
-    for v in vec {
-      if v != 0 {
-        allZeroes = false
-        break
-      }
-    }
-
-    if !allZeroes {
-      append(&transform_values, ..vec)
-    }
-  }
-
-  return transform_values[:]
 }
 
 get_interplation_values :: proc(times: []f32, time: f32) -> (int, int, f32) {
