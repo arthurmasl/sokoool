@@ -27,7 +27,9 @@ game_init :: proc() {
 
   // index buffer
   indices := [?]u16{0, 1, 3, 1, 2, 3}
-  g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}})
+  g.bind.index_buffer = sg.make_buffer(
+    {type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}},
+  )
 
   // load image
   img_data, img_data_ok := read_entire_file("assets/round_cat.png", context.temp_allocator)
@@ -47,7 +49,11 @@ game_init :: proc() {
     {
       width = i32(img.width),
       height = i32(img.height),
-      data = {subimage = {0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(slice.size(img.pixels.buf[:]))}}}},
+      data = {
+        subimage = {
+          0 = {0 = {ptr = raw_data(img.pixels.buf), size = uint(slice.size(img.pixels.buf[:]))}},
+        },
+      },
     },
   )
 
