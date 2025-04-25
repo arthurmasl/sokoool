@@ -132,8 +132,8 @@ create_skybox :: proc() {
       shader = sg.make_shader(skybox_shader_desc(sg.query_backend())),
       layout = {
         attrs = {
-          ATTR_base_a_pos = {format = .FLOAT3},
-          ATTR_base_a_normals_pos = {format = .FLOAT3},
+          ATTR_skybox_a_pos = {format = .FLOAT3},
+          ATTR_skybox_a_normals_pos = {format = .FLOAT3},
         },
       },
       depth = {compare = .LESS_EQUAL, write_enabled = true},
@@ -188,7 +188,7 @@ game_frame :: proc() {
   sg.draw(0, 36, 1)
 
   vs_params.model =
-    linalg.matrix4_translate_f32({0, -1, 0}) * linalg.matrix4_scale_f32({20, 1, 20})
+    linalg.matrix4_translate_f32({0, -1, 0}) * linalg.matrix4_scale_f32({200, 1, 200})
   sg.apply_pipeline(g.cube.pip)
   sg.apply_bindings(g.cube.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
