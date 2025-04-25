@@ -8,27 +8,23 @@ import sg "sokol/gfx"
 import sglue "sokol/glue"
 import slog "sokol/log"
 import stm "sokol/time"
+import stbi "vendor:stb/image"
 
-Game_Memory :: struct {
-  pipeline: sg.Pipeline,
-  bindings: sg.Bindings,
-  pass:     sg.Pass_Action,
-  camera:   Camera,
+Entity :: struct {
+  pip:  sg.Pipeline,
+  bind: sg.Bindings,
 }
 
-@(export)
-game_init :: proc() {
-  g = new(Game_Memory)
-  game_hot_reloaded(g)
+Game_Memory :: struct {
+  camera: Camera,
+  pass:   sg.Pass_Action,
+  cube:   Entity,
+  skybox: Entity,
+}
 
-  camera_init()
-
-  sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
-  stm.setup()
-  debug_init()
-
+create_cube :: proc() {
   // vertex 
-  g.bindings.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_NORMALS_UVS_VERTICES)})
+  g.cube.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_NORMALS_UVS_VERTICES)})
 
   // load image
   img_data, img_data_ok := read_entire_file("assets/round_cat.png", context.temp_allocator)
@@ -44,7 +40,7 @@ game_init :: proc() {
   }
 
   // texture
-  g.bindings.images[IMG__diffuse_texture] = sg.make_image(
+  g.cube.bind.images[IMG__diffuse_texture] = sg.make_image(
     {
       width = i32(img.width),
       height = i32(img.height),
@@ -53,8 +49,10 @@ game_init :: proc() {
   )
 
   // sampler
-  g.bindings.samplers[SMP_diffuse_texture_smp] = sg.make_sampler({})
-  g.pipeline = sg.make_pipeline(
+  g.cube.bind.samplers[SMP_diffuse_texture_smp] = sg.make_sampler({})
+
+  // pipeline
+  g.cube.pip = sg.make_pipeline(
     {
       shader = sg.make_shader(base_shader_desc(sg.query_backend())),
       layout = {
@@ -64,15 +62,102 @@ game_init :: proc() {
           ATTR_base_a_tex_coords = {format = .FLOAT2},
         },
       },
-      // index_type = .UINT16,
-      // depth = {compare = .LESS_EQUAL, write_enabled = true},
       depth = {compare = .LESS, write_enabled = true},
     },
   )
+}
+
+create_skybox :: proc() {
+  // vertex 
+  g.skybox.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_NORMAL_VERTICES)})
+
+  // texture
+  image_data: sg.Image_Data
+  skybox_names := [?]string {
+    "skybox_right",
+    "skybox_left",
+    "skybox_top",
+    "skybox_bottom",
+    "skybox_front",
+    "skybox_back",
+  }
+
+  // load images
+  pixels_arr: [len(skybox_names)][^]byte
+
+  for name, i in skybox_names {
+    path := fmt.aprintf("assets/skybox/%s.jpg", name, allocator = context.temp_allocator)
+    img_data, img_data_ok := read_entire_file(path, context.temp_allocator)
+    if !img_data_ok {
+      fmt.println("Failed loading texture")
+      return
+    }
+
+    desired_channels := i32(4)
+    width, height, channels: i32
+    pixels := stbi.load_from_memory(
+      &img_data[0],
+      i32(len(img_data)),
+      &width,
+      &height,
+      &channels,
+      desired_channels,
+    )
+    if pixels == nil {
+      fmt.println("Failed to load texture")
+      return
+    }
+    pixels_arr[i] = pixels
+
+    image_data.subimage[i][0] = {
+      ptr  = pixels,
+      size = uint(width * height * desired_channels),
+    }
+  }
+
+  for pixels in pixels_arr {
+    stbi.image_free(pixels)
+  }
+
+  g.skybox.bind.images[IMG__skybox_texture] = sg.make_image(
+    {type = .CUBE, pixel_format = .RGBA8, width = 2048, height = 2048, data = image_data},
+  )
+
+  // sampler
+  g.skybox.bind.samplers[SMP_skybox_texture_smp] = sg.make_sampler({})
+
+  // pipeline
+  g.skybox.pip = sg.make_pipeline(
+    {
+      shader = sg.make_shader(skybox_shader_desc(sg.query_backend())),
+      layout = {
+        attrs = {
+          ATTR_base_a_pos = {format = .FLOAT3},
+          ATTR_base_a_normals_pos = {format = .FLOAT3},
+        },
+      },
+      depth = {compare = .LESS_EQUAL, write_enabled = true},
+    },
+  )
+}
+
+@(export)
+game_init :: proc() {
+  g = new(Game_Memory)
+  game_hot_reloaded(g)
+
+  camera_init()
+
+  sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
+  stm.setup()
+  debug_init()
+
+  create_cube()
+  create_skybox()
 
   g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
-    depth = {load_action = .CLEAR, clear_value = 1.0},
+    // depth = {load_action = .CLEAR, clear_value = 1.0},
   }
 }
 
@@ -91,22 +176,32 @@ game_frame :: proc() {
 
   // cube
   vs_params.model = linalg.matrix4_translate_f32({-1, 1, -1}) * linalg.matrix4_scale_f32({3, 3, 3})
-  sg.apply_pipeline(g.pipeline)
-  sg.apply_bindings(g.bindings)
+  sg.apply_pipeline(g.cube.pip)
+  sg.apply_bindings(g.cube.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(0, 36, 1)
 
   vs_params.model = linalg.matrix4_translate_f32({3, 0, 0})
-  sg.apply_pipeline(g.pipeline)
-  sg.apply_bindings(g.bindings)
+  sg.apply_pipeline(g.cube.pip)
+  sg.apply_bindings(g.cube.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(0, 36, 1)
 
   vs_params.model =
     linalg.matrix4_translate_f32({0, -1, 0}) * linalg.matrix4_scale_f32({20, 1, 20})
-  sg.apply_pipeline(g.pipeline)
-  sg.apply_bindings(g.bindings)
+  sg.apply_pipeline(g.cube.pip)
+  sg.apply_bindings(g.cube.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+  sg.draw(0, 36, 1)
+
+  // skybox
+  vs_params.view[3][0] = 0.0
+  vs_params.view[3][1] = 0.0
+  vs_params.view[3][2] = 0.0
+
+  sg.apply_pipeline(g.skybox.pip)
+  sg.apply_bindings(g.skybox.bind)
+  sg.apply_uniforms(UB_vs_skybox_params, data = sg_range(&vs_params))
   sg.draw(0, 36, 1)
 
   debug_process()

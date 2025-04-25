@@ -34,20 +34,8 @@ layout(binding = 0) uniform texture2D _diffuse_texture;
 layout(binding = 0) uniform sampler diffuse_texture_smp;
 #define diffuse_texture sampler2D(_diffuse_texture, diffuse_texture_smp)
 
-float near = 0.1;
-float far = 100.0;
-
-float linearize_depth(float depth) {
-    float z = depth * 2.0 - 1.0;
-    return (2.0 * near * far) / (far + near - z * (far - near));
-}
-
 void main() {
-    frag_color = texture(diffuse_texture, tex_coords);
-    frag_color = vec4(vec3(gl_FragCoord.z), 1.0);
-
-    float depth = linearize_depth(gl_FragCoord.z) / far;
-    frag_color = vec4(vec3(depth), 1.0);
+    frag_color = texture(diffuse_texture, tex_coords) * vec4(0.8, 0.5, 0.9, 1.0);
 }
 
 #pragma sokol @end
