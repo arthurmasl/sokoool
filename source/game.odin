@@ -86,7 +86,7 @@ create_skybox :: proc() {
   pixels_arr: [len(skybox_names)][^]byte
 
   for name, i in skybox_names {
-    path := fmt.aprintf("assets/skybox/%s.jpg", name, allocator = context.temp_allocator)
+    path := fmt.tprintf("assets/skybox/%s.jpg", name)
     img_data, img_data_ok := read_entire_file(path, context.temp_allocator)
     if !img_data_ok {
       fmt.println("Failed loading texture")

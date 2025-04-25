@@ -27,6 +27,6 @@ debug_process :: proc() {
 }
 
 print_text :: proc(format: string, args: ..any) {
-  sdtx.puts(fmt.caprintf(format, ..args, newline = true, allocator = context.temp_allocator))
+  sdtx.puts(fmt.ctprintf(format, ..args, newline = true))
   sdtx.move_y(0.5)
 }
