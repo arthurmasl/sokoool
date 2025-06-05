@@ -5,6 +5,7 @@ CUBE_NORMAL_VERTICES :: []struct {
   normal:    Vec3,
   texcoords: Vec2,
 } {
+  // Back face (-Z)
   {pos = {-0.5, -0.5, -0.5}, normal = {0, 0, -1}},
   {pos = {0.5, -0.5, -0.5}, normal = {0, 0, -1}},
   {pos = {0.5, 0.5, -0.5}, normal = {0, 0, -1}},
