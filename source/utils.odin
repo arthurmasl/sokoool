@@ -4,7 +4,6 @@ import "base:intrinsics"
 import "core:image/png"
 import "core:log"
 import "core:os"
-import "core:slice"
 import sg "sokol/gfx"
 
 import "web"

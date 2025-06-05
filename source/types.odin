@@ -1,6 +1,6 @@
-package types
+package game
 
-import sg "../sokol/gfx"
+import sg "sokol/gfx"
 
 Vec2 :: [2]f32
 Vec3 :: [3]f32
@@ -14,3 +14,9 @@ Vertex :: struct {
   normal:   Vec3,
   texcoord: Vec2,
 }
+
+Entity :: struct {
+  pip:  sg.Pipeline,
+  bind: sg.Bindings,
+}
+
