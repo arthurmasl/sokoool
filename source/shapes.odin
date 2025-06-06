@@ -18,10 +18,10 @@ CUBE_NORMAL_VERTICES :: []struct {
   {pos = {-0.5, 0.5, 0.5}, normal = {0, 0, 1}, texcoords = {1, 0}},
 
   // Left face (-X)
-  {pos = {-0.5, -0.5, -0.5}, normal = {-1, 0, 0}},
-  {pos = {-0.5, 0.5, -0.5}, normal = {-1, 0, 0}},
-  {pos = {-0.5, 0.5, 0.5}, normal = {-1, 0, 0}},
-  {pos = {-0.5, -0.5, 0.5}, normal = {-1, 0, 0}},
+  {pos = {-0.5, -0.5, -0.5}, normal = {-1, 0, 0}, texcoords = {1, 1}},
+  {pos = {-0.5, 0.5, -0.5}, normal = {-1, 0, 0}, texcoords = {0, 1}},
+  {pos = {-0.5, 0.5, 0.5}, normal = {-1, 0, 0}, texcoords = {0, 0}},
+  {pos = {-0.5, -0.5, 0.5}, normal = {-1, 0, 0}, texcoords = {1, 0}},
 
   // Right face (+X)
   {pos = {0.5, -0.5, -0.5}, normal = {1, 0, 0}},
@@ -36,10 +36,10 @@ CUBE_NORMAL_VERTICES :: []struct {
   {pos = {0.5, -0.5, -0.5}, normal = {0, -1, 0}},
 
   // Top face (+Y)
-  {pos = {-0.5, 0.5, -0.5}, normal = {0, 1, 0}},
-  {pos = {-0.5, 0.5, 0.5}, normal = {0, 1, 0}},
-  {pos = {0.5, 0.5, 0.5}, normal = {0, 1, 0}},
-  {pos = {0.5, 0.5, -0.5}, normal = {0, 1, 0}},
+  {pos = {-0.5, 0.5, -0.5}, normal = {0, 1, 0}, texcoords = {1, 1}},
+  {pos = {-0.5, 0.5, 0.5}, normal = {0, 1, 0}, texcoords = {0, 1}},
+  {pos = {0.5, 0.5, 0.5}, normal = {0, 1, 0}, texcoords = {0, 0}},
+  {pos = {0.5, 0.5, -0.5}, normal = {0, 1, 0}, texcoords = {1, 0}},
 }
 
 // odinfmt: disable
