@@ -5,17 +5,17 @@ CUBE_NORMAL_VERTICES :: []struct {
   normal:    Vec3,
   texcoords: Vec2,
 } {
-  // Back face (-Z)
-  {pos = {-0.5, -0.5, -0.5}, normal = {0, 0, -1}},
-  {pos = {0.5, -0.5, -0.5}, normal = {0, 0, -1}},
-  {pos = {0.5, 0.5, -0.5}, normal = {0, 0, -1}},
-  {pos = {-0.5, 0.5, -0.5}, normal = {0, 0, -1}},
-
   // Front face (+Z)
   {pos = {-0.5, -0.5, 0.5}, normal = {0, 0, 1}, texcoords = {1, 1}},
   {pos = {0.5, -0.5, 0.5}, normal = {0, 0, 1}, texcoords = {0, 1}},
   {pos = {0.5, 0.5, 0.5}, normal = {0, 0, 1}, texcoords = {0, 0}},
   {pos = {-0.5, 0.5, 0.5}, normal = {0, 0, 1}, texcoords = {1, 0}},
+
+  // Back face (-Z)
+  {pos = {-0.5, -0.5, -0.5}, normal = {0, 0, -1}},
+  {pos = {0.5, -0.5, -0.5}, normal = {0, 0, -1}},
+  {pos = {0.5, 0.5, -0.5}, normal = {0, 0, -1}},
+  {pos = {-0.5, 0.5, -0.5}, normal = {0, 0, -1}},
 
   // Left face (-X)
   {pos = {-0.5, -0.5, -0.5}, normal = {-1, 0, 0}, texcoords = {1, 1}},

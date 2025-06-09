@@ -17,9 +17,22 @@ Game_Memory :: struct {
 
 create_cube :: proc() {
   // buffers
-  g.cube.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(CUBE_NORMAL_VERTICES)})
+  vertices := []struct {
+    pos:       Vec3,
+    normal:    Vec3,
+    texcoords: Vec2,
+  } {
+    {pos = {-0.5, -0.5, 0.5}, normal = {0, 0, 1}, texcoords = {1, 1}},
+    {pos = {0.5, -0.5, 0.5}, normal = {0, 0, 1}, texcoords = {0, 1}},
+    {pos = {0.5, 0.5, 0.5}, normal = {0, 0, 1}, texcoords = {0, 0}},
+    {pos = {-0.5, 0.5, 0.5}, normal = {0, 0, 1}, texcoords = {1, 0}},
+  }
+  indieces := []u16{0, 1, 2, 0, 2, 3}
+
+  g.cube.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
+
   g.cube.bind.index_buffer = sg.make_buffer(
-    {usage = {index_buffer = true}, data = sg_range(CUBE_INDICES)},
+    {usage = {index_buffer = true}, data = sg_range(indieces)},
   )
 
   // load image
@@ -58,9 +71,9 @@ create_cube :: proc() {
           ATTR_base_a_tex_coords = {format = .FLOAT2},
         },
       },
-      index_type = .UINT16,
       depth = {compare = .LESS_EQUAL, write_enabled = true},
-      cull_mode = .BACK,
+      index_type = .UINT16,
+      // cull_mode = .BACK,
     },
   )
 }
@@ -93,12 +106,12 @@ game_frame :: proc() {
     view       = view,
     projection = projection,
   }
-  vs_params.model = linalg.matrix4_translate_f32({-1, 1, -1})
+  vs_params.model = linalg.matrix4_translate_f32({0, 1, -5}) * linalg.matrix4_scale_f32({6, 6, 1})
 
   sg.apply_pipeline(g.cube.pip)
   sg.apply_bindings(g.cube.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.draw(0, 36, 1)
+  sg.draw(0, 6, 1)
 
   debug_process()
   sg.end_pass()
