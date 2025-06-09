@@ -35,7 +35,7 @@ layout(binding = 0) uniform sampler diffuse_texture_smp;
 #define diffuse_texture sampler2D(_diffuse_texture, diffuse_texture_smp)
 
 void main() {
-    frag_color = texture(diffuse_texture, tex_coords) * vec4(0.8, 0.5, 0.9, 1.0);
+    frag_color = texture(diffuse_texture, tex_coords);
 }
 
 #pragma sokol @end

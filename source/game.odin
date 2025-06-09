@@ -1,13 +1,13 @@
 package game
 
 import "core:fmt"
-import "core:image/png"
 import "core:math/linalg"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
 import slog "sokol/log"
 import stm "sokol/time"
+import stbi "vendor:stb/image"
 
 Game_Memory :: struct {
   camera: Camera,
@@ -36,24 +36,27 @@ create_cube :: proc() {
   )
 
   // load image
-  img_data, img_data_ok := read_entire_file("assets/round_cat.png", context.temp_allocator)
+  img_data, img_data_ok := read_entire_file("assets/brickwall.jpg", context.temp_allocator)
   if !img_data_ok {
     fmt.println("Failed loading texture")
     return
   }
 
-  img, img_err := png.load_from_bytes(img_data, nil, context.temp_allocator)
-  if img_err != nil {
-    fmt.println(img_err)
+  width, height, channels: i32
+  pixels := stbi.load_from_memory(&img_data[0], i32(len(img_data)), &width, &height, &channels, 4)
+  if pixels == nil {
+    fmt.println("Failed to load texture")
     return
   }
+  defer stbi.image_free(pixels)
 
   // texture
   g.cube.bind.images[IMG__diffuse_texture] = sg.make_image(
     {
-      width = i32(img.width),
-      height = i32(img.height),
-      data = {subimage = {0 = {0 = sg_range(img)}}},
+      width = i32(width),
+      height = i32(height),
+      pixel_format = .RGBA8,
+      data = {subimage = {0 = {0 = {ptr = pixels, size = uint(width * height * 4)}}}},
     },
   )
 
