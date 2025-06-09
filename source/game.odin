@@ -147,8 +147,9 @@ game_frame :: proc() {
   vs_params.model = linalg.matrix4_translate_f32({0, 1, -5}) * linalg.matrix4_scale_f32({6, 6, 1})
 
   fs_params := Fs_Params {
-    view_pos  = g.camera.pos,
-    light_pos = light_pos,
+    view_pos      = g.camera.pos,
+    light_pos     = light_pos,
+    enable_normal = 1.0,
   }
 
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))

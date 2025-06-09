@@ -44,6 +44,7 @@ out vec4 frag_color;
 layout(binding = 1) uniform fs_params {
     vec3 view_pos;
     vec3 light_pos;
+    float enable_normal;
 };
 
 layout(binding = 0) uniform texture2D _diffuse_map;
@@ -53,8 +54,6 @@ layout(binding = 0) uniform sampler diffuse_smp;
 layout(binding = 1) uniform texture2D _normal_map;
 layout(binding = 1) uniform sampler normal_smp;
 #define normal_map sampler2D(_normal_map, normal_smp)
-
-const bool ENABLE_NORMAL_MAPPING = true;
 
 void main() {
     vec3 color = texture(diffuse_map, inter.tex_coords).rgb;
@@ -66,7 +65,7 @@ void main() {
     vec3 normal = texture(normal_map, inter.tex_coords).rgb;
     // transform normal vector to range [-1,1]
     normal = normalize(normal * 2.0 - 1.0);
-    normal = ENABLE_NORMAL_MAPPING == true ? normal : normalize(inter.normal);
+    normal = enable_normal == 1.0 ? normal : normalize(inter.normal);
     float diff = max(dot(light_dir, normal), 0.0);
     vec3 diffuse = diff * color;
     // specular
