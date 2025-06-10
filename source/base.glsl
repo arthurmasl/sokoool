@@ -74,7 +74,7 @@ layout(binding = 2) uniform texture2D _depth_map;
 layout(binding = 2) uniform sampler depth_smp;
 #define depth_map sampler2D(_depth_map, depth_smp)
 
-const float height_scale = 0.1;
+const float height_scale = 0.05;
 
 vec2 parallax_mapping(vec2 tex_coords, vec3 view_dir) {
     float height = texture(depth_map, tex_coords).r;

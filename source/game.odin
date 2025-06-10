@@ -18,7 +18,7 @@ Game_Memory :: struct {
 light_pos := Vec3{1.5, 3.0, 25.5}
 
 load_diffuse :: proc() {
-  img_data, img_data_ok := read_entire_file("assets/brickwall.jpg", context.temp_allocator)
+  img_data, img_data_ok := read_entire_file("assets/bricks2.jpg", context.temp_allocator)
   if !img_data_ok {
     fmt.println("Failed loading texture")
     return
@@ -45,7 +45,7 @@ load_diffuse :: proc() {
 }
 
 load_normal :: proc() {
-  img_data, img_data_ok := read_entire_file("assets/brickwall_normal.jpg", context.temp_allocator)
+  img_data, img_data_ok := read_entire_file("assets/bricks2_normal.jpg", context.temp_allocator)
   if !img_data_ok {
     fmt.println("Failed loading texture")
     return
@@ -72,7 +72,7 @@ load_normal :: proc() {
 }
 
 load_depth :: proc() {
-  img_data, img_data_ok := read_entire_file("assets/brickwall_depth.jpg", context.temp_allocator)
+  img_data, img_data_ok := read_entire_file("assets/bricks2_disp.jpg", context.temp_allocator)
   if !img_data_ok {
     fmt.println("Failed loading texture")
     return
