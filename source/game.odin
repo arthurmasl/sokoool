@@ -15,7 +15,7 @@ Game_Memory :: struct {
   cube:   Entity,
 }
 
-light_pos := Vec3{1.5, 3.0, 5.5}
+light_pos := Vec3{1.5, 3.0, 25.5}
 
 load_diffuse :: proc() {
   img_data, img_data_ok := read_entire_file("assets/brickwall.jpg", context.temp_allocator)
@@ -42,7 +42,6 @@ load_diffuse :: proc() {
   )
 
   g.cube.bind.samplers[SMP_diffuse_smp] = sg.make_sampler({})
-
 }
 
 load_normal :: proc() {
@@ -70,31 +69,87 @@ load_normal :: proc() {
   )
 
   g.cube.bind.samplers[SMP_normal_smp] = sg.make_sampler({})
+}
 
+load_depth :: proc() {
+  img_data, img_data_ok := read_entire_file("assets/brickwall_depth.jpg", context.temp_allocator)
+  if !img_data_ok {
+    fmt.println("Failed loading texture")
+    return
+  }
+
+  width, height, channels: i32
+  pixels := stbi.load_from_memory(&img_data[0], i32(len(img_data)), &width, &height, &channels, 4)
+  if pixels == nil {
+    fmt.println("Failed to load texture")
+    return
+  }
+  defer stbi.image_free(pixels)
+
+  g.cube.bind.images[IMG__depth_map] = sg.make_image(
+    {
+      width = i32(width),
+      height = i32(height),
+      pixel_format = .RGBA8,
+      data = {subimage = {0 = {0 = {ptr = pixels, size = uint(width * height * 4)}}}},
+    },
+  )
+
+  g.cube.bind.samplers[SMP_depth_smp] = sg.make_sampler({})
+}
+
+compute_tangent :: proc(pos0, pos1, pos2: Vec3, uv0, uv1, uv2: Vec2) -> Vec3 {
+  edge0 := pos1 - pos0
+  edge1 := pos2 - pos0
+  delta_uv0 := uv1 - uv0
+  delta_uv1 := uv2 - uv0
+
+  f := 1.0 / (delta_uv0.x * delta_uv1.y - delta_uv1.x * delta_uv0.y)
+
+  x := f * (delta_uv1.y * edge0.x - delta_uv0.y * edge1.x)
+  y := f * (delta_uv1.y * edge0.y - delta_uv0.y * edge1.y)
+  z := f * (delta_uv1.y * edge0.z - delta_uv0.y * edge1.z)
+
+  return Vec3{x, y, z}
 }
 
 create_cube :: proc() {
   // buffers
+  pos0 := Vec3{-1, 1, 0}
+  pos1 := Vec3{-1, -1, 0}
+  pos2 := Vec3{1, -1, 0}
+  pos3 := Vec3{1, 1, 0}
+
+  nm := Vec3{0, 0, 1}
+
+  uv0 := Vec2{0, 1}
+  uv1 := Vec2{0, 0}
+  uv2 := Vec2{1, 0}
+  uv3 := Vec2{1, 1}
+
+  ta0 := compute_tangent(pos0, pos1, pos2, uv0, uv1, uv2)
+  ta1 := compute_tangent(pos0, pos2, pos3, uv0, uv2, uv3)
+
   vertices := []struct {
     pos:       Vec3,
     normal:    Vec3,
     texcoords: Vec2,
+    tangent:   Vec3,
   } {
-    {pos = {-0.5, -0.5, 0.5}, normal = {0, 0, 1}, texcoords = {1, 1}},
-    {pos = {0.5, -0.5, 0.5}, normal = {0, 0, 1}, texcoords = {0, 1}},
-    {pos = {0.5, 0.5, 0.5}, normal = {0, 0, 1}, texcoords = {0, 0}},
-    {pos = {-0.5, 0.5, 0.5}, normal = {0, 0, 1}, texcoords = {1, 0}},
+    {pos = pos0, normal = nm, texcoords = uv0, tangent = ta0},
+    {pos = pos1, normal = nm, texcoords = uv1, tangent = ta0},
+    {pos = pos2, normal = nm, texcoords = uv2, tangent = ta0},
+    //
+    {pos = pos0, normal = nm, texcoords = uv0, tangent = ta1},
+    {pos = pos2, normal = nm, texcoords = uv2, tangent = ta1},
+    {pos = pos3, normal = nm, texcoords = uv3, tangent = ta1},
   }
-  indieces := []u16{0, 1, 2, 0, 2, 3}
 
   g.cube.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
 
-  g.cube.bind.index_buffer = sg.make_buffer(
-    {usage = {index_buffer = true}, data = sg_range(indieces)},
-  )
-
   load_diffuse()
   load_normal()
+  load_depth()
 
   // pipeline
   g.cube.pip = sg.make_pipeline(
@@ -105,10 +160,11 @@ create_cube :: proc() {
         ATTR_base_a_pos = {format = .FLOAT3},
         ATTR_base_a_normal = {format = .FLOAT3},
         ATTR_base_a_tex_coords = {format = .FLOAT2},
+        ATTR_base_a_tangent = {format = .FLOAT3},
       },
     },
     depth = {compare = .LESS_EQUAL, write_enabled = true},
-    index_type = .UINT16,
+    // index_type = .UINT16,
     // cull_mode = .BACK,
   },
   )
@@ -143,17 +199,12 @@ game_frame :: proc() {
   vs_params := Vs_Params {
     view       = view,
     projection = projection,
+    view_pos   = g.camera.pos,
+    light_pos  = light_pos,
   }
   vs_params.model = linalg.matrix4_translate_f32({0, 1, -5}) * linalg.matrix4_scale_f32({6, 6, 1})
 
-  fs_params := Fs_Params {
-    view_pos      = g.camera.pos,
-    light_pos     = light_pos,
-    enable_normal = 1.0,
-  }
-
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
 
   sg.draw(0, 6, 1)
 
