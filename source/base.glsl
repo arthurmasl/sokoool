@@ -75,11 +75,35 @@ layout(binding = 2) uniform sampler depth_smp;
 #define depth_map sampler2D(_depth_map, depth_smp)
 
 const float height_scale = 0.05;
+const float min_layers = 8.0;
+const float max_layers = 32.0;
 
 vec2 parallax_mapping(vec2 tex_coords, vec3 view_dir) {
-    float height = texture(depth_map, tex_coords).r;
-    vec2 p = view_dir.xy / view_dir.z * (height * height_scale);
-    return tex_coords - p;
+    float num_layers = mix(max_layers, min_layers, max(dot(vec3(0.0, 0.0, 1.0), view_dir), 0.0));
+
+    float layer_depth = 1.0 / num_layers;
+    float current_layer_depth = 0.0;
+    vec2 p = view_dir.xy * height_scale;
+    vec2 delta_tex_coords = p / num_layers;
+
+    vec2 current_tex_coord = tex_coords;
+    float current_depth_map_value = texture(depth_map, current_tex_coord).r;
+
+    while (current_layer_depth < current_depth_map_value) {
+        current_tex_coord -= delta_tex_coords;
+        current_depth_map_value = texture(depth_map, current_tex_coord).r;
+        current_layer_depth += layer_depth;
+    }
+
+    vec2 prev_tex_coords = current_tex_coord + delta_tex_coords;
+
+    float after_depth = current_depth_map_value - current_layer_depth;
+    float before_depth = texture(depth_map, prev_tex_coords).r - current_layer_depth + layer_depth;
+
+    float weight = after_depth / (after_depth - before_depth);
+    vec2 final_tex_coords = prev_tex_coords * weight + current_tex_coord * (1.0 - weight);
+
+    return final_tex_coords;
 }
 
 void main() {
