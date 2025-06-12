@@ -27,12 +27,13 @@ void main() {
 in vec2 tex_coords;
 out vec4 frag_color;
 
-layout(binding = 0) uniform texture2D _diffuse_map;
-layout(binding = 0) uniform sampler diffuse_smp;
-#define diffuse_texture sampler2D(_diffuse_map, diffuse_smp)
+layout(binding = 0) uniform texture2D _offscreen_diffuse_map;
+layout(binding = 0) uniform sampler offscreen_diffuse_smp;
+#define diffuse_texture sampler2D(_offscreen_diffuse_map, offscreen_diffuse_smp)
 
 void main() {
     frag_color = texture(diffuse_texture, tex_coords);
+    // frag_color = vec4(1, 0, 1, 0);
 }
 
 #pragma sokol @end
