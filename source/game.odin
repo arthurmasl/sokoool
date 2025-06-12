@@ -10,165 +10,57 @@ import stm "sokol/time"
 import stbi "vendor:stb/image"
 
 Game_Memory :: struct {
-  camera: Camera,
-  pass:   sg.Pass_Action,
-  cube:   Entity,
+  camera:    Camera,
+  offscreen: Offscreen,
+  display:   Display,
 }
 
-light_pos := Vec3{1.5, 3.0, 25.5}
+Offscreen :: struct {
+  attachments:      sg.Attachments,
+  attachments_desc: sg.Attachment_Desc,
+  pass_action:      sg.Pass_Action,
+  pipeline:         sg.Pipeline,
+  bindings_cube:    sg.Bindings,
+}
 
-load_diffuse :: proc() {
-  img_data, img_data_ok := read_entire_file("assets/brickwall.jpg", context.temp_allocator)
-  if !img_data_ok {
-    fmt.println("Failed loading texture")
-    return
+Display :: struct {
+  pass_action: sg.Pass_Action,
+  pipeline:    sg.Pipeline,
+  bindings:    sg.Bindings,
+}
+
+create_offscreen :: proc() {
+  color_img_desc := sg.Image_Desc {
+    usage = {render_attachment = true},
+    width = sapp.width(),
+    height = sapp.height(),
+    pixel_format = .RGBA8,
+  }
+  color_smp_desc := sg.Sampler_Desc {
+    min_filter = .LINEAR,
+    mag_filter = .LINEAR,
+    wrap_u     = .CLAMP_TO_EDGE,
+    wrap_v     = .CLAMP_TO_EDGE,
+    compare    = .NEVER,
   }
 
-  width, height, channels: i32
-  pixels := stbi.load_from_memory(&img_data[0], i32(len(img_data)), &width, &height, &channels, 4)
-  if pixels == nil {
-    fmt.println("Failed to load texture")
-    return
-  }
-  defer stbi.image_free(pixels)
+  color_img := sg.make_image(color_img_desc)
+  color_smp := sg.make_sampler(color_smp_desc)
 
-  g.cube.bind.images[IMG__diffuse_map] = sg.make_image(
-    {
-      width = i32(width),
-      height = i32(height),
-      pixel_format = .RGBA8,
-      data = {subimage = {0 = {0 = {ptr = pixels, size = uint(width * height * 4)}}}},
-    },
+  depth_img_desc := color_img_desc
+  depth_img_desc.pixel_format = .DEPTH
+  depth_img := sg.make_image(depth_img_desc)
+
+  g.offscreen.attachments = sg.make_attachments(
+    {colors = {0 = {image = color_img}}, depth_stencil = {image = depth_img}},
   )
 
-  g.cube.bind.samplers[SMP_diffuse_smp] = sg.make_sampler({})
+  g.display.bindings.images[IMG__diffuse_map] = color_img
+  g.display.bindings.samplers[IMG_diffuse_smp] = color_smp
 }
 
-load_normal :: proc() {
-  img_data, img_data_ok := read_entire_file("assets/brickwall_normal.jpg", context.temp_allocator)
-  if !img_data_ok {
-    fmt.println("Failed loading texture")
-    return
-  }
+create_display :: proc() {
 
-  width, height, channels: i32
-  pixels := stbi.load_from_memory(&img_data[0], i32(len(img_data)), &width, &height, &channels, 4)
-  if pixels == nil {
-    fmt.println("Failed to load texture")
-    return
-  }
-  defer stbi.image_free(pixels)
-
-  g.cube.bind.images[IMG__normal_map] = sg.make_image(
-    {
-      width = i32(width),
-      height = i32(height),
-      pixel_format = .RGBA8,
-      data = {subimage = {0 = {0 = {ptr = pixels, size = uint(width * height * 4)}}}},
-    },
-  )
-
-  g.cube.bind.samplers[SMP_normal_smp] = sg.make_sampler({})
-}
-
-load_depth :: proc() {
-  img_data, img_data_ok := read_entire_file("assets/brickwall_depth.jpg", context.temp_allocator)
-  if !img_data_ok {
-    fmt.println("Failed loading texture")
-    return
-  }
-
-  width, height, channels: i32
-  pixels := stbi.load_from_memory(&img_data[0], i32(len(img_data)), &width, &height, &channels, 4)
-  if pixels == nil {
-    fmt.println("Failed to load texture")
-    return
-  }
-  defer stbi.image_free(pixels)
-
-  g.cube.bind.images[IMG__depth_map] = sg.make_image(
-    {
-      width = i32(width),
-      height = i32(height),
-      pixel_format = .RGBA8,
-      data = {subimage = {0 = {0 = {ptr = pixels, size = uint(width * height * 4)}}}},
-    },
-  )
-
-  g.cube.bind.samplers[SMP_depth_smp] = sg.make_sampler({})
-}
-
-compute_tangent :: proc(pos0, pos1, pos2: Vec3, uv0, uv1, uv2: Vec2) -> Vec3 {
-  edge0 := pos1 - pos0
-  edge1 := pos2 - pos0
-  delta_uv0 := uv1 - uv0
-  delta_uv1 := uv2 - uv0
-
-  f := 1.0 / (delta_uv0.x * delta_uv1.y - delta_uv1.x * delta_uv0.y)
-
-  x := f * (delta_uv1.y * edge0.x - delta_uv0.y * edge1.x)
-  y := f * (delta_uv1.y * edge0.y - delta_uv0.y * edge1.y)
-  z := f * (delta_uv1.y * edge0.z - delta_uv0.y * edge1.z)
-
-  return Vec3{x, y, z}
-}
-
-create_cube :: proc() {
-  // buffers
-  pos0 := Vec3{-1, 1, 0}
-  pos1 := Vec3{-1, -1, 0}
-  pos2 := Vec3{1, -1, 0}
-  pos3 := Vec3{1, 1, 0}
-
-  nm := Vec3{0, 0, 1}
-
-  uv0 := Vec2{0, 1}
-  uv1 := Vec2{0, 0}
-  uv2 := Vec2{1, 0}
-  uv3 := Vec2{1, 1}
-
-  ta0 := compute_tangent(pos0, pos1, pos2, uv0, uv1, uv2)
-  ta1 := compute_tangent(pos0, pos2, pos3, uv0, uv2, uv3)
-
-  vertices := []struct {
-    pos:       Vec3,
-    normal:    Vec3,
-    texcoords: Vec2,
-    tangent:   Vec3,
-  } {
-    {pos = pos0, normal = nm, texcoords = uv0, tangent = ta0},
-    {pos = pos1, normal = nm, texcoords = uv1, tangent = ta0},
-    {pos = pos2, normal = nm, texcoords = uv2, tangent = ta0},
-    //
-    {pos = pos0, normal = nm, texcoords = uv0, tangent = ta1},
-    {pos = pos2, normal = nm, texcoords = uv2, tangent = ta1},
-    {pos = pos3, normal = nm, texcoords = uv3, tangent = ta1},
-  }
-
-  g.cube.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
-
-  stbi.set_flip_vertically_on_load(1)
-  load_diffuse()
-  load_normal()
-  load_depth()
-
-  // pipeline
-  g.cube.pip = sg.make_pipeline(
-  {
-    shader = sg.make_shader(base_shader_desc(sg.query_backend())),
-    layout = {
-      attrs = {
-        ATTR_base_a_pos = {format = .FLOAT3},
-        ATTR_base_a_normal = {format = .FLOAT3},
-        ATTR_base_a_tex_coords = {format = .FLOAT2},
-        ATTR_base_a_tangent = {format = .FLOAT3},
-      },
-    },
-    depth = {compare = .LESS_EQUAL, write_enabled = true},
-    // index_type = .UINT16,
-    // cull_mode = .BACK,
-  },
-  )
 }
 
 @(export)
@@ -181,11 +73,82 @@ game_init :: proc() {
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
   stm.setup()
   debug_init()
-  create_cube()
 
-  g.pass = {
+  create_offscreen()
+
+  g.offscreen.pass_action = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
   }
+  g.display.pass_action = {
+    colors = {0 = {load_action = .DONTCARE}},
+    depth = {load_action = .DONTCARE},
+    stencil = {load_action = .DONTCARE},
+  }
+
+  
+  // odinfmt: disable
+  cube_vertices := [?]f32{
+       // positions          // texture Coords
+        -0.5, -0.5, -0.5,  0.0, 0.0,
+         0.5, -0.5, -0.5,  1.0, 0.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 0.0,
+
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 1.0,
+         0.5,  0.5,  0.5,  1.0, 1.0,
+        -0.5,  0.5,  0.5,  0.0, 1.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+
+        -0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5, -0.5,  1.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5,  0.5,  0.5,  1.0, 0.0,
+
+         0.5,  0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5,  0.5,  0.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5, -0.5,  1.0, 1.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5,  0.5,  0.0, 0.0,
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+  }
+  quad_vertices := [?]f32 {
+        // positions   // texCoords
+        -1.0,  1.0,  0.0, 1.0,
+        -1.0, -1.0,  0.0, 0.0,
+         1.0, -1.0,  1.0, 0.0,
+
+        -1.0,  1.0,  0.0, 1.0,
+         1.0, -1.0,  1.0, 0.0,
+         1.0,  1.0,  1.0, 1.0,
+  }
+  // odinfmt: enable
+
+  cube_buffer := sg.make_buffer({data = {ptr = &cube_vertices, size = size_of(cube_vertices)}})
+  quad_buffer := sg.make_buffer({data = {ptr = &quad_vertices, size = size_of(quad_vertices)}})
+
+  g.offscreen.bindings_cube.vertex_buffers[0] = cube_buffer
+  g.display.bindings.vertex_buffers[0] = quad_buffer
+
 }
 
 @(export)
