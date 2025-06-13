@@ -87,9 +87,9 @@ game_event :: proc(e: ^sapp.Event) {
     if e.key_code == .T do DEBUG_TEXT = !DEBUG_TEXT
   }
 
-  camera_process_input(e)
-
   if e.type == .RESIZED {
     create_offscreen(e.framebuffer_width, e.framebuffer_height)
   }
+
+  camera_process_input(e)
 }
