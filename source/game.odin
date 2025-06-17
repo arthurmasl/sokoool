@@ -23,47 +23,14 @@ game_init :: proc() {
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
   stm.setup()
   debug_init()
-  
-  // odinfmt: disable
-  vertices := []Sb_Vertex {
-    {pos = {-1.0, -1.0, -1.0}, color = {1.0, 0.0, 0.0, 1.0}},
-    {pos = {1.0, -1.0, -1.0},  color = {1.0, 0.0, 0.0, 1.0}},
-    {pos = {1.0, 1.0, -1.0},   color = {1.0, 0.0, 0.0, 1.0}},
-    {pos = {-1.0, 1.0, -1.0},  color = {1.0, 0.0, 0.0, 1.0}},
-    {pos = {-1.0, -1.0, 1.0},  color = {0.0, 1.0, 0.0, 1.0}},
-    {pos = {1.0, -1.0, 1.0},   color = {0.0, 1.0, 0.0, 1.0}},
-    {pos = {1.0, 1.0, 1.0},    color = {0.0, 1.0, 0.0, 1.0}},
-    {pos = {-1.0, 1.0, 1.0},   color = {0.0, 1.0, 0.0, 1.0}},
-    {pos = {-1.0, -1.0, -1.0}, color = {0.0, 0.0, 1.0, 1.0}},
-    {pos = {-1.0, 1.0, -1.0},  color = {0.0, 0.0, 1.0, 1.0}},
-    {pos = {-1.0, 1.0, 1.0},   color = {0.0, 0.0, 1.0, 1.0}},
-    {pos = {-1.0, -1.0, 1.0},  color = {0.0, 0.0, 1.0, 1.0}},
-    {pos = {1.0, -1.0, -1.0},  color = {1.0, 0.5, 0.0, 1.0}},
-    {pos = {1.0, 1.0, -1.0},   color = {1.0, 0.5, 0.0, 1.0}},
-    {pos = {1.0, 1.0, 1.0},    color = {1.0, 0.5, 0.0, 1.0}},
-    {pos = {1.0, -1.0, 1.0},   color = {1.0, 0.5, 0.0, 1.0}},
-    {pos = {-1.0, -1.0, -1.0}, color = {0.0, 0.5, 1.0, 1.0}},
-    {pos = {-1.0, -1.0, 1.0},  color = {0.0, 0.5, 1.0, 1.0}},
-    {pos = {1.0, -1.0, 1.0},   color = {0.0, 0.5, 1.0, 1.0}},
-    {pos = {1.0, -1.0, -1.0},  color = {0.0, 0.5, 1.0, 1.0}},
-    {pos = {-1.0, 1.0, -1.0},  color = {1.0, 0.0, 0.5, 1.0}},
-    {pos = {-1.0, 1.0, 1.0},   color = {1.0, 0.0, 0.5, 1.0}},
-    {pos = {1.0, 1.0, 1.0},    color = {1.0, 0.0, 0.5, 1.0}},
-    {pos = {1.0, 1.0, -1.0},   color = {1.0, 0.0, 0.5, 1.0}},
-  }
-  indices:= []u16{
-    0, 1, 2,  0, 2, 3,
-    6, 5, 4,  7, 6, 4,
-    8, 9, 10,  8, 10, 11,
-    14, 13, 12,  15, 14, 12,
-    16, 17, 18,  16, 18, 19,
-    22, 21, 20,  23, 22, 20,
-  }
-  // odinfmt: enable
 
-  storage_buffer := sg.make_buffer({usage = {storage_buffer = true}, data = sg_range(vertices)})
-  index_buffer := sg.make_buffer({usage = {index_buffer = true}, data = sg_range(indices)})
-  pipeline := sg.make_pipeline(
+  g.cube.bind.storage_buffers = {
+    SBUF_ssbo = sg.make_buffer({usage = {storage_buffer = true}, data = sg_range(CUBE_VERTICES)}),
+  }
+  g.cube.bind.index_buffer = sg.make_buffer(
+    {usage = {index_buffer = true}, data = sg_range(CUBE_INDICES)},
+  )
+  g.cube.pip = sg.make_pipeline(
     {
       shader = sg.make_shader(base_shader_desc(sg.query_backend())),
       index_type = .UINT16,
@@ -71,12 +38,6 @@ game_init :: proc() {
       depth = {write_enabled = true, compare = .LESS_EQUAL},
     },
   )
-
-  g.cube = {
-    pip = pipeline,
-    bind = {storage_buffers = {SBUF_ssbo = storage_buffer}, index_buffer = index_buffer},
-  }
-
   g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
   }
