@@ -203,15 +203,14 @@ game_init :: proc() {
       shader = sg.make_shader(display_shader_desc(sg.query_backend())),
       layout = {
         attrs = {
-          ATTR_offscreen_a_pos = {format = .FLOAT2},
-          ATTR_offscreen_a_tex_coords = {format = .FLOAT2},
+          ATTR_display_a_pos = {format = .FLOAT2},
+          ATTR_display_a_tex_coords = {format = .FLOAT2},
         },
       },
     },
   )
 
   load_diffuse()
-
 }
 
 @(export)
@@ -229,7 +228,7 @@ game_frame :: proc() {
     projection = projection,
   }
 
-  vs_params.model = linalg.matrix4_translate_f32({0, 1, 0}) * linalg.matrix4_scale_f32({6, 6, 1})
+  vs_params.model = linalg.matrix4_translate_f32({-1, 1, -1})
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(0, 36, 1)
   sg.end_pass()

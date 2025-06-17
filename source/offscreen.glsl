@@ -33,7 +33,7 @@ layout(binding = 0) uniform sampler offscreen_diffuse_smp;
 
 void main() {
     frag_color = texture(diffuse_texture, tex_coords);
-    // frag_color = vec4(1, 0, 1, 1);
+    // frag_color = vec4(0, 1, 1, 1);
 }
 
 #pragma sokol @end

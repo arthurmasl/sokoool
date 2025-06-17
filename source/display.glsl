@@ -47,9 +47,8 @@ void main() {
     kernel[1] = kernel[3] = kernel[5] = kernel[7] = 2.0 / 16.0;
 
     vec3 sample_tex[9];
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 9; i++)
         sample_tex[i] = vec3(texture(diffuse_texture, tex_coords.st + offsets[i]));
-    }
 
     vec3 color = vec3(0.0);
     for (int i = 0; i < 9; i++)
