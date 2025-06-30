@@ -25,8 +25,19 @@ layout(binding = 0) uniform texture2D _diffuse_map;
 layout(binding = 0) uniform sampler diffuse_smp;
 #define diffuse_texture sampler2D(_diffuse_map, diffuse_smp)
 
+const vec2 resolution = vec2(800.0, 600.0);
+const float pixel_size = 3.0;
+
 void main() {
-    frag_color = texture(diffuse_texture, tex_coords);
+    // default
+    // frag_color = texture(diffuse_texture, tex_coords);
+
+    // pixelate
+    vec2 coord = tex_coords * resolution;
+    coord = floor(coord / pixel_size) * pixel_size;
+    coord /= resolution;
+
+    frag_color = texture(diffuse_texture, coord);
 }
 
 #pragma sokol @end
