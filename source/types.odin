@@ -19,4 +19,3 @@ Entity :: struct {
   pip:  sg.Pipeline,
   bind: sg.Bindings,
 }
-

@@ -24,16 +24,23 @@ game_init :: proc() {
 
   // index buffer
   indices := [?]u16{0, 1, 2, 0, 2, 3}
-  g.bind.index_buffer = sg.make_buffer({type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}})
+  g.bind.index_buffer = sg.make_buffer(
+    {type = .INDEXBUFFER, data = {ptr = &indices, size = size_of(indices)}},
+  )
 
   // pipeline
   g.pip = sg.make_pipeline(
-  {
-    shader = shader,
-    index_type = .UINT16,
-    // primitive_type = .LINES,
-    layout = {attrs = {ATTR_simple_position = {format = .FLOAT3}, ATTR_simple_color0 = {format = .FLOAT4}}},
-  },
+    {
+      shader = shader,
+      index_type = .UINT16,
+      // primitive_type = .LINES,
+      layout = {
+        attrs = {
+          ATTR_simple_position = {format = .FLOAT3},
+          ATTR_simple_color0 = {format = .FLOAT4},
+        },
+      },
+    },
   )
 
   // clear
