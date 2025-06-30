@@ -38,7 +38,7 @@ game_init :: proc() {
     width = sapp.width(),
     height = sapp.height(),
     pixel_format = .RGBA8,
-    sample_count = 4,
+    sample_count = 1,
   }
   color_img := sg.make_image(color_img_desc)
 
@@ -73,7 +73,7 @@ game_init :: proc() {
       layout = {attrs = {ATTR_offscreen_a_pos = {format = .FLOAT3}}},
       depth = {compare = .LESS_EQUAL, write_enabled = true, pixel_format = .DEPTH},
       colors = {0 = {pixel_format = .RGBA8}},
-      sample_count = 4,
+      sample_count = 1,
       // primitive_type = .LINES,
     },
   )
@@ -107,6 +107,8 @@ game_init :: proc() {
 
 @(export)
 game_frame :: proc() {
+  delta_time = f32(sapp.frame_duration())
+
   view, projection := camera_update()
   model := linalg.matrix4_translate_f32({-1, 1, -1})
   vs_params := Vs_Params {
@@ -128,9 +130,8 @@ game_frame :: proc() {
   sg.apply_bindings(g.display.bindings)
 
   sg.draw(0, 6, 1)
-
-  debug_process()
   sg.end_pass()
+
   sg.commit()
 
   free_all(context.temp_allocator)
