@@ -90,8 +90,8 @@ game_event :: proc(e: ^sapp.Event) {
 
   camera_process_input(e)
 
-  if e.type == .RESIZED {
-    fmt.println("res")
-    create_offscreen(e.framebuffer_width, e.framebuffer_height)
-  }
+  // if e.type == .RESIZED {
+  //   fmt.println("res")
+  //   create_offscreen(e.framebuffer_width, e.framebuffer_height)
+  // }
 }
