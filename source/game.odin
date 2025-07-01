@@ -70,7 +70,12 @@ game_init :: proc() {
   g.offscreen.pipeline = sg.make_pipeline(
     {
       shader = sg.make_shader(offscreen_shader_desc(sg.query_backend())),
-      layout = {attrs = {ATTR_offscreen_a_pos = {format = .FLOAT3}}},
+      layout = {
+        attrs = {
+          ATTR_offscreen_a_pos = {format = .FLOAT3},
+          ATTR_offscreen_a_color = {format = .FLOAT4},
+        },
+      },
       depth = {compare = .LESS_EQUAL, write_enabled = true, pixel_format = .DEPTH},
       colors = {0 = {pixel_format = .RGBA8}},
       sample_count = 1,
@@ -80,7 +85,7 @@ game_init :: proc() {
 
   // display
   g.display.pass_action = {
-    colors = {0 = {load_action = .CLEAR, clear_value = {0.9, 0.9, 0.9, 1.0}}},
+    colors = {0 = {load_action = .CLEAR, clear_value = {0.1, 0.1, 0.1, 1.0}}},
   }
 
   g.display.bindings = {
