@@ -1,6 +1,7 @@
 package game
 
 import "core:math/linalg"
+import "core:math/rand"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
@@ -107,7 +108,6 @@ game_init :: proc() {
       depth = {compare = .LESS_EQUAL, write_enabled = true},
     },
   )
-
 }
 
 @(export)
@@ -115,18 +115,27 @@ game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
 
   view, projection := camera_update()
-  model := linalg.matrix4_translate_f32({-1, 1, -1})
-  vs_params := Vs_Params {
-    mvp = projection * view * model,
-  }
 
   // offscreen
   sg.begin_pass(g.offscreen.pass)
   sg.apply_pipeline(g.offscreen.pipeline)
   sg.apply_bindings(g.offscreen.bindings)
 
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.draw(0, 36, 1)
+  for _ in 0 ..= 100 {
+    model := linalg.matrix4_translate_f32(
+      {
+        rand.float32_range(-100, 100),
+        rand.float32_range(-100, 100),
+        rand.float32_range(-100, 100),
+      },
+    )
+    vs_params := Vs_Params {
+      mvp = projection * view * model,
+    }
+
+    sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+    sg.draw(0, 36, 1)
+  }
   sg.end_pass()
 
   // display
