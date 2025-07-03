@@ -49,6 +49,10 @@ game_init :: proc() {
         rand.float32_range(-100, 100),
       },
     )
+    cube.model *= linalg.matrix4_rotate_f32(
+      linalg.RAD_PER_DEG * rand.float32_range(0, 360),
+      {1, 1, 0},
+    )
   }
 
   color_img_desc := sg.Image_Desc {
