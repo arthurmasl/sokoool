@@ -38,6 +38,7 @@ game_init :: proc() {
   camera_init()
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
+  debug_init()
 
   // cubes
   for &cube in g.cubes {
@@ -153,6 +154,7 @@ game_frame :: proc() {
   sg.apply_bindings(g.display.bindings)
 
   sg.draw(0, 6, 1)
+  debug_process()
   sg.end_pass()
 
   sg.commit()
