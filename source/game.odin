@@ -11,6 +11,7 @@ Game_Memory :: struct {
   camera:    Camera,
   offscreen: Offscreen,
   display:   Display,
+  cubes:     [10000]Cube,
 }
 
 Offscreen :: struct {
@@ -25,6 +26,10 @@ Display :: struct {
   bindings:    sg.Bindings,
 }
 
+Cube :: struct {
+  model: Mat4,
+}
+
 @(export)
 game_init :: proc() {
   g = new(Game_Memory)
@@ -33,6 +38,17 @@ game_init :: proc() {
   camera_init()
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
+
+  // cubes
+  for &cube in g.cubes {
+    cube.model = linalg.matrix4_translate_f32(
+      {
+        rand.float32_range(-100, 100),
+        rand.float32_range(-100, 100),
+        rand.float32_range(-100, 100),
+      },
+    )
+  }
 
   color_img_desc := sg.Image_Desc {
     usage = {render_attachment = true},
@@ -121,16 +137,9 @@ game_frame :: proc() {
   sg.apply_pipeline(g.offscreen.pipeline)
   sg.apply_bindings(g.offscreen.bindings)
 
-  for _ in 0 ..= 100 {
-    model := linalg.matrix4_translate_f32(
-      {
-        rand.float32_range(-100, 100),
-        rand.float32_range(-100, 100),
-        rand.float32_range(-100, 100),
-      },
-    )
+  for cube in g.cubes {
     vs_params := Vs_Params {
-      mvp = projection * view * model,
+      mvp = projection * view * cube.model,
     }
 
     sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
