@@ -84,13 +84,8 @@ game_event :: proc(e: ^sapp.Event) {
   if e.type == .KEY_DOWN {
     if e.key_code == .R do force_reset = true
     if e.key_code == .Q do sapp.request_quit()
-    // if e.key_code == .T do DEBUG_TEXT = !DEBUG_TEXT
+    if e.key_code == .T do DEBUG_TEXT = !DEBUG_TEXT
   }
 
   camera_process_input(e)
-
-  // if e.type == .RESIZED {
-  //   fmt.println("res")
-  //   create_offscreen(e.framebuffer_width, e.framebuffer_height)
-  // }
 }
