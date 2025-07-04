@@ -85,23 +85,21 @@ game_init :: proc() {
     action = {colors = {0 = {load_action = .CLEAR, clear_value = {0.1, 0.1, 0.1, 1.0}}}},
   }
 
-  g.offscreen.bindings = {
-    vertex_buffers = {0 = sg.make_buffer({data = sg_range(CUBE_VERTICES)})},
+  g.offscreen.bindings.storage_buffers = {
+    SBUF_ssbo = sg.make_buffer({usage = {storage_buffer = true}, data = sg_range(CUBE_VERTICES)}),
   }
+  g.offscreen.bindings.index_buffer = sg.make_buffer(
+    {usage = {index_buffer = true}, data = sg_range(CUBE_INDICES)},
+  )
 
   g.offscreen.pipeline = sg.make_pipeline(
     {
       shader = sg.make_shader(offscreen_shader_desc(sg.query_backend())),
-      layout = {
-        attrs = {
-          ATTR_offscreen_a_pos = {format = .FLOAT3},
-          ATTR_offscreen_a_color = {format = .FLOAT4},
-        },
-      },
       depth = {compare = .LESS_EQUAL, write_enabled = true, pixel_format = .DEPTH},
       colors = {0 = {pixel_format = .RGBA8}},
+      index_type = .UINT16,
+      cull_mode = .BACK,
       sample_count = 1,
-      // primitive_type = .LINES,
     },
   )
 
@@ -119,7 +117,6 @@ game_init :: proc() {
   g.display.pipeline = sg.make_pipeline(
     {
       shader = sg.make_shader(display_shader_desc(sg.query_backend())),
-      // primitive_type = .LINES,
       layout = {
         attrs = {
           ATTR_display_a_pos = {format = .FLOAT2},

@@ -7,8 +7,14 @@
 
 #pragma sokol @vs vs
 
-in vec3 a_pos;
-in vec4 a_color;
+struct sb_vertex {
+    vec3 pos;
+    vec4 color;
+};
+
+layout(binding = 0) readonly buffer ssbo {
+    sb_vertex vtx[];
+};
 
 layout(binding = 0) uniform vs_params {
     mat4 mvp;
@@ -17,8 +23,8 @@ layout(binding = 0) uniform vs_params {
 out vec4 color;
 
 void main() {
-    gl_Position = mvp * vec4(a_pos, 1.0);
-    color = a_color;
+    gl_Position = mvp * vec4(vtx[gl_VertexIndex].pos, 1.0);
+    color = vtx[gl_VertexIndex].color;
 }
 #pragma sokol @end
 
