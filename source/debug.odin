@@ -20,6 +20,7 @@ debug_process :: proc() {
 
   fps := 1.0 / delta_time
   print_text("FPS: %d", u8(fps))
+  print_text("CUBES: %d", CUBES_COUNT)
 
   // print_text("CAMERA: %#w", g.camera)
 

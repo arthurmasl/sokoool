@@ -26,7 +26,7 @@ layout(binding = 0) uniform sampler diffuse_smp;
 #define diffuse_texture sampler2D(_diffuse_map, diffuse_smp)
 
 const vec2 resolution = vec2(1920, 1080);
-const float pixel_size = 4;
+const float pixel_size = 1;
 
 void main() {
     vec2 coord = tex_coords * resolution;

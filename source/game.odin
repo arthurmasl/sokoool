@@ -6,7 +6,7 @@ import sg "sokol/gfx"
 import sglue "sokol/glue"
 import slog "sokol/log"
 
-CUBES_COUNT :: 100
+CUBES_COUNT :: 3000000
 
 Game_Memory :: struct {
   camera:    Camera,
@@ -40,15 +40,6 @@ game_init :: proc() {
 
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
   debug_init()
-
-  // cubes
-  for &cube in g.inst {
-    cube.pos = Vec3 {
-      rand.float32_range(-100, 100),
-      rand.float32_range(-100, 100),
-      rand.float32_range(-100, 100),
-    }
-  }
 
   color_img_desc := sg.Image_Desc {
     usage = {render_attachment = true},
@@ -130,6 +121,20 @@ game_init :: proc() {
       depth = {compare = .LESS_EQUAL, write_enabled = true},
     },
   )
+
+  // cubes
+  for &cube in g.inst {
+    cube.pos = Vec3 {
+      rand.float32_range(-1000, 1000),
+      rand.float32_range(-1000, 1000),
+      rand.float32_range(-1000, 1000),
+    }
+  }
+
+  sg.update_buffer(
+    g.offscreen.bindings.storage_buffers[SBUF_instances],
+    data = {ptr = &g.inst, size = CUBES_COUNT * size_of(Sb_Instance)},
+  )
 }
 
 @(export)
@@ -141,11 +146,6 @@ game_frame :: proc() {
     mvp = projection * view,
   }
 
-  sg.update_buffer(
-    g.offscreen.bindings.storage_buffers[SBUF_instances],
-    data = {ptr = &g.inst, size = CUBES_COUNT * size_of(Sb_Instance)},
-  )
-
   // offscreen
   sg.begin_pass(g.offscreen.pass)
   sg.apply_pipeline(g.offscreen.pipeline)
@@ -153,6 +153,7 @@ game_frame :: proc() {
 
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(0, 36, CUBES_COUNT)
+  sg.end_pass()
 
   // display
   sg.begin_pass({action = g.display.pass_action, swapchain = sglue.swapchain()})
