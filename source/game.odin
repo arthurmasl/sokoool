@@ -1,17 +1,18 @@
 package game
 
-import "core:math/linalg"
 import "core:math/rand"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
 import slog "sokol/log"
 
+CUBES_COUNT :: 100
+
 Game_Memory :: struct {
   camera:    Camera,
   offscreen: Offscreen,
   display:   Display,
-  cubes:     [10000]Cube,
+  inst:      [CUBES_COUNT]Sb_Instance,
 }
 
 Offscreen :: struct {
@@ -41,18 +42,12 @@ game_init :: proc() {
   debug_init()
 
   // cubes
-  for &cube in g.cubes {
-    cube.model = linalg.matrix4_translate_f32(
-      {
-        rand.float32_range(-100, 100),
-        rand.float32_range(-100, 100),
-        rand.float32_range(-100, 100),
-      },
-    )
-    cube.model *= linalg.matrix4_rotate_f32(
-      linalg.RAD_PER_DEG * rand.float32_range(0, 360),
-      {1, 1, 0},
-    )
+  for &cube in g.inst {
+    cube.pos = Vec3 {
+      rand.float32_range(-100, 100),
+      rand.float32_range(-100, 100),
+      rand.float32_range(-100, 100),
+    }
   }
 
   color_img_desc := sg.Image_Desc {
@@ -86,8 +81,17 @@ game_init :: proc() {
   }
 
   g.offscreen.bindings.storage_buffers = {
-    SBUF_ssbo = sg.make_buffer({usage = {storage_buffer = true}, data = sg_range(CUBE_VERTICES)}),
+    SBUF_vertices  = sg.make_buffer(
+      {usage = {storage_buffer = true}, data = sg_range(CUBE_VERTICES)},
+    ),
+    SBUF_instances = sg.make_buffer(
+      {
+        usage = {storage_buffer = true, stream_update = true},
+        size = CUBES_COUNT * size_of(Sb_Instance),
+      },
+    ),
   }
+
   g.offscreen.bindings.index_buffer = sg.make_buffer(
     {usage = {index_buffer = true}, data = sg_range(CUBE_INDICES)},
   )
@@ -133,21 +137,22 @@ game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
 
   view, projection := camera_update()
+  vs_params := Vs_Params {
+    mvp = projection * view,
+  }
+
+  sg.update_buffer(
+    g.offscreen.bindings.storage_buffers[SBUF_instances],
+    data = {ptr = &g.inst, size = CUBES_COUNT * size_of(Sb_Instance)},
+  )
 
   // offscreen
   sg.begin_pass(g.offscreen.pass)
   sg.apply_pipeline(g.offscreen.pipeline)
   sg.apply_bindings(g.offscreen.bindings)
 
-  for cube in g.cubes {
-    vs_params := Vs_Params {
-      mvp = projection * view * cube.model,
-    }
-
-    sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-    sg.draw(0, 36, 1)
-  }
-  sg.end_pass()
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+  sg.draw(0, 36, CUBES_COUNT)
 
   // display
   sg.begin_pass({action = g.display.pass_action, swapchain = sglue.swapchain()})
