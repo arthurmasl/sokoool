@@ -61,7 +61,7 @@ camera_process_input :: proc(e: ^sapp.Event) {
 camera_update :: proc() -> (types.Mat4, types.Mat4) {
   // camera
   g.camera.yaw += g.camera.mouse_x * SENSITIVITY
-  g.camera.pitch -= g.camera.mouse_y * SENSITIVITY
+  g.camera.pitch += g.camera.mouse_y * SENSITIVITY
 
   g.camera.mouse_x = 0
   g.camera.mouse_y = 0
@@ -89,8 +89,8 @@ camera_update :: proc() -> (types.Mat4, types.Mat4) {
   if g.camera.key_down[.S] do dir -= right
   if g.camera.key_down[.F] do dir += right
 
-  if g.camera.key_down[.SPACE] do dir += up
-  if g.camera.key_down[.Z] do dir -= up
+  if g.camera.key_down[.SPACE] do dir -= up
+  if g.camera.key_down[.Z] do dir += up
 
   g.camera.pos += linalg.normalize0(dir) * vel
   // g.camera.pos.y = max(g.camera.pos.y, 1)
