@@ -21,7 +21,7 @@ Camera :: struct {
   key_down:    #sparse[sapp.Keycode]bool,
 }
 
-SPEED :: 150
+SPEED :: 15
 SENSITIVITY :: 0.2
 
 camera_init :: proc() {
@@ -93,14 +93,14 @@ camera_update :: proc() -> (types.Mat4, types.Mat4) {
   if g.camera.key_down[.Z] do dir -= up
 
   g.camera.pos += linalg.normalize0(dir) * vel
-  // g.camera.pos.y = max(g.camera.pos.y, 1)
+  g.camera.pos.y = max(g.camera.pos.y, 1)
 
   view := linalg.matrix4_look_at_f32(g.camera.pos, g.camera.pos + g.camera.front, g.camera.up)
   projection := linalg.matrix4_perspective_f32(
     g.camera.fov,
     sapp.widthf() / sapp.heightf(),
     0.1,
-    2500.0,
+    500.0,
   )
 
   return view, projection
