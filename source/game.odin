@@ -43,10 +43,14 @@ game_init :: proc() {
 game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
   time = f32(stm.ms(stm.now()))
+  vs_params := Vs_Params {
+    a_time = time,
+  }
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.display.pip)
   sg.apply_bindings(g.display.bind)
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(0, 6, 1)
 
   sg.end_pass()
