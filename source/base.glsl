@@ -37,11 +37,7 @@ in float time;
 out vec4 frag_color;
 
 void main() {
-    vec3 color = vec3(uv.x);
-    float pct = smoothstep(0.002, 0.0, abs(uv.y - uv.x));
-    color = (1.0 - pct) * color + pct * vec3(1.0, 0.0, 0.0);
-
-    frag_color = vec4(color, 1.0);
+    frag_color = vec4(uv.xy, 0.2, 1.0);
 }
 
 #pragma sokol @end
