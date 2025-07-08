@@ -29,7 +29,6 @@ float plot(vec2 st, float pct) {
 void main() {
     vec2 coord = vec2(gl_FragCoord.x, resolution.y - gl_FragCoord.y);
     vec2 st = coord / resolution;
-    // float y = smoothstep(0.1, 0.9, st.x);
     float y = abs(sin(time * st.x * PI));
     vec3 color = vec3(y);
     float pct = plot(st, y);
