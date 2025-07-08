@@ -1,5 +1,7 @@
 package game
 
+import "core:fmt"
+import "core:math"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
@@ -42,15 +44,19 @@ game_init :: proc() {
 @(export)
 game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
-  time = f32(stm.ms(stm.now()))
-  vs_params := Vs_Params {
-    u_time = time,
+  time = f32(stm.sec(stm.now()))
+  fs_params := Fs_Params {
+    time       = time,
+    resolution = Vec2{sapp.widthf(), sapp.heightf()},
+    mouse      = Vec2{g.camera.mouse_x, g.camera.mouse_y},
   }
+
+  // fmt.println(time, math.abs(math.sin(time)))
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.display.pip)
   sg.apply_bindings(g.display.bind)
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+  sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
   sg.draw(0, 6, 1)
 
   sg.end_pass()
