@@ -29,7 +29,9 @@ game_init :: proc() {
   g.display.pip = sg.make_pipeline(
     {
       shader = sg.make_shader(base_shader_desc(sg.query_backend())),
-      layout = {attrs = {ATTR_base_pos = {format = .FLOAT2}}},
+      layout = {
+        attrs = {ATTR_base_pos = {format = .FLOAT2}, ATTR_base_texcoord = {format = .FLOAT2}},
+      },
       cull_mode = .FRONT,
       depth = {compare = .LESS_EQUAL, write_enabled = true},
     },
@@ -46,10 +48,10 @@ game_init :: proc() {
 game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
   time = f32(stm.sec(stm.now()))
-  fs_params := Fs_Params {
-    time       = time,
-    resolution = Vec2{sapp.widthf(), sapp.heightf()},
-    mouse      = Vec2{g.camera.mouse_x, g.camera.mouse_y},
+  vs_params := Vs_Params {
+    u_time       = time,
+    u_resolution = Vec2{sapp.widthf(), sapp.heightf()},
+    u_mouse      = Vec2{g.camera.mouse_x, g.camera.mouse_y},
   }
 
   // fmt.println(time, math.abs(math.sin(time)))
@@ -57,7 +59,7 @@ game_frame :: proc() {
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
   sg.apply_pipeline(g.display.pip)
   sg.apply_bindings(g.display.bind)
-  sg.apply_uniforms(UB_fs_params, data = sg_range(&fs_params))
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(0, 6, 1)
 
   sg.end_pass()

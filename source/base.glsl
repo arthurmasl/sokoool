@@ -5,34 +5,41 @@
 // VS
 #pragma sokol @vs vs
 in vec2 pos;
+in vec2 texcoord;
+
+layout(binding = 0) uniform vs_params {
+    vec2 u_resolution;
+    vec2 u_mouse;
+    float u_time;
+};
+
+out vec2 uv;
+out vec2 resolution;
+out vec2 mouse;
+out float time;
 
 void main() {
     gl_Position = vec4(pos.xy, 0.0, 1.0);
+    uv = texcoord;
+    resolution = u_resolution;
+    mouse = u_mouse;
+    time = u_time;
 }
 #pragma sokol @end
 
 // FS
 #pragma sokol @fs fs
-layout(binding = 0) uniform fs_params {
-    vec2 resolution;
-    vec2 mouse;
-    float time;
-};
+in vec2 uv;
+in vec2 resolution;
+in vec2 mouse;
+in float time;
+
 out vec4 frag_color;
 
-const float PI = 3.14159265359;
-
-float plot(vec2 st, float pct) {
-    return smoothstep(pct - 0.02, pct, st.y) - smoothstep(pct, pct + 0.02, st.y);
-}
-
 void main() {
-    vec2 coord = vec2(gl_FragCoord.x, resolution.y - gl_FragCoord.y);
-    vec2 st = coord / resolution;
-    float y = abs(sin(time * st.x * PI));
-    vec3 color = vec3(y);
-    float pct = plot(st, y);
-    color = (1.0 - pct) * color + pct * vec3(0.0, 1.0, 0.0);
+    vec3 color = vec3(uv.x);
+    float pct = smoothstep(0.002, 0.0, abs(uv.y - uv.x));
+    color = (1.0 - pct) * color + pct * vec3(1.0, 0.0, 0.0);
 
     frag_color = vec4(color, 1.0);
 }
