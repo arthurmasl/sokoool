@@ -44,7 +44,7 @@ game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
   time = f32(stm.ms(stm.now()))
   vs_params := Vs_Params {
-    a_time = time,
+    u_time = time,
   }
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})

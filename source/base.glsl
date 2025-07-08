@@ -1,17 +1,18 @@
 #pragma sokol @header package game
 #pragma sokol @header import sg "sokol/gfx"
+#pragma sokol @ctype mat4 Mat4
 
 // VS
 #pragma sokol @vs vs
 layout(binding = 0) uniform vs_params {
-    float a_time;
+    float u_time;
 };
 in vec2 pos;
 out float time;
 
 void main() {
     gl_Position = vec4(pos, 0.0, 1.0);
-    time = a_time;
+    time = u_time;
 }
 #pragma sokol @end
 
