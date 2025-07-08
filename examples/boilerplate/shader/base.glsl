@@ -1,5 +1,6 @@
 #pragma sokol @header package game
 #pragma sokol @header import sg "sokol/gfx"
+#pragma sokol @ctype mat4 Mat4
 
 // VS
 #pragma sokol @vs vs
