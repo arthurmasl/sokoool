@@ -54,6 +54,8 @@ void main() {
     pct.g = sin(uv.x * PI);
     pct.b = pow(uv.x, 0.5);
 
+    pct *= abs(sin(uv.x * time));
+
     color = mix(color_r, color_b, pct);
 
     color = mix(color, color_r, plot(pct.r));
