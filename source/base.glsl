@@ -37,7 +37,12 @@ in float time;
 out vec4 frag_color;
 
 void main() {
-    frag_color = vec4(uv.xy, 0.2, 1.0);
+    vec3 color = vec3(0.0);
+    float pct = abs(sin(time));
+
+    color = mix(vec3(1, 0, 0), vec3(0, 1, 0), pct);
+
+    frag_color = vec4(color, 1.0);
 }
 
 #pragma sokol @end
