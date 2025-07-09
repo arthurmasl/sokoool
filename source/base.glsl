@@ -36,11 +36,29 @@ in float time;
 
 out vec4 frag_color;
 
+const vec3 color_r = vec3(1, 0, 0);
+const vec3 color_g = vec3(0, 1, 0);
+const vec3 color_b = vec3(0, 0, 1);
+
+const float PI = 3.14159265359;
+
+float plot(float pct) {
+    return smoothstep(pct - 0.01, pct, uv.y) - smoothstep(pct, pct + 0.01, uv.y);
+}
+
 void main() {
     vec3 color = vec3(0.0);
-    float pct = abs(sin(time));
+    vec3 pct = vec3(uv.x);
 
-    color = mix(vec3(1, 0, 0), vec3(0, 1, 0), pct);
+    pct.r = smoothstep(0.0, 1.0, uv.x);
+    pct.g = sin(uv.x * PI);
+    pct.b = pow(uv.x, 0.5);
+
+    color = mix(color_r, color_b, pct);
+
+    color = mix(color, color_r, plot(pct.r));
+    color = mix(color, color_g, plot(pct.g));
+    color = mix(color, color_b, plot(pct.b));
 
     frag_color = vec4(color, 1.0);
 }
