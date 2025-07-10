@@ -36,16 +36,14 @@ in float time;
 
 out vec4 frag_color;
 
+vec3 circle(float radius, vec2 pos) {
+    vec2 center = uv - pos;
+    center.x *= resolution.x / resolution.y;
+    return vec3(step(radius, length(center)));
+}
+
 void main() {
-    vec3 color = vec3(0.0);
-
-    float border_size = 0.2;
-
-    vec2 bl = step(vec2(border_size), uv);
-    vec2 tr = step(vec2(border_size), 1.0 - uv);
-
-    color = vec3(bl.x * bl.y * tr.x * tr.y);
-
+    vec3 color = circle(0.2, vec2(0.5, 0.5));
     frag_color = vec4(color, 1.0);
 }
 

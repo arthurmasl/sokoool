@@ -36,28 +36,14 @@ in float time;
 
 out vec4 frag_color;
 
-const vec3 color_r = vec3(1, 0, 0);
-const vec3 color_g = vec3(0, 1, 0);
-const vec3 color_b = vec3(0, 0, 1);
-
-const float PI = 3.14159265359;
-
-float plot(float pct) {
-    return smoothstep(pct - 0.01, pct, uv.y) - smoothstep(pct, pct + 0.01, uv.y);
+vec3 circle(float radius, vec2 pos) {
+    vec2 center = uv - pos;
+    center.x *= resolution.x / resolution.y;
+    return vec3(step(radius, length(center)));
 }
 
 void main() {
-    vec3 color = vec3(1.0, 0.5, 0.2);
-
-    vec2 center = uv - 0.5;
-    center.x *= resolution.x / resolution.y;
-
-    float radius = 0.25;
-    float edge = 0.1;
-    float dist = length(center);
-    float circle = smoothstep(radius, radius - edge, dist);
-
-    color = mix(vec3(0.2), vec3(0.8, 0.7, 0.3), circle);
+    vec3 color = circle(0.2, vec2(0.5, 0.5));
     frag_color = vec4(color, 1.0);
 }
 
