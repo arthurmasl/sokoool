@@ -1,41 +1,50 @@
 #pragma sokol @header package game
-
 #pragma sokol @header import sg "sokol/gfx"
-#pragma sokol @header import "types"
+#pragma sokol @ctype mat4 Mat4
 
-#pragma sokol @ctype vec3 types.Vec3
-#pragma sokol @ctype mat4 types.Mat4
-
+// VS
 #pragma sokol @vs vs
+in vec2 pos;
+in vec2 texcoord;
 
 layout(binding = 0) uniform vs_params {
-    mat4 mvp;
+    vec2 u_resolution;
+    vec2 u_mouse;
+    float u_time;
 };
 
-struct sb_vertex {
-    vec3 pos;
-    vec4 color;
-};
-
-layout(binding = 0) readonly buffer ssbo {
-    sb_vertex vtx[];
-};
-
-out vec4 color;
+out vec2 uv;
+out vec2 resolution;
+out vec2 mouse;
+out float time;
 
 void main() {
-    vec4 position = vec4(vtx[gl_VertexIndex].pos, 1.0);
-    gl_Position = mvp * position;
-    color = vtx[gl_VertexIndex].color;
+    gl_Position = vec4(pos.xy, 0.0, 1.0);
+    uv = texcoord;
+    resolution = u_resolution;
+    mouse = u_mouse;
+    time = u_time;
 }
 #pragma sokol @end
 
+// FS
 #pragma sokol @fs fs
-in vec4 color;
+in vec2 uv;
+in vec2 resolution;
+in vec2 mouse;
+in float time;
+
 out vec4 frag_color;
 
+vec3 circle(float radius, vec2 pos) {
+    vec2 center = uv - pos;
+    center.x *= resolution.x / resolution.y;
+    return vec3(step(radius, length(center)));
+}
+
 void main() {
-    frag_color = color;
+    vec3 color = circle(0.2, vec2(0.5, 0.5));
+    frag_color = vec4(color, 1.0);
 }
 
 #pragma sokol @end
