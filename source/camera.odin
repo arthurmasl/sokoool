@@ -28,11 +28,12 @@ camera_init :: proc() {
   sapp.show_mouse(false)
 
   g.camera.first_mouse = true
-  g.camera.pos = {0, 0, 5}
+  g.camera.pos = {0, 5, 6}
   g.camera.front = {0, 0, -1}
   g.camera.up = {0, 1, 0}
   g.camera.fov = 45
   g.camera.yaw = -90
+  g.camera.pitch = -35
 
 }
 
