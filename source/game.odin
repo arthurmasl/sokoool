@@ -48,7 +48,7 @@ game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
 
   view, projection := camera_update()
-  model := linalg.matrix4_translate_f32({0, 0, 0})
+  model := linalg.matrix4_translate_f32({0, 1, 0})
   vs_params := Vs_Params {
     mvp = projection * view * model,
   }
