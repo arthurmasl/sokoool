@@ -2,14 +2,13 @@ package game
 
 import "core:math"
 import "core:math/linalg"
-import "types"
 
 import sapp "sokol/app"
 
 Camera :: struct {
-  pos:         types.Vec3,
-  front:       types.Vec3,
-  up:          types.Vec3,
+  pos:         Vec3,
+  front:       Vec3,
+  up:          Vec3,
   //
   first_mouse: bool,
   mouse_x:     f32,
@@ -28,11 +27,12 @@ camera_init :: proc() {
   sapp.show_mouse(false)
 
   g.camera.first_mouse = true
-  g.camera.pos = {0, 0, 5}
+  g.camera.pos = {0, 5, 6}
   g.camera.front = {0, 0, -1}
   g.camera.up = {0, 1, 0}
   g.camera.fov = 45
   g.camera.yaw = -90
+  g.camera.pitch = -35
 
 }
 
@@ -58,7 +58,7 @@ camera_process_input :: proc(e: ^sapp.Event) {
   }
 }
 
-camera_update :: proc() -> (types.Mat4, types.Mat4) {
+camera_update :: proc() -> (Mat4, Mat4) {
   // camera
   g.camera.yaw += g.camera.mouse_x * SENSITIVITY
   g.camera.pitch -= g.camera.mouse_y * SENSITIVITY
@@ -68,7 +68,7 @@ camera_update :: proc() -> (types.Mat4, types.Mat4) {
 
   g.camera.pitch = math.clamp(g.camera.pitch, -89, 89)
 
-  direction := types.Vec3 {
+  direction := Vec3 {
     math.cos(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch)),
     math.sin(linalg.to_radians(g.camera.pitch)),
     math.sin(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch)),
@@ -78,7 +78,7 @@ camera_update :: proc() -> (types.Mat4, types.Mat4) {
 
   // movement
   vel := SPEED * delta_time
-  dir := types.Vec3{}
+  dir := Vec3{}
 
   up := g.camera.up
   front := g.camera.front

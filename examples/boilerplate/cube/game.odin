@@ -8,9 +8,10 @@ import slog "sokol/log"
 import stm "sokol/time"
 
 Game_Memory :: struct {
-  camera: Camera,
-  pass:   sg.Pass_Action,
-  cube:   Entity,
+  camera:      Camera,
+  pass:        sg.Pass_Action,
+  cube:        Entity,
+  transparent: Entity,
 }
 
 @(export)
@@ -24,6 +25,7 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
+  // default
   g.cube.bind.storage_buffers = {
     SBUF_ssbo = sg.make_buffer({usage = {storage_buffer = true}, data = sg_range(CUBE_VERTICES)}),
   }
@@ -38,6 +40,7 @@ game_init :: proc() {
       depth = {write_enabled = true, compare = .LESS_EQUAL},
     },
   )
+
   g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
   }
@@ -54,6 +57,8 @@ game_frame :: proc() {
   }
 
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
+
+  // cube
   sg.apply_pipeline(g.cube.pip)
   sg.apply_bindings(g.cube.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))

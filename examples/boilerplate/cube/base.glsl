@@ -1,10 +1,9 @@
 #pragma sokol @header package game
 
 #pragma sokol @header import sg "sokol/gfx"
-#pragma sokol @header import "types"
 
-#pragma sokol @ctype vec3 types.Vec3
-#pragma sokol @ctype mat4 types.Mat4
+#pragma sokol @ctype vec3 Vec3
+#pragma sokol @ctype mat4 Mat4
 
 #pragma sokol @vs vs
 
