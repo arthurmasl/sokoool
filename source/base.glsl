@@ -9,18 +9,18 @@
 const float PI = 3.14159265359;
 const float TAU = PI * 2;
 
-const float amp = 0.2;
+const float amp = 0.15;
 
 float get_radial_wave(vec2 uv, float time) {
     vec2 uv_centered = uv.xy * 2 - 1;
     float radial_distance = length(uv_centered);
-    float wave = cos((radial_distance - time * 0.1) * TAU * 5) * 0.5 + 0.5;
+    float wave = cos((radial_distance - time * 0.1) * PI * 10) * 0.5 + 0.5;
     wave *= 1 - radial_distance;
     return wave;
 }
 
 float get_linear_wave(vec2 uv, float time) {
-    float wave = cos((uv.x - time * 0.1) * TAU * 5) * 0.5 + 0.5;
+    float wave = cos((uv.x - time * 0.1) * PI * 10) * 0.5 + 0.5;
     return wave;
 }
 
@@ -82,7 +82,9 @@ void main() {
     // float wave2 = get_linear_wave(uv.xx, time);
     // wave *= wave2;
 
-    frag_color = vec4(wave.xxx, 1);
+    vec3 color = vec3(wave) * vec3(0.1, 0.4, 0.5);
+
+    frag_color = vec4(color, 1);
 }
 
 #pragma sokol @end
