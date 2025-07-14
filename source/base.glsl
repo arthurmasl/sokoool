@@ -19,6 +19,7 @@ layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 texcoord;
 layout(location = 3) in vec4 color0;
 
+out vec4 color;
 out vec2 uv;
 out float time;
 
@@ -31,10 +32,12 @@ void main() {
 
     uv = texcoord;
     time = u_time;
+    color = color0;
 }
 #pragma sokol @end
 
 #pragma sokol @fs fs
+in vec4 color;
 in vec2 uv;
 in float time;
 
@@ -46,6 +49,7 @@ void main() {
     float wave = cos((uv.y - time * 0.1) * TAU * 5) * 0.5 + 0.5;
 
     frag_color = vec4(vec3(wave), 1);
+    // frag_color = color;
 }
 
 #pragma sokol @end

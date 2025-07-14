@@ -33,7 +33,7 @@ game_init :: proc() {
     vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
     indices = {buffer = {ptr = &indices, size = size_of(indices)}},
   }
-  buf = sshape.build_plane(buf, {width = 3.0, depth = 3.0, tiles = 30, random_colors = false})
+  buf = sshape.build_plane(buf, {width = 3.0, depth = 3.0, tiles = 30, random_colors = true})
 
   g.draw = sshape.element_range(buf)
 
@@ -41,21 +41,23 @@ game_init :: proc() {
   g.display.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
 
   g.display.pip = sg.make_pipeline(
-    {
-      shader = sg.make_shader(base_shader_desc(sg.query_backend())),
-      layout = {
-        buffers = {0 = sshape.vertex_buffer_layout_state()},
-        attrs = {
-          0 = sshape.position_vertex_attr_state(),
-          1 = sshape.normal_vertex_attr_state(),
-          2 = sshape.texcoord_vertex_attr_state(),
-          3 = sshape.color_vertex_attr_state(),
-        },
+  {
+    shader = sg.make_shader(base_shader_desc(sg.query_backend())),
+    layout = {
+      buffers = {0 = sshape.vertex_buffer_layout_state()},
+      attrs = {
+        0 = sshape.position_vertex_attr_state(),
+        1 = sshape.normal_vertex_attr_state(),
+        2 = sshape.texcoord_vertex_attr_state(),
+        3 = sshape.color_vertex_attr_state(),
       },
-      index_type = .UINT16,
-      cull_mode = .NONE,
-      depth = {compare = .LESS_EQUAL, write_enabled = true},
     },
+    index_type = .UINT16,
+    cull_mode = .NONE,
+    depth = {compare = .LESS_EQUAL, write_enabled = true},
+    // primitive_type = .LINE_STRIP,
+    // primitive_type = .LINES,
+  },
   )
 
   g.pass = {
