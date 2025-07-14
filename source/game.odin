@@ -25,19 +25,16 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  // default
-  g.cube.bind.storage_buffers = {
-    SBUF_ssbo = sg.make_buffer({usage = {storage_buffer = true}, data = sg_range(CUBE_VERTICES)}),
-  }
+  g.cube.bind.vertex_buffers[0] = sg.make_buffer({data = sg_range(QUAD_VERTICES)})
   g.cube.bind.index_buffer = sg.make_buffer(
-    {usage = {index_buffer = true}, data = sg_range(CUBE_INDICES)},
+    {usage = {index_buffer = true}, data = sg_range(QUAD_INDICES)},
   )
+
   g.cube.pip = sg.make_pipeline(
     {
       shader = sg.make_shader(base_shader_desc(sg.query_backend())),
+      layout = {attrs = {ATTR_base_a_pos = {format = .FLOAT3}}},
       index_type = .UINT16,
-      cull_mode = .BACK,
-      depth = {write_enabled = true, compare = .LESS_EQUAL},
     },
   )
 
@@ -51,7 +48,7 @@ game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
 
   view, projection := camera_update()
-  model := linalg.matrix4_translate_f32({-1, 1, -1})
+  model := linalg.matrix4_translate_f32({0, 0, 0})
   vs_params := Vs_Params {
     mvp = projection * view * model,
   }
@@ -62,7 +59,7 @@ game_frame :: proc() {
   sg.apply_pipeline(g.cube.pip)
   sg.apply_bindings(g.cube.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.draw(0, 36, 1)
+  sg.draw(0, 6, 1)
 
   sg.end_pass()
   sg.commit()
