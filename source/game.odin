@@ -33,7 +33,7 @@ game_init :: proc() {
     vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
     indices = {buffer = {ptr = &indices, size = size_of(indices)}},
   }
-  buf = sshape.build_plane(buf, {width = 1.0, depth = 1.0, tiles = 20, random_colors = false})
+  buf = sshape.build_plane(buf, {width = 3.0, depth = 3.0, tiles = 30, random_colors = false})
 
   g.draw = sshape.element_range(buf)
 
@@ -69,7 +69,7 @@ game_frame :: proc() {
 
   view, projection := camera_update()
   model :=
-    linalg.matrix4_translate_f32({0, 0, 0}) *
+    linalg.matrix4_translate_f32({0, 0.5, 0}) *
     linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * 90, {0, 1, 0})
   vs_params := Vs_Params {
     mvp    = projection * view * model,

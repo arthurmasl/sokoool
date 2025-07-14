@@ -24,8 +24,8 @@ out float time;
 
 void main() {
     vec4 pos = position;
-    // float wave = cos((texcoord.y - u_time * 0.1) * TAU * 5);
-    // pos.y = wave * 0.2;
+    float wave = cos((texcoord.y - u_time * 0.1) * TAU * 5);
+    pos.y = wave * 0.05;
 
     gl_Position = mvp * pos;
 
