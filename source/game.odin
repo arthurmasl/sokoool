@@ -13,7 +13,6 @@ Game_Memory :: struct {
   pass:    sg.Pass_Action,
   display: Entity,
   draw:    sshape.Element_Range,
-  debug:   Debug_UI,
 }
 
 @(export)
@@ -87,6 +86,8 @@ game_frame :: proc() {
   sg.apply_bindings(g.display.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(g.draw.base_element, g.draw.num_elements, 1)
+
+  debug_process()
 
   sg.end_pass()
   sg.commit()

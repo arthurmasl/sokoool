@@ -16,9 +16,9 @@ Camera :: struct {
   yaw:         f32,
   pitch:       f32,
   fov:         f32,
-  //
-  key_down:    #sparse[sapp.Keycode]bool,
 }
+
+key_down: #sparse[sapp.Keycode]bool
 
 SPEED :: 5
 SENSITIVITY :: 0.2
@@ -41,8 +41,8 @@ camera_process_input :: proc(e: ^sapp.Event) {
   if !sapp.mouse_locked() do return
 
   // keyboard
-  if e.type == .KEY_DOWN do g.camera.key_down[e.key_code] = true
-  if e.type == .KEY_UP do g.camera.key_down[e.key_code] = false
+  if e.type == .KEY_DOWN do key_down[e.key_code] = true
+  if e.type == .KEY_UP do key_down[e.key_code] = false
 
   // mosue
   if e.type == .MOUSE_MOVE {
@@ -82,13 +82,13 @@ camera_update :: proc() -> (Mat4, Mat4) {
   front := g.camera.front
   right := linalg.cross(g.camera.front, g.camera.up)
 
-  if g.camera.key_down[.E] do dir += front
-  if g.camera.key_down[.D] do dir -= front
-  if g.camera.key_down[.S] do dir -= right
-  if g.camera.key_down[.F] do dir += right
+  if key_down[.E] do dir += front
+  if key_down[.D] do dir -= front
+  if key_down[.S] do dir -= right
+  if key_down[.F] do dir += right
 
-  if g.camera.key_down[.SPACE] do dir += up
-  if g.camera.key_down[.Z] do dir -= up
+  if key_down[.SPACE] do dir += up
+  if key_down[.Z] do dir -= up
 
   g.camera.pos += linalg.normalize0(dir) * vel
   g.camera.pos.y = max(g.camera.pos.y, 1)
