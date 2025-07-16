@@ -49,20 +49,14 @@ in float time;
 out vec4 frag_color;
 
 void main() {
-    const float health = 0.2;
+    const float health = 0.5;
 
     vec3 bg_color = vec3(0, 0, 0);
-    // float color_pct = step(0.4, health);
-    vec3 hp_color = mix(vec3(1, 0, 0), vec3(0, 1, 0), health);
+    float color_pct = step(0.4, health);
+    vec3 hp_color = mix(vec3(1, 0, 0), vec3(0, 1, 0), color_pct);
     float healtbar_mask = step(1.0 - uv.y, health);
 
-    vec3 out_color = mix(bg_color, hp_color, healtbar_mask);
-
-    // if (length(out_color) == 0)
-    // if (out_color == vec3(0))
-    //     discard;
-
-    frag_color = vec4(out_color, 1.0);
+    frag_color = vec4(hp_color, healtbar_mask);
 }
 
 #pragma sokol @end

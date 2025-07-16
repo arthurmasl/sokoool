@@ -56,6 +56,20 @@ game_init :: proc() {
     index_type = .UINT16,
     cull_mode = .NONE,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
+    colors = {
+      0 = {
+        blend = {
+          enabled = true,
+          src_factor_rgb = .SRC_ALPHA,
+          dst_factor_rgb = .ONE_MINUS_SRC_ALPHA,
+          op_rgb = .ADD,
+          src_factor_alpha = .SRC_ALPHA,
+          dst_factor_alpha = .ONE_MINUS_SRC_ALPHA,
+          op_alpha = .ADD,
+        },
+      },
+    },
+    color_count = 1,
     // primitive_type = .LINE_STRIP,
     // primitive_type = .LINES,
   },
