@@ -58,16 +58,20 @@ out vec4 frag_color;
 const float HEALTH = 0.2;
 const float SIZE = 5.0;
 const float GAP = 0.5;
+const float BORDER_SIZE = 0.2;
 
 void main() {
     // border
     vec2 coords = uv;
     coords.x *= SIZE;
     vec2 point_on_line_seg = vec2(clamp(coords.x, GAP, SIZE - GAP), 0.5);
-    float sdf = distance(coords, point_on_line_seg) * 2 - 1;
 
+    float sdf = distance(coords, point_on_line_seg) * 2 - 1;
     if (sdf >= 0)
         discard;
+
+    float border_sdf = sdf + BORDER_SIZE;
+    float bordr_mask = step(0, -border_sdf);
 
     // color
     float healtbar_mask = step(uv.x, HEALTH);
@@ -78,7 +82,7 @@ void main() {
         healthbar_color *= flash;
     }
 
-    frag_color = vec4(healthbar_color * healtbar_mask, 1.0);
+    frag_color = vec4(healthbar_color * healtbar_mask * bordr_mask, 1.0);
 }
 
 #pragma sokol @end
