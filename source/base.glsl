@@ -25,14 +25,22 @@ layout(location = 1) in vec3 normal_pos;
 layout(location = 2) in vec2 texcoord;
 layout(location = 3) in vec4 color0;
 
+layout(binding = 4) uniform texture2D heightmap_texture;
+layout(binding = 4) uniform sampler heightmap_smp;
+#define sampled_heightmap sampler2D(heightmap_texture, heightmap_smp)
+
 out vec4 color;
 out vec2 uv;
 out vec3 normal;
 out float time;
 out vec3 light_dir;
 
+const float HEIGHT_SCALE = 800.0;
+
 void main() {
-    vec4 pos = position;
+    float height = texture(sampled_heightmap, texcoord).r;
+    vec4 pos = vec4(position.x, height * HEIGHT_SCALE, position.z, 1.0);
+    // pos.y *= height * HEIGHT_SCfLE;
 
     gl_Position = mvp * pos;
 
@@ -58,7 +66,7 @@ in vec3 light_dir;
 out vec4 frag_color;
 
 void main() {
-    vec3 color = vec3(dot(normal, light_dir) * vec3(0.2, 0.8, 0.5));
+    vec3 color = vec3(dot(normal, light_dir) * vec3(uv.x, 1 - uv.y, 0));
     frag_color = vec4(color, 1);
 }
 

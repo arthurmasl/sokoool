@@ -20,14 +20,14 @@ Camera :: struct {
 
 key_down: #sparse[sapp.Keycode]bool
 
-SPEED :: 5
+SPEED :: 100
 SENSITIVITY :: 0.2
 
 camera_init :: proc() {
   sapp.show_mouse(false)
 
   g.camera.first_mouse = true
-  g.camera.pos = {0, 0, 3}
+  g.camera.pos = {0, 1, 0}
   g.camera.front = {0, 0, -1}
   g.camera.up = {0, 1, 0}
   g.camera.fov = 45
@@ -98,7 +98,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
     g.camera.fov,
     sapp.widthf() / sapp.heightf(),
     0.1,
-    500.0,
+    5000.0,
   )
 
   return view, projection

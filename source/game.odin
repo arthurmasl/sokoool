@@ -28,14 +28,17 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  vertices: [6 * 1024 * 10]f32
-  indices: [16 * 1024 * 5]u16
+  vertices: [6 * 1024 * 100]f32
+  indices: [16 * 1024 * 50]u16
 
   buf := sshape.Buffer {
     vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
     indices = {buffer = {ptr = &indices, size = size_of(indices)}},
   }
-  // buf = sshape.build_plane(buf, {width = 5.0, depth = 1.0, tiles = 0, random_colors = false})
+  buf = sshape.build_plane(
+    buf,
+    {width = 2800.0, depth = 2600.0, tiles = 100, random_colors = true},
+  )
   // buf = sshape.build_box(
   //   buf,
   //   {width = 1.0, depth = 1.0, height = 1.0, tiles = 1, merge = true, random_colors = true},
@@ -44,7 +47,7 @@ game_init :: proc() {
   //   buf,
   //   {radius = 2.0, height = 1.0, slices = 100, stacks = 1, merge = true, random_colors = true},
   // )
-  buf = sshape.build_sphere(buf, {radius = 3, slices = 50, stacks = 15, random_colors = true})
+  // buf = sshape.build_sphere(buf, {radius = 3, slices = 50, stacks = 15, random_colors = true})
 
   g.draw = sshape.element_range(buf)
 
@@ -65,6 +68,7 @@ game_init :: proc() {
     index_type = .UINT16,
     cull_mode = .NONE,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
+    // primitive_type = .LINE_STRIP,
     // colors = {
     //   0 = {
     //     blend = {
@@ -80,6 +84,9 @@ game_init :: proc() {
     // },
     // color_count = 1,
   }
+
+  g.display.bind.images[IMG_heightmap_texture] = sg.make_image(load_image("heightmap_terrain.png"))
+  g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
 
   g.display.pip = sg.make_pipeline(pipeline_desc)
 
@@ -99,7 +106,7 @@ game_frame :: proc() {
   view, projection := camera_update()
   time := f32(stm.sec(stm.now()))
   model :=
-    linalg.matrix4_translate_f32({0, 0.5, 0}) *
+    linalg.matrix4_translate_f32({0, 0, -500}) *
     linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG, {0, 1, 0})
 
   vs_params := Vs_Params {

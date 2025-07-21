@@ -55,7 +55,7 @@ load_png_image :: proc(name: string) -> ^png.Image {
 }
 
 load_image :: proc(name: string) -> sg.Image_Desc {
-  // stbi.set_flip_vertically_on_load(1)
+  stbi.set_flip_vertically_on_load(1)
 
   path := fmt.tprintf("assets/%s", name)
   img_data, img_data_ok := read_entire_file(path, context.temp_allocator)
