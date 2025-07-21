@@ -32,10 +32,11 @@ layout(binding = 4) uniform sampler heightmap_smp;
 out vec4 color;
 out vec2 uv;
 out vec3 normal;
+out vec3 frag_pos;
 out float time;
 out vec3 light_dir;
 
-const float HEIGHT_SCALE = 800.0;
+const float HEIGHT_SCALE = 150.0;
 
 void main() {
     float height = texture(sampled_heightmap, texcoord).r;
@@ -49,6 +50,7 @@ void main() {
     color = color0;
     uv = texcoord;
     normal = normal_pos;
+    frag_pos = normalize(pos.xyz);
 }
 #pragma sokol @end
 
@@ -58,6 +60,7 @@ void main() {
 in vec4 color;
 in vec2 uv;
 in vec3 normal;
+in vec3 frag_pos;
 
 in float time;
 in vec3 light_dir;
@@ -65,8 +68,9 @@ in vec3 light_dir;
 out vec4 frag_color;
 
 void main() {
-    vec3 color = vec3(dot(normal, light_dir) * vec3(uv.x, 1 - uv.y, 0));
-    frag_color = vec4(color, 1);
+    vec3 color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), frag_pos.y + 0.4);
+    vec3 final = vec3(dot(normal, light_dir) * color);
+    frag_color = vec4(final, 1);
 }
 
 #pragma sokol @end
