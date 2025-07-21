@@ -28,8 +28,8 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  vertices: [6 * 1024 * 100]f32
-  indices: [16 * 1024 * 50]u16
+  vertices: [6 * 10 * 1024]f32
+  indices: [16 * 8 * 1024]u16
 
   buf := sshape.Buffer {
     vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
