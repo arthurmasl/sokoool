@@ -9,11 +9,12 @@ import sshape "sokol/shape"
 import stm "sokol/time"
 
 Game_Memory :: struct {
-  camera:    Camera,
-  pass:      sg.Pass_Action,
-  display:   Entity,
-  debug_pip: sg.Pipeline,
-  draw:      sshape.Element_Range,
+  camera:     Camera,
+  pass:       sg.Pass_Action,
+  display:    Entity,
+  debug_pip:  sg.Pipeline,
+  draw_plane: sshape.Element_Range,
+  draw_quad:  sshape.Element_Range,
 }
 
 @(export)
@@ -35,10 +36,8 @@ game_init :: proc() {
     vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
     indices = {buffer = {ptr = &indices, size = size_of(indices)}},
   }
-  buf = sshape.build_plane(
-    buf,
-    {width = 2048.0, depth = 2048.0, tiles = 100, random_colors = false},
-  )
+  buf = sshape.build_plane(buf, {width = 2048.0, depth = 2048.0, tiles = 100})
+  g.draw_plane = sshape.element_range(buf)
   // buf = sshape.build_box(
   //   buf,
   //   {width = 1.0, depth = 1.0, height = 1.0, tiles = 1, merge = true, random_colors = true},
@@ -49,7 +48,8 @@ game_init :: proc() {
   // )
   // buf = sshape.build_sphere(buf, {radius = 3, slices = 50, stacks = 15, random_colors = true})
 
-  g.draw = sshape.element_range(buf)
+  buf = sshape.build_plane(buf, {width = 100.0, depth = 100.0, tiles = 1})
+  g.draw_quad = sshape.element_range(buf)
 
   g.display.bind.vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buf))
   g.display.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
@@ -85,11 +85,11 @@ game_init :: proc() {
     // color_count = 1,
   }
 
-  g.display.bind.images[IMG_heightmap_texture] = sg.make_image(load_image("hm/height_map.png"))
-  g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
+  // g.display.bind.images[IMG_heightmap_texture] = sg.make_image(load_image("hm/height_map.png"))
+  // g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
 
-  g.display.bind.images[IMG_diffuse_texture] = sg.make_image(load_image("hm/diffuse.png"))
-  g.display.bind.samplers[SMP_diffuse_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
+  // g.display.bind.images[IMG_diffuse_texture] = sg.make_image(load_image("hm/diffuse.png"))
+  // g.display.bind.samplers[SMP_diffuse_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
 
   g.display.pip = sg.make_pipeline(pipeline_desc)
 
@@ -124,7 +124,7 @@ game_frame :: proc() {
   sg.apply_pipeline(DEBUG_LINES ? g.debug_pip : g.display.pip)
   sg.apply_bindings(g.display.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.draw(g.draw.base_element, g.draw.num_elements, 1)
+  sg.draw(g.draw_plane.base_element, g.draw_plane.num_elements, 1)
 
   debug_process()
 

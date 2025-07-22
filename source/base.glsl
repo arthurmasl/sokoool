@@ -36,10 +36,28 @@ out vec3 frag_pos;
 out float time;
 out vec3 light_dir;
 
-const float HEIGHT_SCALE = 1200.0;
+const float HEIGHT_SCALE = 50.0;
+
+float random2d(vec2 coord) {
+    return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+float noise(vec2 uv) {
+    vec2 i = floor(uv);
+    vec2 f = fract(uv);
+
+    float a = random2d(i);
+    float b = random2d(i + vec2(1.0, 0.0));
+    float c = random2d(i + vec2(0.0, 1.0));
+    float d = random2d(i + vec2(1.0, 1.0));
+
+    vec2 u = smoothstep(0.0, 1.0, f);
+
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
 
 void main() {
-    float height = texture(sampled_heightmap, texcoord).r;
+    float height = noise(vec2(texcoord * 10.0));
     vec4 pos = vec4(position.x, height * HEIGHT_SCALE, position.z, 1.0);
 
     gl_Position = mvp * pos;
@@ -73,9 +91,9 @@ out vec4 frag_color;
 
 void main() {
     vec3 texture_color = texture(sampled_diffuse, uv).rgb;
-    vec3 color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), frag_pos.y + 0.4);
-    // vec3 final = vec3(dot(normal, light_dir) * color);
-    vec3 final = vec3(dot(normal, light_dir) * texture_color);
+    vec3 color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), frag_pos.y + 0.5);
+    vec3 final = vec3(dot(normal, light_dir) * color);
+    // vec3 final = vec3(dot(normal, light_dir) * texture_color);
     frag_color = vec4(final, 1);
 }
 
