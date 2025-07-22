@@ -16,11 +16,15 @@ Camera :: struct {
   yaw:         f32,
   pitch:       f32,
   fov:         f32,
+  // 
+  turbo:       bool,
+  speed:       f32,
 }
 
 key_down: #sparse[sapp.Keycode]bool
 
 SPEED :: 100
+TURBO_SPEED :: 500
 SENSITIVITY :: 0.2
 
 camera_init :: proc() {
@@ -32,6 +36,8 @@ camera_init :: proc() {
   g.camera.up = {0, 1, 0}
   g.camera.fov = 45
   g.camera.yaw = -90
+
+  g.camera.speed = SPEED
 }
 
 camera_process_input :: proc(e: ^sapp.Event) {
@@ -43,6 +49,11 @@ camera_process_input :: proc(e: ^sapp.Event) {
   // keyboard
   if e.type == .KEY_DOWN do key_down[e.key_code] = true
   if e.type == .KEY_UP do key_down[e.key_code] = false
+
+  if e.type == .KEY_DOWN && e.key_code == .T {
+    g.camera.turbo = !g.camera.turbo
+    g.camera.speed = g.camera.turbo ? TURBO_SPEED : SPEED
+  }
 
   // mosue
   if e.type == .MOUSE_MOVE {
@@ -75,7 +86,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
   g.camera.front = linalg.normalize(direction)
 
   // movement
-  vel := SPEED * delta_time
+  vel := g.camera.speed * delta_time
   dir := Vec3{}
 
   up := g.camera.up
