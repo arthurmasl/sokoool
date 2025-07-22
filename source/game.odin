@@ -37,7 +37,7 @@ game_init :: proc() {
   }
   buf = sshape.build_plane(
     buf,
-    {width = 2800.0, depth = 2600.0, tiles = 100, random_colors = true},
+    {width = 2048.0, depth = 2048.0, tiles = 100, random_colors = false},
   )
   // buf = sshape.build_box(
   //   buf,
@@ -85,8 +85,11 @@ game_init :: proc() {
     // color_count = 1,
   }
 
-  g.display.bind.images[IMG_heightmap_texture] = sg.make_image(load_image("heightmap_terrain.png"))
+  g.display.bind.images[IMG_heightmap_texture] = sg.make_image(load_image("hm/height_map.png"))
   g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
+
+  g.display.bind.images[IMG_diffuse_texture] = sg.make_image(load_image("hm/diffuse.png"))
+  g.display.bind.samplers[SMP_diffuse_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
 
   g.display.pip = sg.make_pipeline(pipeline_desc)
 
@@ -106,7 +109,7 @@ game_frame :: proc() {
   view, projection := camera_update()
   time := f32(stm.sec(stm.now()))
   model :=
-    linalg.matrix4_translate_f32({0, 0, -500}) *
+    linalg.matrix4_translate_f32({0, -500, 0}) *
     linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG, {0, 1, 0})
 
   vs_params := Vs_Params {

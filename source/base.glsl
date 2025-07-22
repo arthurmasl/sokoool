@@ -25,8 +25,8 @@ layout(location = 1) in vec3 normal_pos;
 layout(location = 2) in vec2 texcoord;
 layout(location = 3) in vec4 color0;
 
-layout(binding = 4) uniform texture2D heightmap_texture;
-layout(binding = 4) uniform sampler heightmap_smp;
+layout(binding = 0) uniform texture2D heightmap_texture;
+layout(binding = 0) uniform sampler heightmap_smp;
 #define sampled_heightmap sampler2D(heightmap_texture, heightmap_smp)
 
 out vec4 color;
@@ -36,7 +36,7 @@ out vec3 frag_pos;
 out float time;
 out vec3 light_dir;
 
-const float HEIGHT_SCALE = 150.0;
+const float HEIGHT_SCALE = 1200.0;
 
 void main() {
     float height = texture(sampled_heightmap, texcoord).r;
@@ -65,11 +65,17 @@ in vec3 frag_pos;
 in float time;
 in vec3 light_dir;
 
+layout(binding = 1) uniform texture2D diffuse_texture;
+layout(binding = 1) uniform sampler diffuse_smp;
+#define sampled_diffuse sampler2D(diffuse_texture, diffuse_smp)
+
 out vec4 frag_color;
 
 void main() {
+    vec3 texture_color = texture(sampled_diffuse, uv).rgb;
     vec3 color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), frag_pos.y + 0.4);
-    vec3 final = vec3(dot(normal, light_dir) * color);
+    // vec3 final = vec3(dot(normal, light_dir) * color);
+    vec3 final = vec3(dot(normal, light_dir) * texture_color);
     frag_color = vec4(final, 1);
 }
 
