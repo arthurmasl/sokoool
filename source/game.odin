@@ -63,7 +63,7 @@ game_init :: proc() {
   g.display.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
 
   // quad
-  buf = sshape.build_plane(buf, {width = 100, depth = 100, tiles = 1})
+  buf = sshape.build_plane(buf, {width = 2, depth = 2, tiles = 1})
   g.quad.draw = sshape.element_range(buf)
   g.quad.bind.vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buf))
   g.quad.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
@@ -80,7 +80,7 @@ game_init :: proc() {
       },
     },
     index_type = .UINT16,
-    // cull_mode = .BACK,
+    cull_mode = .BACK,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
   }
 
@@ -100,7 +100,6 @@ game_init :: proc() {
   // quad
   quad_pip_desc := pipeline_desc
   quad_pip_desc.shader = sg.make_shader(quad_shader_desc(sg.query_backend()))
-  // quad_pip_desc.primitive_type = .TRIANGLE_STRIP
   g.quad.pip = sg.make_pipeline(quad_pip_desc)
 
   // debug
@@ -120,6 +119,9 @@ game_init :: proc() {
 
   g.display.bind.images[IMG_heightmap_texture] = g.storage_image
   g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({})
+
+  g.quad.bind.images[IMG_noise_texture] = g.storage_image
+  g.quad.bind.samplers[SMP_noise_smp] = sg.make_sampler({})
 }
 
 @(export)

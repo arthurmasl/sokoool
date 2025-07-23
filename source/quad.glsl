@@ -26,8 +26,13 @@ void main() {
 in vec2 uv;
 out vec4 frag_color;
 
+layout(binding = 0) uniform texture2D noise_texture;
+layout(binding = 0) uniform sampler noise_smp;
+#define sampled_noise sampler2D(noise_texture, noise_smp)
+
 void main() {
-    frag_color = vec4(1, 0, 0, 1);
+    vec3 texture_color = texture(sampled_noise, uv).rgb;
+    frag_color = vec4(texture_color, 1.0);
 }
 
 #pragma sokol @end
