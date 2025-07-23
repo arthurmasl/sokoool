@@ -18,6 +18,9 @@ Game_Memory :: struct {
   attachments:   sg.Attachments,
 }
 
+NOISE_WIDTH :: 128
+NOISE_HEIGHT :: 128
+
 TERRAIN_WIDTH :: 15000.0
 TERRAIN_HEIGHT :: 15000.0
 TERRAIN_TILES :: 100
@@ -74,8 +77,8 @@ game_init :: proc() {
   g.storage_image = sg.make_image(
     {
       type = ._2D,
-      width = 128,
-      height = 128,
+      width = NOISE_WIDTH,
+      height = NOISE_HEIGHT,
       usage = {storage_attachment = true},
       pixel_format = .RGBA32F,
     },
@@ -95,9 +98,9 @@ game_init :: proc() {
   )
   sg.begin_pass({compute = true, attachments = g.attachments})
   sg.apply_pipeline(compute_pipeline)
-  sg.dispatch(128, 128, 1)
+  sg.dispatch(NOISE_WIDTH / 32, NOISE_HEIGHT / 32, 1)
   sg.end_pass()
-  // sg.destroy_pipeline(compute_pipeline)
+  sg.destroy_pipeline(compute_pipeline)
 
   g.display.bind.images[IMG_heightmap_texture] = g.storage_image
   g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({})
