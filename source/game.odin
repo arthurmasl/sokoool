@@ -9,11 +9,13 @@ import sshape "sokol/shape"
 import stm "sokol/time"
 
 Game_Memory :: struct {
-  camera:    Camera,
-  pass:      sg.Pass_Action,
-  display:   Entity,
-  debug_pip: sg.Pipeline,
-  att:       sg.Attachments,
+  camera:        Camera,
+  pass:          sg.Pass_Action,
+  display:       Entity,
+  debug_pip:     sg.Pipeline,
+  //
+  storage_image: sg.Image,
+  attachments:   sg.Attachments,
 }
 
 TERRAIN_WIDTH :: 15000.0
@@ -69,7 +71,7 @@ game_init :: proc() {
 
   g.display.pip = sg.make_pipeline(pipeline_desc)
 
-  noise_image := sg.make_image(
+  g.storage_image = sg.make_image(
     {
       type = ._2D,
       width = 128,
@@ -78,6 +80,7 @@ game_init :: proc() {
       pixel_format = .RGBA32F,
     },
   )
+  g.attachments = sg.make_attachments({storages = {SIMG_noise_image = {image = g.storage_image}}})
 
   debug_pip_desc := pipeline_desc
   debug_pip_desc.primitive_type = .LINE_STRIP
@@ -90,19 +93,13 @@ game_init :: proc() {
   compute_pipeline := sg.make_pipeline(
     {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
   )
-  sg.begin_pass(
-    {
-      compute = true,
-      attachments = sg.make_attachments({storages = {SIMG_noise_image = {image = noise_image}}}),
-    },
-  )
+  sg.begin_pass({compute = true, attachments = g.attachments})
   sg.apply_pipeline(compute_pipeline)
-  // sg.apply_bindings({images = {SIMG_noise_image = noise_image}})
   sg.dispatch(128, 128, 1)
   sg.end_pass()
-  sg.destroy_pipeline(compute_pipeline)
+  // sg.destroy_pipeline(compute_pipeline)
 
-  g.display.bind.images[IMG_heightmap_texture] = noise_image
+  g.display.bind.images[IMG_heightmap_texture] = g.storage_image
   g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({})
 }
 
