@@ -1,40 +1,17 @@
 #pragma sokol @header package game
-
 #pragma sokol @header import sg "sokol/gfx"
-
-#pragma sokol @ctype vec3 Vec3
 #pragma sokol @ctype mat4 Mat4
 
+// SHARED
 #pragma sokol @block common
 const float PI = 3.14159265359;
 const float TAU = PI * 2;
-
 #pragma sokol @end
 
-#pragma sokol @vs vs
-#pragma sokol @include_block common
-
-layout(binding = 0) uniform vs_params {
-    mat4 mvp;
-    float u_time;
-    vec3 u_light_dir;
-};
-
-layout(location = 0) in vec4 position;
-layout(location = 1) in vec3 normal_pos;
-layout(location = 2) in vec2 texcoord;
-layout(location = 3) in vec4 color0;
-
-layout(binding = 0) uniform texture2D heightmap_texture;
-layout(binding = 0) uniform sampler heightmap_smp;
-#define sampled_heightmap sampler2D(heightmap_texture, heightmap_smp)
-
-out vec4 color;
-out vec2 uv;
-out vec3 normal;
-out vec3 frag_pos;
-out float time;
-out vec3 light_dir;
+// COMPUTE SHADER
+#pragma sokol @cs cs_init
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+layout(binding = 0, rgba32f) uniform image2D noise_image;
 
 const float HEIGHT_SCALE = 250.0;
 
@@ -51,14 +28,50 @@ float noise(vec2 uv) {
     float c = random2d(i + vec2(0.0, 1.0));
     float d = random2d(i + vec2(1.0, 1.0));
 
-    vec2 u = smoothstep(0.0, 1.0, f);
+    vec2 u = f * f * (3.0 - 2.0 * f);
 
     return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
 void main() {
-    float height = noise(vec2(texcoord * 10.0));
-    vec4 pos = vec4(position.x, height * HEIGHT_SCALE, position.z, 1.0);
+    ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 uv = vec2(texel_coord) / vec2(imageSize(noise_image));
+    float n = noise(uv * HEIGHT_SCALE);
+    imageStore(noise_image, texel_coord, vec4(vec3(n), 1.0));
+}
+
+#pragma sokol @end
+#pragma sokol @program init cs_init
+
+// VERTEX SHADER
+#pragma sokol @vs vs
+#pragma sokol @include_block common
+
+layout(location = 0) in vec4 position;
+layout(location = 1) in vec3 normal_pos;
+layout(location = 2) in vec2 texcoord;
+layout(location = 3) in vec4 color0;
+
+layout(binding = 0) uniform texture2D heightmap_texture;
+layout(binding = 0) uniform sampler heightmap_smp;
+#define sampled_heightmap sampler2D(heightmap_texture, heightmap_smp)
+
+layout(binding = 0) uniform vs_params {
+    mat4 mvp;
+    float u_time;
+    vec3 u_light_dir;
+};
+
+out vec4 color;
+out vec2 uv;
+out vec3 normal;
+out vec3 frag_pos;
+out float time;
+out vec3 light_dir;
+
+void main() {
+    float height = texture(sampled_heightmap, texcoord).r;
+    vec4 pos = vec4(position.x, height, position.z, 1.0);
 
     gl_Position = mvp * pos;
 
@@ -72,6 +85,7 @@ void main() {
 }
 #pragma sokol @end
 
+// FRAGMENT SHADER
 #pragma sokol @fs fs
 #pragma sokol @include_block common
 
@@ -83,17 +97,11 @@ in vec3 frag_pos;
 in float time;
 in vec3 light_dir;
 
-layout(binding = 1) uniform texture2D diffuse_texture;
-layout(binding = 1) uniform sampler diffuse_smp;
-#define sampled_diffuse sampler2D(diffuse_texture, diffuse_smp)
-
 out vec4 frag_color;
 
 void main() {
-    vec3 texture_color = texture(sampled_diffuse, uv).rgb;
     vec3 color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), frag_pos.y + 0.5);
     vec3 final = vec3(dot(normal, light_dir) * color);
-    // vec3 final = vec3(dot(normal, light_dir) * texture_color);
     frag_color = vec4(final, 1);
 }
 

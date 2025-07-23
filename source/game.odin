@@ -13,11 +13,14 @@ Game_Memory :: struct {
   pass:      sg.Pass_Action,
   display:   Entity,
   debug_pip: sg.Pipeline,
+  att:       sg.Attachments,
 }
 
-TERRAIN_WIDTH :: 14048.0
-TERRAIN_HEIGHT :: 14048.0
+TERRAIN_WIDTH :: 15000.0
+TERRAIN_HEIGHT :: 15000.0
 TERRAIN_TILES :: 100
+
+TRIANGLES :: TERRAIN_TILES * 2 * 4
 
 @(export)
 game_init :: proc() {
@@ -31,8 +34,8 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  vertices: [6 * 10 * 1024]f32
-  indices: [16 * 8 * 1024]u16
+  vertices: [64 * 1024]f32
+  indices: [64 * 1024]u16
 
   buf := sshape.Buffer {
     vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
@@ -42,6 +45,7 @@ game_init :: proc() {
     buf,
     {width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
   )
+
   g.display.draw = sshape.element_range(buf)
 
   g.display.bind.vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buf))
@@ -65,13 +69,41 @@ game_init :: proc() {
 
   g.display.pip = sg.make_pipeline(pipeline_desc)
 
+  noise_image := sg.make_image(
+    {
+      type = ._2D,
+      width = 128,
+      height = 128,
+      usage = {storage_attachment = true},
+      pixel_format = .RGBA32F,
+    },
+  )
+
   debug_pip_desc := pipeline_desc
-  debug_pip_desc.primitive_type = .LINES
+  debug_pip_desc.primitive_type = .LINE_STRIP
   g.debug_pip = sg.make_pipeline(debug_pip_desc)
 
   g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
   }
+
+  compute_pipeline := sg.make_pipeline(
+    {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
+  )
+  sg.begin_pass(
+    {
+      compute = true,
+      attachments = sg.make_attachments({storages = {SIMG_noise_image = {image = noise_image}}}),
+    },
+  )
+  sg.apply_pipeline(compute_pipeline)
+  // sg.apply_bindings({images = {SIMG_noise_image = noise_image}})
+  sg.dispatch(128, 128, 1)
+  sg.end_pass()
+  sg.destroy_pipeline(compute_pipeline)
+
+  g.display.bind.images[IMG_heightmap_texture] = noise_image
+  g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({})
 }
 
 @(export)
