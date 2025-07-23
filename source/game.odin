@@ -39,6 +39,11 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
+  // display
+  g.pass = {
+    colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
+  }
+
   vertices: [64 * 1024]f32
   indices: [64 * 1024]u16
 
@@ -85,14 +90,12 @@ game_init :: proc() {
   )
   g.attachments = sg.make_attachments({storages = {SIMG_noise_image = {image = g.storage_image}}})
 
+  // debug
   debug_pip_desc := pipeline_desc
   debug_pip_desc.primitive_type = .LINE_STRIP
   g.debug_pip = sg.make_pipeline(debug_pip_desc)
 
-  g.pass = {
-    colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
-  }
-
+  // compute
   compute_pipeline := sg.make_pipeline(
     {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
   )
