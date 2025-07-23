@@ -20,6 +20,8 @@ Game_Memory :: struct {
   attachments:   sg.Attachments,
 }
 
+QUAD_SIZE :: 500
+
 NOISE_WIDTH :: 128
 NOISE_HEIGHT :: 128
 
@@ -63,7 +65,17 @@ game_init :: proc() {
   g.display.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
 
   // quad
-  buf = sshape.build_plane(buf, {width = 2, depth = 2, tiles = 1})
+  buf = sshape.build_plane(
+    buf,
+    {
+      width = 2,
+      depth = 2,
+      tiles = 1,
+      transform = {
+        m = transmute([4][4]f32)(linalg.matrix4_rotate_f32(90 * linalg.RAD_PER_DEG, {1, 0, 0})),
+      },
+    },
+  )
   g.quad.draw = sshape.element_range(buf)
   g.quad.bind.vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buf))
   g.quad.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
@@ -151,11 +163,7 @@ game_frame :: proc() {
   // quad
   sg.apply_pipeline(g.quad.pip)
   sg.apply_bindings(g.quad.bind)
-  vs_params_quad := Vs_Params_Quad {
-    mvp = linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * 90, {1, 0, 0}),
-  }
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params_quad))
-  sg.apply_viewport(0, 0, 350, 350, false)
+  sg.apply_viewport(0, 0, QUAD_SIZE, QUAD_SIZE, false)
   sg.draw(g.quad.draw.base_element, g.quad.draw.num_elements, 1)
 
   sg.end_pass()
