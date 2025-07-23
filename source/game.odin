@@ -53,15 +53,20 @@ game_init :: proc() {
     vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
     indices = {buffer = {ptr = &indices, size = size_of(indices)}},
   }
+  // plane
   buf = sshape.build_plane(
     buf,
     {width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
   )
-
   g.display.draw = sshape.element_range(buf)
-
   g.display.bind.vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buf))
   g.display.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
+
+  // quad
+  buf = sshape.build_plane(buf, {width = 100, depth = 100, tiles = 1})
+  g.quad.draw = sshape.element_range(buf)
+  g.quad.bind.vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buf))
+  g.quad.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
 
   pipeline_desc := sg.Pipeline_Desc {
     shader = sg.make_shader(base_shader_desc(sg.query_backend())),
@@ -75,7 +80,7 @@ game_init :: proc() {
       },
     },
     index_type = .UINT16,
-    cull_mode = .BACK,
+    // cull_mode = .BACK,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
   }
 
@@ -91,6 +96,12 @@ game_init :: proc() {
     },
   )
   g.attachments = sg.make_attachments({storages = {SIMG_noise_image = {image = g.storage_image}}})
+
+  // quad
+  quad_pip_desc := pipeline_desc
+  quad_pip_desc.shader = sg.make_shader(quad_shader_desc(sg.query_backend()))
+  // quad_pip_desc.primitive_type = .TRIANGLE_STRIP
+  g.quad.pip = sg.make_pipeline(quad_pip_desc)
 
   // debug
   debug_pip_desc := pipeline_desc
@@ -134,6 +145,16 @@ game_frame :: proc() {
   sg.draw(g.display.draw.base_element, g.display.draw.num_elements, 1)
 
   debug_process()
+
+  // quad
+  sg.apply_pipeline(g.quad.pip)
+  sg.apply_bindings(g.quad.bind)
+  vs_params_quad := Vs_Params_Quad {
+    mvp = linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * 90, {1, 0, 0}),
+  }
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params_quad))
+  sg.apply_viewport(0, 0, 350, 350, false)
+  sg.draw(g.quad.draw.base_element, g.quad.draw.num_elements, 1)
 
   sg.end_pass()
   sg.commit()
