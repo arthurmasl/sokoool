@@ -11,8 +11,10 @@ import stm "sokol/time"
 Game_Memory :: struct {
   camera:        Camera,
   pass:          sg.Pass_Action,
+  //
   display:       Entity,
-  debug_pip:     sg.Pipeline,
+  quad:          Entity,
+  debug:         Entity,
   //
   storage_image: sg.Image,
   attachments:   sg.Attachments,
@@ -93,7 +95,7 @@ game_init :: proc() {
   // debug
   debug_pip_desc := pipeline_desc
   debug_pip_desc.primitive_type = .LINE_STRIP
-  g.debug_pip = sg.make_pipeline(debug_pip_desc)
+  g.debug.pip = sg.make_pipeline(debug_pip_desc)
 
   // compute
   compute_pipeline := sg.make_pipeline(
@@ -126,7 +128,7 @@ game_frame :: proc() {
   sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
 
   // plane
-  sg.apply_pipeline(DEBUG_LINES ? g.debug_pip : g.display.pip)
+  sg.apply_pipeline(DEBUG_LINES ? g.debug.pip : g.display.pip)
   sg.apply_bindings(g.display.bind)
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(g.display.draw.base_element, g.display.draw.num_elements, 1)
