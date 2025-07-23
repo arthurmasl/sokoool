@@ -36,7 +36,7 @@ out vec3 frag_pos;
 out float time;
 out vec3 light_dir;
 
-const float HEIGHT_SCALE = 50.0;
+const float HEIGHT_SCALE = 250.0;
 
 float random2d(vec2 coord) {
     return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);

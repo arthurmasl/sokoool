@@ -1,6 +1,7 @@
 package game
 
 import sg "sokol/gfx"
+import sshape "sokol/shape"
 
 Vec2 :: [2]f32
 Vec3 :: [3]f32
@@ -18,5 +19,5 @@ Vertex :: struct {
 Entity :: struct {
   pip:  sg.Pipeline,
   bind: sg.Bindings,
+  draw: sshape.Element_Range,
 }
-

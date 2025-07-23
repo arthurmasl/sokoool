@@ -24,7 +24,7 @@ Camera :: struct {
 key_down: #sparse[sapp.Keycode]bool
 
 SPEED :: 100
-TURBO_SPEED :: 500
+TURBO_SPEED :: 1500
 SENSITIVITY :: 0.2
 
 camera_init :: proc() {
@@ -109,7 +109,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
     g.camera.fov,
     sapp.widthf() / sapp.heightf(),
     0.1,
-    5000.0,
+    15000.0,
   )
 
   return view, projection
