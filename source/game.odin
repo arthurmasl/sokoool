@@ -27,14 +27,9 @@ PassID :: enum {
 
 Game_Memory :: struct {
   camera:    Camera,
-  pass:      sg.Pass_Action,
   //
-  display:   Entity,
-  quad:      Entity,
-  debug:     Entity,
-  //
-  passes:    [PassID]sg.Pass,
   ranges:    [BindingID]sshape.Element_Range,
+  passes:    [PassID]sg.Pass,
   bindings:  [BindingID]sg.Bindings,
   pipelines: [PipelineID]sg.Pipeline,
 }
@@ -193,7 +188,6 @@ game_frame :: proc() {
   }
 
   sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
-  debug_process()
 
   // terrain
   sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Display])
@@ -201,11 +195,14 @@ game_frame :: proc() {
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
 
-  // debug display
+  // debug screen
   sg.apply_pipeline(g.pipelines[.Atlas])
   sg.apply_bindings(g.bindings[.Atlas])
   sg.apply_viewport(0, 0, QUAD_SIZE, QUAD_SIZE, false)
   sg.draw(g.ranges[.Atlas].base_element, g.ranges[.Atlas].num_elements, 1)
+
+  sg.apply_viewport(0, 0, sapp.width(), sapp.height(), false)
+  debug_process()
 
   sg.end_pass()
   sg.commit()
