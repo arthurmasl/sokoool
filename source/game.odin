@@ -8,13 +8,35 @@ import slog "sokol/log"
 import sshape "sokol/shape"
 import stm "sokol/time"
 
+BindingID :: enum {
+  Terrain,
+  Atlas,
+}
+
+PipelineID :: enum {
+  Display,
+  Primitive,
+  Atlas,
+  Compute,
+}
+
+PassID :: enum {
+  Display,
+  Compute,
+}
+
 Game_Memory :: struct {
-  camera:  Camera,
-  pass:    sg.Pass_Action,
+  camera:    Camera,
+  pass:      sg.Pass_Action,
   //
-  display: Entity,
-  quad:    Entity,
-  debug:   Entity,
+  display:   Entity,
+  quad:      Entity,
+  debug:     Entity,
+  //
+  passes:    [PassID]sg.Pass,
+  ranges:    [BindingID]sshape.Element_Range,
+  bindings:  [BindingID]sg.Bindings,
+  pipelines: [PipelineID]sg.Pipeline,
 }
 
 QUAD_SIZE :: 500
@@ -28,6 +50,24 @@ TERRAIN_TILES :: 100
 
 TRIANGLES :: TERRAIN_TILES * 2 * 4
 
+vertices: [64 * 1024]f32
+indices: [64 * 1024]u16
+
+shape_buffer := sshape.Buffer {
+  vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
+  indices = {buffer = {ptr = &indices, size = size_of(indices)}},
+}
+
+build_plane :: proc(id: BindingID, desc: sshape.Plane) {
+  buffer := sshape.build_plane(
+    shape_buffer,
+    {width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
+  )
+  g.ranges[id] = sshape.element_range(buffer)
+  g.bindings[id].vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buffer))
+  g.bindings[id].index_buffer = sg.make_buffer(sshape.index_buffer_desc(buffer))
+}
+
 @(export)
 game_init :: proc() {
   if g == nil {
@@ -40,44 +80,8 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
-  // display
-  g.pass = {
-    colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},
-  }
-
-  vertices: [64 * 1024]f32
-  indices: [64 * 1024]u16
-
-  buf := sshape.Buffer {
-    vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
-    indices = {buffer = {ptr = &indices, size = size_of(indices)}},
-  }
-  // plane
-  buf = sshape.build_plane(
-    buf,
-    {width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
-  )
-  g.display.draw = sshape.element_range(buf)
-  g.display.bind.vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buf))
-  g.display.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
-
-  // quad
-  buf = sshape.build_plane(
-    buf,
-    {
-      width = 2,
-      depth = 2,
-      tiles = 1,
-      transform = {
-        m = transmute([4][4]f32)(linalg.matrix4_rotate_f32(90 * linalg.RAD_PER_DEG, {1, 0, 0})),
-      },
-    },
-  )
-  g.quad.draw = sshape.element_range(buf)
-  g.quad.bind.vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buf))
-  g.quad.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
-
-  pipeline_desc := sg.Pipeline_Desc {
+  // resources
+  display_pip_desc := sg.Pipeline_Desc {
     shader = sg.make_shader(base_shader_desc(sg.query_backend())),
     layout = {
       buffers = {0 = sshape.vertex_buffer_layout_state()},
@@ -93,8 +97,13 @@ game_init :: proc() {
     depth = {compare = .LESS_EQUAL, write_enabled = true},
   }
 
-  g.display.pip = sg.make_pipeline(pipeline_desc)
+  quad_pip_desc := display_pip_desc
+  quad_pip_desc.shader = sg.make_shader(quad_shader_desc(sg.query_backend()))
 
+  debug_pip_desc := display_pip_desc
+  debug_pip_desc.primitive_type = .LINE_STRIP
+
+  sampler := sg.make_sampler({})
   image_desc := sg.Image_Desc {
     type = ._2D,
     width = NOISE_WIDTH,
@@ -114,36 +123,59 @@ game_init :: proc() {
     },
   )
 
-  // quad
-  quad_pip_desc := pipeline_desc
-  quad_pip_desc.shader = sg.make_shader(quad_shader_desc(sg.query_backend()))
-  g.quad.pip = sg.make_pipeline(quad_pip_desc)
+  // passes
+  g.passes[.Display] = {
+    action = {colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}}},
+  }
+  g.passes[.Compute] = {
+    compute     = true,
+    attachments = attachments,
+  }
 
-  // debug
-  debug_pip_desc := pipeline_desc
-  debug_pip_desc.primitive_type = .LINE_STRIP
-  g.debug.pip = sg.make_pipeline(debug_pip_desc)
+  // shapes
+  build_plane(
+    .Terrain,
+    {width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
+  )
+  build_plane(
+    .Atlas,
+    {
+      width = 2,
+      depth = 2,
+      tiles = 1,
+      transform = {
+        m = transmute([4][4]f32)(linalg.matrix4_rotate_f32(
+            90 * linalg.RAD_PER_DEG,
+            {1, 0, 0},
+          )),
+      },
+    },
+  )
 
-  // compute
-  compute_pipeline := sg.make_pipeline(
+  // pipelines
+  g.pipelines[.Display] = sg.make_pipeline(display_pip_desc)
+  g.pipelines[.Atlas] = sg.make_pipeline(quad_pip_desc)
+  g.pipelines[.Primitive] = sg.make_pipeline(debug_pip_desc)
+  g.pipelines[.Compute] = sg.make_pipeline(
     {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
   )
-  sg.begin_pass({compute = true, attachments = attachments})
-  sg.apply_pipeline(compute_pipeline)
+
+  // compute
+  sg.begin_pass(g.passes[.Compute])
+  sg.apply_pipeline(g.pipelines[.Compute])
   sg.dispatch(NOISE_WIDTH / 32, NOISE_HEIGHT / 32, 1)
   sg.end_pass()
-  sg.destroy_pipeline(compute_pipeline)
+  sg.destroy_pipeline(g.pipelines[.Compute])
 
-  sampler := sg.make_sampler({})
+  // images
+  g.bindings[.Terrain].images[IMG_heightmap_texture] = image_noise
+  g.bindings[.Terrain].images[IMG_diffuse_texture] = image_diffuse
+  g.bindings[.Atlas].images[IMG_noise_texture] = image_diffuse
 
-  g.display.bind.images[IMG_heightmap_texture] = image_noise
-  g.display.bind.samplers[SMP_heightmap_smp] = sampler
-
-  g.display.bind.images[IMG_diffuse_texture] = image_diffuse
-  g.display.bind.samplers[SMP_diffuse_smp] = sampler
-
-  g.quad.bind.images[IMG_noise_texture] = image_diffuse
-  g.quad.bind.samplers[SMP_noise_smp] = sampler
+  // samplers
+  g.bindings[.Terrain].samplers[SMP_heightmap_smp] = sampler
+  g.bindings[.Terrain].samplers[SMP_diffuse_smp] = sampler
+  g.bindings[.Atlas].samplers[SMP_noise_smp] = sampler
 }
 
 @(export)
@@ -160,21 +192,20 @@ game_frame :: proc() {
     u_light_dir = Vec3{0, 1.0, 0},
   }
 
-  sg.begin_pass({action = g.pass, swapchain = sglue.swapchain()})
-
-  // plane
-  sg.apply_pipeline(DEBUG_LINES ? g.debug.pip : g.display.pip)
-  sg.apply_bindings(g.display.bind)
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.draw(g.display.draw.base_element, g.display.draw.num_elements, 1)
-
+  sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
   debug_process()
 
-  // quad
-  sg.apply_pipeline(g.quad.pip)
-  sg.apply_bindings(g.quad.bind)
+  // terrain
+  sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Display])
+  sg.apply_bindings(g.bindings[.Terrain])
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+  sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
+
+  // debug display
+  sg.apply_pipeline(g.pipelines[.Atlas])
+  sg.apply_bindings(g.bindings[.Atlas])
   sg.apply_viewport(0, 0, QUAD_SIZE, QUAD_SIZE, false)
-  sg.draw(g.quad.draw.base_element, g.quad.draw.num_elements, 1)
+  sg.draw(g.ranges[.Atlas].base_element, g.ranges[.Atlas].num_elements, 1)
 
   sg.end_pass()
   sg.commit()
