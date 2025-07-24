@@ -9,15 +9,16 @@ import sshape "sokol/shape"
 import stm "sokol/time"
 
 Game_Memory :: struct {
-  camera:        Camera,
-  pass:          sg.Pass_Action,
+  camera:                Camera,
+  pass:                  sg.Pass_Action,
   //
-  display:       Entity,
-  quad:          Entity,
-  debug:         Entity,
+  display:               Entity,
+  quad:                  Entity,
+  debug:                 Entity,
   //
-  storage_image: sg.Image,
-  attachments:   sg.Attachments,
+  storage_image_noise:   sg.Image,
+  storage_image_diffuse: sg.Image,
+  attachments:           sg.Attachments,
 }
 
 QUAD_SIZE :: 500
@@ -25,8 +26,8 @@ QUAD_SIZE :: 500
 NOISE_WIDTH :: 128
 NOISE_HEIGHT :: 128
 
-TERRAIN_WIDTH :: 15000.0
-TERRAIN_HEIGHT :: 15000.0
+TERRAIN_WIDTH :: 12800.0
+TERRAIN_HEIGHT :: 12800.0
 TERRAIN_TILES :: 100
 
 TRIANGLES :: TERRAIN_TILES * 2 * 4
@@ -98,16 +99,24 @@ game_init :: proc() {
 
   g.display.pip = sg.make_pipeline(pipeline_desc)
 
-  g.storage_image = sg.make_image(
+  image_desc := sg.Image_Desc {
+    type = ._2D,
+    width = NOISE_WIDTH,
+    height = NOISE_HEIGHT,
+    usage = {storage_attachment = true},
+    pixel_format = .RGBA32F,
+  }
+  g.storage_image_noise = sg.make_image(image_desc)
+  g.storage_image_diffuse = sg.make_image(image_desc)
+
+  g.attachments = sg.make_attachments(
     {
-      type = ._2D,
-      width = NOISE_WIDTH,
-      height = NOISE_HEIGHT,
-      usage = {storage_attachment = true},
-      pixel_format = .RGBA32F,
+      storages = {
+        SIMG_noise_image = {image = g.storage_image_noise},
+        SIMG_diffuse_image = {image = g.storage_image_diffuse},
+      },
     },
   )
-  g.attachments = sg.make_attachments({storages = {SIMG_noise_image = {image = g.storage_image}}})
 
   // quad
   quad_pip_desc := pipeline_desc
@@ -129,11 +138,16 @@ game_init :: proc() {
   sg.end_pass()
   sg.destroy_pipeline(compute_pipeline)
 
-  g.display.bind.images[IMG_heightmap_texture] = g.storage_image
-  g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({})
+  sampler := sg.make_sampler({})
 
-  g.quad.bind.images[IMG_noise_texture] = g.storage_image
-  g.quad.bind.samplers[SMP_noise_smp] = sg.make_sampler({})
+  g.display.bind.images[IMG_heightmap_texture] = g.storage_image_noise
+  g.display.bind.samplers[SMP_heightmap_smp] = sampler
+
+  g.display.bind.images[IMG_diffuse_texture] = g.storage_image_diffuse
+  g.display.bind.samplers[SMP_diffuse_smp] = sampler
+
+  g.quad.bind.images[IMG_noise_texture] = g.storage_image_diffuse
+  g.quad.bind.samplers[SMP_noise_smp] = sampler
 }
 
 @(export)

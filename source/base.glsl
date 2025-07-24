@@ -20,6 +20,7 @@ const float BEACH = 0.02;
 #pragma sokol @include_block common
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 layout(binding = 0, rgba32f) uniform image2D noise_image;
+layout(binding = 1, rgba32f) uniform image2D diffuse_image;
 
 float random2d(vec2 coord) {
     return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
@@ -50,6 +51,16 @@ void main() {
     float n = pow((f1 + f2 + f3) / (1 + 0.5 + 0.25), REDISTRIBUTION);
 
     imageStore(noise_image, texel_coord, vec4(vec3(n), 1.0));
+
+    vec3 color;
+    if (n < WATER)
+        color = vec3(0.1, 0.3, 0.8);
+    else if (n < BEACH)
+        color = vec3(0.6, 0.5, 0.2);
+    else
+        color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), n + 0.5);
+
+    imageStore(diffuse_image, texel_coord, vec4(color, 1.0));
 }
 
 #pragma sokol @end
@@ -80,10 +91,11 @@ out vec3 normal;
 out vec3 frag_pos;
 out float time;
 out vec3 light_dir;
+out float height;
 
 void main() {
-    float height = texture(sampled_heightmap, texcoord).r * HEIGHT_SCALE;
-    vec4 pos = vec4(position.x, height, position.z, 1.0);
+    float h = texture(sampled_heightmap, texcoord).r;
+    vec4 pos = vec4(position.x, h * HEIGHT_SCALE, position.z, 1.0);
 
     gl_Position = mvp * pos;
 
@@ -94,12 +106,17 @@ void main() {
     uv = texcoord;
     normal = normal_pos;
     frag_pos = normalize(pos.xyz);
+    height = h;
 }
 #pragma sokol @end
 
 // FRAGMENT SHADER
 #pragma sokol @fs fs
 #pragma sokol @include_block common
+
+layout(binding = 1) uniform texture2D diffuse_texture;
+layout(binding = 1) uniform sampler diffuse_smp;
+#define sampled_diffuse sampler2D(diffuse_texture, diffuse_smp)
 
 in vec4 color;
 in vec2 uv;
@@ -108,20 +125,13 @@ in vec3 frag_pos;
 
 in float time;
 in vec3 light_dir;
+in float height;
 
 out vec4 frag_color;
 
 void main() {
-    vec3 color;
-
-    if (frag_pos.y < WATER)
-        color = vec3(0.1, 0.3, 0.8);
-    else if (frag_pos.y < BEACH)
-        color = vec3(0.6, 0.5, 0.2);
-    else
-        color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), frag_pos.y + 0.5);
-
-    vec3 final = vec3(dot(normal, light_dir) * color);
+    vec3 texture_color = texture(sampled_diffuse, uv).rgb;
+    vec3 final = vec3(dot(normal, light_dir) * texture_color);
 
     frag_color = vec4(final, 1);
 }
