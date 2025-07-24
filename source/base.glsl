@@ -6,14 +6,16 @@
 #pragma sokol @block common
 const float PI = 3.14159265359;
 const float TAU = PI * 2;
+
+const float FREQUENCY = 5.0;
+const float HEIGHT_SCALE = 550.0;
 #pragma sokol @end
 
 // COMPUTE SHADER
 #pragma sokol @cs cs_init
+#pragma sokol @include_block common
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 layout(binding = 0, rgba32f) uniform image2D noise_image;
-
-const float FREQUENCY = 10.0;
 
 float random2d(vec2 coord) {
     return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
@@ -36,7 +38,13 @@ float noise(vec2 uv) {
 void main() {
     ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);
     vec2 uv = vec2(texel_coord) / vec2(imageSize(noise_image));
-    float n = noise(uv * FREQUENCY);
+
+    float f1 = 1.0 * noise(uv * FREQUENCY);
+    float f2 = 0.5 * noise(2 * uv * FREQUENCY);
+    float f3 = 0.25 * noise(4 * uv * FREQUENCY);
+
+    float n = f1 + f2 + f3;
+
     imageStore(noise_image, texel_coord, vec4(vec3(n), 1.0));
 }
 
@@ -68,8 +76,6 @@ out vec3 normal;
 out vec3 frag_pos;
 out float time;
 out vec3 light_dir;
-
-const float HEIGHT_SCALE = 550.0;
 
 void main() {
     float height = texture(sampled_heightmap, texcoord).r * HEIGHT_SCALE;
