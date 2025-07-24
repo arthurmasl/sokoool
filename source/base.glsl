@@ -7,8 +7,12 @@
 const float PI = 3.14159265359;
 const float TAU = PI * 2;
 
-const float FREQUENCY = 5.0;
-const float HEIGHT_SCALE = 550.0;
+const float FREQUENCY = 10.0;
+const float HEIGHT_SCALE = 1050.0;
+const float REDISTRIBUTION = 3.0;
+
+const float WATER = 0.01;
+const float BEACH = 0.02;
 #pragma sokol @end
 
 // COMPUTE SHADER
@@ -43,7 +47,7 @@ void main() {
     float f2 = 0.5 * noise(2 * uv * FREQUENCY);
     float f3 = 0.25 * noise(4 * uv * FREQUENCY);
 
-    float n = f1 + f2 + f3;
+    float n = pow((f1 + f2 + f3) / (1 + 0.5 + 0.25), REDISTRIBUTION);
 
     imageStore(noise_image, texel_coord, vec4(vec3(n), 1.0));
 }
@@ -108,8 +112,17 @@ in vec3 light_dir;
 out vec4 frag_color;
 
 void main() {
-    vec3 color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), frag_pos.y + 0.5);
+    vec3 color;
+
+    if (frag_pos.y < WATER)
+        color = vec3(0.1, 0.3, 0.8);
+    else if (frag_pos.y < BEACH)
+        color = vec3(0.6, 0.5, 0.2);
+    else
+        color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), frag_pos.y + 0.5);
+
     vec3 final = vec3(dot(normal, light_dir) * color);
+
     frag_color = vec4(final, 1);
 }
 

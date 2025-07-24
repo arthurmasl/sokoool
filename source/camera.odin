@@ -109,7 +109,7 @@ camera_update :: proc() -> (Mat4, Mat4) {
     g.camera.fov,
     sapp.widthf() / sapp.heightf(),
     0.1,
-    15000.0,
+    25000.0,
   )
 
   return view, projection
