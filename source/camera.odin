@@ -67,6 +67,7 @@ camera_process_input :: proc(e: ^sapp.Event) {
   }
 }
 
+@(require_results)
 camera_update :: proc() -> (Mat4, Mat4) {
   // camera
   g.camera.yaw += g.camera.mouse_x * SENSITIVITY

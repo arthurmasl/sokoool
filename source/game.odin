@@ -156,9 +156,9 @@ game_frame :: proc() {
   sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
 
   // debug screen
+  sg.apply_viewport(0, 0, QUAD_SIZE, QUAD_SIZE, false)
   sg.apply_pipeline(g.pipelines[.Atlas])
   sg.apply_bindings(g.bindings[.Atlas])
-  sg.apply_viewport(0, 0, QUAD_SIZE, QUAD_SIZE, false)
   sg.draw(g.ranges[.Atlas].base_element, g.ranges[.Atlas].num_elements, 1)
 
   debug_process()

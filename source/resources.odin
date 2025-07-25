@@ -64,10 +64,12 @@ sg_range :: proc {
   sg_range_from_struct,
 }
 
+@(require_results)
 sg_range_from_slice :: proc(sl: []$T) -> sg.Range {
   return {ptr = raw_data(sl), size = uint(slice.size(sl))}
 }
 
+@(require_results)
 sg_range_from_struct :: proc(st: ^$T) -> sg.Range where intrinsics.type_is_struct(T) {
   return sg.Range{ptr = st, size = size_of(T)}
 }
