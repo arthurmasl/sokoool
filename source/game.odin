@@ -83,6 +83,11 @@ game_init :: proc() {
     },
   )
 
+  atlas_transform := transmute([4][4]f32)(linalg.matrix4_rotate_f32(
+      90 * linalg.RAD_PER_DEG,
+      {1, 0, 0},
+    ))
+
   // passes
   g.passes[.Display] = {
     action = {colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}}},
@@ -95,21 +100,11 @@ game_init :: proc() {
   // shapes
   build_shape(
     .Terrain,
-    {width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
+    sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
   )
   build_shape(
     .Atlas,
-    {
-      width = 2,
-      depth = 2,
-      tiles = 1,
-      transform = {
-        m = transmute([4][4]f32)(linalg.matrix4_rotate_f32(
-            90 * linalg.RAD_PER_DEG,
-            {1, 0, 0},
-          )),
-      },
-    },
+    sshape.Plane{width = 2, depth = 2, tiles = 1, transform = {m = atlas_transform}},
   )
 
   // pipelines
