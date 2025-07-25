@@ -78,9 +78,11 @@ camera_update :: proc() -> (Mat4, Mat4) {
   g.camera.pitch = math.clamp(g.camera.pitch, -89, 89)
 
   direction := Vec3 {
-    math.cos(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch)),
+    math.cos(linalg.to_radians(g.camera.yaw)) *
+    math.cos(linalg.to_radians(g.camera.pitch)),
     math.sin(linalg.to_radians(g.camera.pitch)),
-    math.sin(linalg.to_radians(g.camera.yaw)) * math.cos(linalg.to_radians(g.camera.pitch)),
+    math.sin(linalg.to_radians(g.camera.yaw)) *
+    math.cos(linalg.to_radians(g.camera.pitch)),
   }
 
   g.camera.front = linalg.normalize(direction)
@@ -104,7 +106,11 @@ camera_update :: proc() -> (Mat4, Mat4) {
   g.camera.pos += linalg.normalize0(dir) * vel
   // g.camera.pos.y = max(g.camera.pos.y, 1)
 
-  view := linalg.matrix4_look_at_f32(g.camera.pos, g.camera.pos + g.camera.front, g.camera.up)
+  view := linalg.matrix4_look_at_f32(
+    g.camera.pos,
+    g.camera.pos + g.camera.front,
+    g.camera.up,
+  )
   projection := linalg.matrix4_perspective_f32(
     g.camera.fov,
     sapp.widthf() / sapp.heightf(),

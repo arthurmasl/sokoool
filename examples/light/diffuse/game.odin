@@ -34,7 +34,10 @@ game_init :: proc() {
   {
     shader = sg.make_shader(simple_shader),
     layout = {
-      attrs = {ATTR_simple_pos = {format = .FLOAT3}, ATTR_simple_normals_pos = {format = .FLOAT3}},
+      attrs = {
+        ATTR_simple_pos = {format = .FLOAT3},
+        ATTR_simple_normals_pos = {format = .FLOAT3},
+      },
     },
     // cull_mode = .BACK,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
@@ -43,7 +46,10 @@ game_init :: proc() {
   g.pip_light = sg.make_pipeline(
   {
     shader = sg.make_shader(light_shader),
-    layout = {attrs = {ATTR_simple_pos = {format = .FLOAT3}}, buffers = {0 = {stride = 24}}},
+    layout = {
+      attrs = {ATTR_simple_pos = {format = .FLOAT3}},
+      buffers = {0 = {stride = 24}},
+    },
     // cull_mode = .BACK,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
   },

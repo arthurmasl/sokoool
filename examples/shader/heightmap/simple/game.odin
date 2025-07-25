@@ -85,7 +85,9 @@ game_init :: proc() {
     // color_count = 1,
   }
 
-  g.display.bind.images[IMG_heightmap_texture] = sg.make_image(load_image("heightmap_terrain.png"))
+  g.display.bind.images[IMG_heightmap_texture] = sg.make_image(
+    load_image("heightmap_terrain.png"),
+  )
   g.display.bind.samplers[SMP_heightmap_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
 
   g.display.pip = sg.make_pipeline(pipeline_desc)

@@ -34,7 +34,10 @@ game_init :: proc() {
     vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
     indices = {buffer = {ptr = &indices, size = size_of(indices)}},
   }
-  buf = sshape.build_plane(buf, {width = 5.0, depth = 1.0, tiles = 0, random_colors = false})
+  buf = sshape.build_plane(
+    buf,
+    {width = 5.0, depth = 1.0, tiles = 0, random_colors = false},
+  )
   // buf = sshape.build_box(
   //   buf,
   //   {width = 1.0, depth = 1.0, height = 1.0, tiles = 1, merge = true, random_colors = true},
@@ -46,41 +49,43 @@ game_init :: proc() {
   g.display.bind.index_buffer = sg.make_buffer(sshape.index_buffer_desc(buf))
 
   g.display.pip = sg.make_pipeline(
-  {
-    shader = sg.make_shader(base_shader_desc(sg.query_backend())),
-    layout = {
-      buffers = {0 = sshape.vertex_buffer_layout_state()},
-      attrs = {
-        0 = sshape.position_vertex_attr_state(),
-        1 = sshape.normal_vertex_attr_state(),
-        2 = sshape.texcoord_vertex_attr_state(),
-        3 = sshape.color_vertex_attr_state(),
-      },
-    },
-    index_type = .UINT16,
-    cull_mode = .NONE,
-    depth = {compare = .LESS_EQUAL, write_enabled = true},
-    colors = {
-      0 = {
-        blend = {
-          enabled = true,
-          src_factor_rgb = .SRC_ALPHA,
-          dst_factor_rgb = .ONE_MINUS_SRC_ALPHA,
-          op_rgb = .ADD,
-          src_factor_alpha = .SRC_ALPHA,
-          dst_factor_alpha = .ONE_MINUS_SRC_ALPHA,
-          op_alpha = .ADD,
+    {
+      shader = sg.make_shader(base_shader_desc(sg.query_backend())),
+      layout = {
+        buffers = {0 = sshape.vertex_buffer_layout_state()},
+        attrs = {
+          0 = sshape.position_vertex_attr_state(),
+          1 = sshape.normal_vertex_attr_state(),
+          2 = sshape.texcoord_vertex_attr_state(),
+          3 = sshape.color_vertex_attr_state(),
         },
       },
+      index_type = .UINT16,
+      cull_mode = .NONE,
+      depth = {compare = .LESS_EQUAL, write_enabled = true},
+      colors = {
+        0 = {
+          blend = {
+            enabled = true,
+            src_factor_rgb = .SRC_ALPHA,
+            dst_factor_rgb = .ONE_MINUS_SRC_ALPHA,
+            op_rgb = .ADD,
+            src_factor_alpha = .SRC_ALPHA,
+            dst_factor_alpha = .ONE_MINUS_SRC_ALPHA,
+            op_alpha = .ADD,
+          },
+        },
+      },
+      color_count = 1,
+      // primitive_type = .LINE_STRIP,
+      // primitive_type = .LINES,
     },
-    color_count = 1,
-    // primitive_type = .LINE_STRIP,
-    // primitive_type = .LINES,
-  },
   )
 
   g.display.bind.images[IMG_first_texture] = sg.make_image(load_image("healthbar.png"))
-  g.display.bind.samplers[SMP_first_texture_smp] = sg.make_sampler({wrap_u = .CLAMP_TO_EDGE})
+  g.display.bind.samplers[SMP_first_texture_smp] = sg.make_sampler(
+    {wrap_u = .CLAMP_TO_EDGE},
+  )
 
   g.pass = {
     colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}},

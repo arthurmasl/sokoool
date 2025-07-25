@@ -8,23 +8,6 @@ import slog "sokol/log"
 import sshape "sokol/shape"
 import stm "sokol/time"
 
-BindingID :: enum {
-  Terrain,
-  Atlas,
-}
-
-PipelineID :: enum {
-  Display,
-  Primitive,
-  Atlas,
-  Compute,
-}
-
-PassID :: enum {
-  Display,
-  Compute,
-}
-
 Game_Memory :: struct {
   camera:    Camera,
   //
@@ -44,24 +27,6 @@ TERRAIN_HEIGHT :: 12800.0
 TERRAIN_TILES :: 100
 
 TRIANGLES :: TERRAIN_TILES * 2 * 4
-
-vertices: [64 * 1024]f32
-indices: [64 * 1024]u16
-
-shape_buffer := sshape.Buffer {
-  vertices = {buffer = {ptr = &vertices, size = size_of(vertices)}},
-  indices = {buffer = {ptr = &indices, size = size_of(indices)}},
-}
-
-build_plane :: proc(id: BindingID, desc: sshape.Plane) {
-  buffer := sshape.build_plane(
-    shape_buffer,
-    {width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
-  )
-  g.ranges[id] = sshape.element_range(buffer)
-  g.bindings[id].vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buffer))
-  g.bindings[id].index_buffer = sg.make_buffer(sshape.index_buffer_desc(buffer))
-}
 
 @(export)
 game_init :: proc() {
@@ -128,11 +93,11 @@ game_init :: proc() {
   }
 
   // shapes
-  build_plane(
+  build_shape(
     .Terrain,
     {width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
   )
-  build_plane(
+  build_shape(
     .Atlas,
     {
       width = 2,
@@ -201,7 +166,6 @@ game_frame :: proc() {
   sg.apply_viewport(0, 0, QUAD_SIZE, QUAD_SIZE, false)
   sg.draw(g.ranges[.Atlas].base_element, g.ranges[.Atlas].num_elements, 1)
 
-  sg.apply_viewport(0, 0, sapp.width(), sapp.height(), false)
   debug_process()
 
   sg.end_pass()
