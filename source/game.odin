@@ -26,6 +26,8 @@ TERRAIN_WIDTH :: 12800.0
 TERRAIN_HEIGHT :: 12800.0
 TERRAIN_TILES :: 100
 
+GRASS_COUNT :: 1
+
 TRIANGLES :: TERRAIN_TILES * 2 * 4
 
 @(export)
@@ -62,6 +64,11 @@ game_init :: proc() {
 
   debug_pip_desc := display_pip_desc
   debug_pip_desc.primitive_type = .LINE_STRIP
+
+  grass_pip_desc := display_pip_desc
+  // grass_pip_desc.primitive_type = .LINE_STRIP
+  grass_pip_desc.cull_mode = .NONE
+  grass_pip_desc.shader = sg.make_shader(grass_shader_desc(sg.query_backend()))
 
   sampler := sg.make_sampler({})
   image_desc := sg.Image_Desc {
@@ -106,6 +113,7 @@ game_init :: proc() {
     .Atlas,
     sshape.Plane{width = 2, depth = 2, tiles = 1, transform = {m = atlas_transform}},
   )
+  build_shape(.Grass, sshape.Plane{width = 1, depth = 1, tiles = 3})
 
   // pipelines
   g.pipelines[.Display] = sg.make_pipeline(display_pip_desc)
@@ -114,6 +122,7 @@ game_init :: proc() {
   g.pipelines[.Compute] = sg.make_pipeline(
     {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
   )
+  g.pipelines[.Grass] = sg.make_pipeline(grass_pip_desc)
 
   // compute
   sg.begin_pass(g.passes[.Compute])
@@ -124,13 +133,14 @@ game_init :: proc() {
 
   // images
   g.bindings[.Terrain].images[IMG_heightmap_texture] = image_noise
-  g.bindings[.Terrain].images[IMG_diffuse_texture] = image_diffuse
-  g.bindings[.Atlas].images[IMG_noise_texture] = image_diffuse
-
-  // samplers
   g.bindings[.Terrain].samplers[SMP_heightmap_smp] = sampler
-  g.bindings[.Terrain].samplers[SMP_diffuse_smp] = sampler
+
+  // g.bindings[.Terrain].images[IMG_diffuse_texture] = image_diffuse
+  // g.bindings[.Terrain].samplers[SMP_diffuse_smp] = sampler
+
+  g.bindings[.Atlas].images[IMG_noise_texture] = image_diffuse
   g.bindings[.Atlas].samplers[SMP_noise_smp] = sampler
+
 }
 
 @(export)
@@ -139,13 +149,19 @@ game_frame :: proc() {
 
   view, projection := camera_update()
   time := f32(stm.sec(stm.now()))
-  model := linalg.matrix4_translate_f32({0, -500, 0})
 
   vs_params := Vs_Params {
-    mvp         = projection * view * model,
+    mvp         = projection * view * linalg.matrix4_translate_f32({0, -500, 0}),
     u_time      = time,
     u_light_dir = Vec3{0, 1.0, 0},
   }
+  vs_params_grass := vs_params
+  vs_params_grass.mvp =
+    projection *
+    view *
+    linalg.matrix4_translate_f32({0, 0, 0}) *
+    linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * 90, {1, 0, 0}) *
+    linalg.matrix4_scale_f32({0.2, 1, 1})
 
   sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
 
@@ -154,6 +170,12 @@ game_frame :: proc() {
   sg.apply_bindings(g.bindings[.Terrain])
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
+
+  // grass
+  sg.apply_pipeline(g.pipelines[.Grass])
+  sg.apply_bindings(g.bindings[.Grass])
+  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params_grass))
+  sg.draw(g.ranges[.Grass].base_element, g.ranges[.Grass].num_elements, GRASS_COUNT)
 
   // debug screen
   sg.apply_viewport(0, 0, QUAD_SIZE, QUAD_SIZE, false)

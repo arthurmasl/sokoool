@@ -10,6 +10,7 @@ Mat4 :: matrix[4, 4]f32
 BindingID :: enum u8 {
   Terrain,
   Atlas,
+  Grass,
 }
 
 PipelineID :: enum u8 {
@@ -17,6 +18,7 @@ PipelineID :: enum u8 {
   Primitive,
   Atlas,
   Compute,
+  Grass,
 }
 
 PassID :: enum u8 {

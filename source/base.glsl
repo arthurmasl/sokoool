@@ -13,11 +13,25 @@ const float REDISTRIBUTION = 3.0;
 
 const float WATER = 0.01;
 const float BEACH = 0.02;
+
+vec3 get_biome_color(float height) {
+    vec3 color;
+
+    if (height < WATER)
+        color = vec3(0.1, 0.3, 0.8);
+    else if (height < BEACH)
+        color = vec3(0.6, 0.5, 0.2);
+    else
+        color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), height + 0.5);
+
+    return color;
+}
 #pragma sokol @end
 
 // COMPUTE SHADER
 #pragma sokol @cs cs_init
 #pragma sokol @include_block common
+
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 layout(binding = 0, rgba32f) uniform image2D noise_image;
 layout(binding = 1, rgba32f) uniform image2D diffuse_image;
@@ -52,13 +66,7 @@ void main() {
 
     imageStore(noise_image, texel_coord, vec4(vec3(n), 1.0));
 
-    vec3 color;
-    if (n < WATER)
-        color = vec3(0.1, 0.3, 0.8);
-    else if (n < BEACH)
-        color = vec3(0.6, 0.5, 0.2);
-    else
-        color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), n + 0.5);
+    vec3 color = get_biome_color(n);
 
     imageStore(diffuse_image, texel_coord, vec4(color, 1.0));
 }
@@ -114,9 +122,9 @@ void main() {
 #pragma sokol @fs fs
 #pragma sokol @include_block common
 
-layout(binding = 1) uniform texture2D diffuse_texture;
-layout(binding = 1) uniform sampler diffuse_smp;
-#define sampled_diffuse sampler2D(diffuse_texture, diffuse_smp)
+// layout(binding = 1) uniform texture2D diffuse_texture;
+// layout(binding = 1) uniform sampler diffuse_smp;
+// #define sampled_diffuse sampler2D(diffuse_texture, diffuse_smp)
 
 in vec4 color;
 in vec2 uv;
@@ -130,8 +138,8 @@ in float height;
 out vec4 frag_color;
 
 void main() {
-    vec3 texture_color = texture(sampled_diffuse, uv).rgb;
-    vec3 final = vec3(dot(normal, light_dir) * texture_color);
+    vec3 biome_color = get_biome_color(height);
+    vec3 final = vec3(dot(normal, light_dir) * biome_color);
 
     frag_color = vec4(final, 1);
 }
