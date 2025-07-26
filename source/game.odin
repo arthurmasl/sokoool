@@ -153,7 +153,7 @@ game_frame :: proc() {
   vs_params := Vs_Params {
     mvp         = projection * view * linalg.matrix4_translate_f32({0, -500, 0}),
     u_time      = time,
-    u_light_dir = Vec3{0, 1.0, 0},
+    u_light_dir = Vec3{0.0, 1.0, 0.0},
   }
   vs_params_grass := vs_params
   vs_params_grass.mvp =

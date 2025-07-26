@@ -14,23 +14,28 @@ layout(binding = 0) uniform vs_params_grass {
 
 out vec2 uv;
 out vec3 normal;
+out vec3 light_dir;
 
 void main() {
     gl_Position = mvp * vec4(position, 1.0);
     uv = texcoord;
     normal = normal_pos;
+    light_dir = u_light_dir;
 }
 #pragma sokol @end
 
 #pragma sokol @fs fs
 in vec2 uv;
 in vec3 normal;
+in vec3 light_dir;
 
 out vec4 frag_color;
 
 void main() {
     vec3 color = mix(vec3(0.3, 0.6, 0.3), vec3(0.8, 0.9, 0), uv.y);
-    frag_color = vec4(color, 1.0);
+    vec3 final = vec3(dot(normal, light_dir) * color);
+
+    frag_color = vec4(final, 1.0);
 }
 
 #pragma sokol @end
