@@ -1,9 +1,6 @@
-#pragma sokol @header package game
-#pragma sokol @header import sg "sokol/gfx"
-#pragma sokol @ctype mat4 Mat4
+#pragma sokol @include common.glsl
 
 #pragma sokol @vs vs
-
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal_pos;
 layout(location = 2) in vec2 texcoord;

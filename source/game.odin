@@ -44,7 +44,7 @@ game_init :: proc() {
 
   // resources
   display_pip_desc := sg.Pipeline_Desc {
-    shader = sg.make_shader(base_shader_desc(sg.query_backend())),
+    shader = sg.make_shader(terrain_shader_desc(sg.query_backend())),
     layout = {
       buffers = {0 = sshape.vertex_buffer_layout_state()},
       attrs = {
