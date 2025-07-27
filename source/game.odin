@@ -1,6 +1,7 @@
 package game
 
 import "core:math/linalg"
+import "core:math/rand"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
@@ -28,7 +29,7 @@ TERRAIN_WIDTH :: 12800.0
 TERRAIN_HEIGHT :: 12800.0
 TERRAIN_TILES :: 100
 
-GRASS_COUNT :: 4
+GRASS_COUNT :: 300
 
 TRIANGLES :: TERRAIN_TILES * 2 * 4
 
@@ -122,8 +123,11 @@ game_init :: proc() {
   // grass
   build_grass(.Grass)
   for &grass in g.grass_inst {
-    grass.model = linalg.matrix4_translate_f32({0, 0, 0})
+    grass.model = linalg.matrix4_translate_f32(
+      {rand.float32_range(-50, 50), 0, rand.float32_range(-50, 50)},
+    )
   }
+
   sg.update_buffer(
     g.bindings[.Grass].storage_buffers[SBUF_instances],
     data = {ptr = &g.grass_inst, size = GRASS_COUNT * size_of(Sb_Instance)},

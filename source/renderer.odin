@@ -42,19 +42,22 @@ build_shape :: proc(id: BindingID, desc: ShapeType) {
 
 build_grass :: proc(id: BindingID) {
   vertices := []Sb_Vertex {
-    {position = {0.0, 0.1, 0.5}, texcoord = {1, 0}, normal_pos = {0, 0, 0}}, // t
-    {position = {0.1, -0.1, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // r
-    {position = {-0.1, -0.1, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // l
-    // quad
-    {position = {-0.1, -0.1, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // tl
-    {position = {0.1, -0.1, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // tr
-    {position = {0.1, -0.4, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // br
-    {position = {-0.1, -0.4, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // bl
-    // quad 2
-    {position = {-0.1, -0.4, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // tl
-    {position = {0.1, -0.4, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // tr
-    {position = {0.1, -0.8, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // br
-    {position = {-0.1, -0.8, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // bl
+    // Triangle (top)
+    {position = {0.0, 0.1, 0.5}, texcoord = {0.5, 0.0}, normal_pos = {0, 0, 0}}, // top-center
+    {position = {0.1, -0.1, 0.5}, texcoord = {1.0, 0.222}, normal_pos = {0, 0, 0}}, // bottom-right
+    {position = {-0.1, -0.1, 0.5}, texcoord = {0.0, 0.222}, normal_pos = {0, 0, 0}}, // bottom-left
+
+    // Quad 1 (middle)
+    {position = {-0.1, -0.1, 0.5}, texcoord = {0.0, 0.222}, normal_pos = {0, 0, 0}}, // top-left
+    {position = {0.1, -0.1, 0.5}, texcoord = {1.0, 0.222}, normal_pos = {0, 0, 0}}, // top-right
+    {position = {0.1, -0.4, 0.5}, texcoord = {1.0, 0.555}, normal_pos = {0, 0, 0}}, // bottom-right
+    {position = {-0.1, -0.4, 0.5}, texcoord = {0.0, 0.555}, normal_pos = {0, 0, 0}}, // bottom-left
+
+    // Quad 2 (bottom)
+    {position = {-0.1, -0.4, 0.5}, texcoord = {0.0, 0.555}, normal_pos = {0, 0, 0}}, // top-left
+    {position = {0.1, -0.4, 0.5}, texcoord = {1.0, 0.555}, normal_pos = {0, 0, 0}}, // top-right
+    {position = {0.1, -0.8, 0.5}, texcoord = {1.0, 1.0}, normal_pos = {0, 0, 0}}, // bottom-right
+    {position = {-0.1, -0.8, 0.5}, texcoord = {0.0, 1.0}, normal_pos = {0, 0, 0}}, // bottom-left
   }
   
   // odinfmt: disable
