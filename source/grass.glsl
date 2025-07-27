@@ -32,6 +32,7 @@ out vec3 light_dir;
 void main() {
     mat4 model = inst[gl_InstanceIndex].model;
     vec3 pos = vtx[gl_VertexIndex].position;
+    pos.y -= 450;
     gl_Position = vp * model * vec4(pos, 1.0);
 
     uv = vtx[gl_VertexIndex].texcoord;
