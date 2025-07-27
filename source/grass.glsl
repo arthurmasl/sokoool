@@ -25,6 +25,10 @@ layout(binding = 0) uniform vs_params_grass {
     vec3 u_light_dir;
 };
 
+// layout(binding = 0) uniform texture2D heightmap_texture_g;
+// layout(binding = 0) uniform sampler heightmap_smp_g;
+// #define sampled_heightmap sampler2D(heightmap_texture_g, heightmap_smp_g)
+
 out vec2 uv;
 out vec3 normal;
 out vec3 light_dir;
