@@ -9,12 +9,14 @@ import sshape "sokol/shape"
 import stm "sokol/time"
 
 Game_Memory :: struct {
-  camera:    Camera,
+  camera:     Camera,
   //
-  ranges:    [BindingID]sshape.Element_Range,
-  passes:    [PassID]sg.Pass,
-  bindings:  [BindingID]sg.Bindings,
-  pipelines: [PipelineID]sg.Pipeline,
+  ranges:     [BindingID]sshape.Element_Range,
+  passes:     [PassID]sg.Pass,
+  bindings:   [BindingID]sg.Bindings,
+  pipelines:  [PipelineID]sg.Pipeline,
+  //
+  grass_inst: [GRASS_COUNT]Sb_Instance,
 }
 
 QUAD_SIZE :: 500
@@ -26,7 +28,7 @@ TERRAIN_WIDTH :: 12800.0
 TERRAIN_HEIGHT :: 12800.0
 TERRAIN_TILES :: 100
 
-GRASS_COUNT :: 1
+GRASS_COUNT :: 4
 
 TRIANGLES :: TERRAIN_TILES * 2 * 4
 
@@ -65,19 +67,13 @@ game_init :: proc() {
   debug_pip_desc := display_pip_desc
   debug_pip_desc.primitive_type = .LINE_STRIP
 
-  // grass_pip_desc := display_pip_desc
-  // grass_pip_desc.primitive_type = .LINE_STRIP
   grass_pip_desc := sg.Pipeline_Desc {
     shader = sg.make_shader(grass_shader_desc(sg.query_backend())),
-    layout = {
-      attrs = {0 = {format = .FLOAT3}, 1 = {format = .FLOAT3}, 2 = {format = .FLOAT2}},
-    },
     index_type = .UINT16,
     cull_mode = .NONE,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
+    // primitive_type = .LINE_STRIP,
   }
-  grass_pip_desc.cull_mode = .NONE
-  grass_pip_desc.shader = sg.make_shader(grass_shader_desc(sg.query_backend()))
 
   sampler := sg.make_sampler({})
   image_desc := sg.Image_Desc {
@@ -122,8 +118,16 @@ game_init :: proc() {
     .Atlas,
     sshape.Plane{width = 2, depth = 2, tiles = 1, transform = {m = atlas_transform}},
   )
-  // build_shape(.Grass, sshape.Plane{width = 1, depth = 1, tiles = 3})
+
+  // grass
   build_grass(.Grass)
+  for &grass in g.grass_inst {
+    grass.model = linalg.matrix4_translate_f32({0, 0, 0})
+  }
+  sg.update_buffer(
+    g.bindings[.Grass].storage_buffers[SBUF_instances],
+    data = {ptr = &g.grass_inst, size = GRASS_COUNT * size_of(Sb_Instance)},
+  )
 
   // pipelines
   g.pipelines[.Display] = sg.make_pipeline(display_pip_desc)
@@ -165,10 +169,11 @@ game_frame :: proc() {
     u_time      = time,
     u_light_dir = Vec3{0.0, 1.0, 0.0},
   }
-  vs_params_grass := vs_params
-  vs_params_grass.mvp = projection * view * linalg.matrix4_translate_f32({0, 0, 0})
-  // linalg.matrix4_scale_f32({0.2, 1, 1})
-  // linalg.matrix4_rotate_f32(linalg.RAD_PER_DEG * 90, {1, 0, 0}) *
+  vs_params_grass := Vs_Params_Grass {
+    vp          = projection * view,
+    u_time      = vs_params.u_time,
+    u_light_dir = vs_params.u_light_dir,
+  }
 
   sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
 
@@ -181,7 +186,7 @@ game_frame :: proc() {
   // grass
   sg.apply_pipeline(g.pipelines[.Grass])
   sg.apply_bindings(g.bindings[.Grass])
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params_grass))
+  sg.apply_uniforms(UB_vs_params_grass, data = sg_range(&vs_params_grass))
   sg.draw(g.ranges[.Grass].base_element, g.ranges[.Grass].num_elements, GRASS_COUNT)
 
   // debug screen

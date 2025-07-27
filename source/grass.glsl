@@ -1,13 +1,25 @@
 #pragma sokol @include common.glsl
 
 #pragma sokol @vs vs
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec3 normal_pos;
-layout(location = 2) in vec2 texcoord;
-// layout(location = 3) in vec4 color0;
+
+struct sb_vertex {
+    vec3 position;
+    vec3 normal_pos;
+    vec2 texcoord;
+};
+struct sb_instance {
+    mat4 model;
+};
+
+layout(binding = 0) readonly buffer vertices {
+    sb_vertex vtx[];
+};
+layout(binding = 1) readonly buffer instances {
+    sb_instance inst[];
+};
 
 layout(binding = 0) uniform vs_params_grass {
-    mat4 mvp;
+    mat4 vp;
     float u_time;
     vec3 u_light_dir;
 };
@@ -17,9 +29,12 @@ out vec3 normal;
 out vec3 light_dir;
 
 void main() {
-    gl_Position = mvp * vec4(position, 1.0);
-    uv = texcoord;
-    normal = normal_pos;
+    mat4 model = inst[gl_InstanceIndex].model;
+    vec3 pos = vtx[gl_VertexIndex].position;
+    gl_Position = vp * model * vec4(pos, 1.0);
+
+    uv = vtx[gl_VertexIndex].texcoord;
+    normal = vtx[gl_VertexIndex].normal_pos;
     light_dir = u_light_dir;
 }
 #pragma sokol @end

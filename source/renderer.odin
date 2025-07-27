@@ -41,24 +41,20 @@ build_shape :: proc(id: BindingID, desc: ShapeType) {
 }
 
 build_grass :: proc(id: BindingID) {
-  vertices := []struct {
-    pos:      Vec3,
-    normal:   Vec3,
-    texcoord: Vec2,
-  } {
-    {pos = {0.0, 0.1, 0.5}, texcoord = {1, 0}}, // top
-    {pos = {0.1, -0.1, 0.5}, texcoord = {0, 1}}, // right
-    {pos = {-0.1, -0.1, 0.5}, texcoord = {0, 1}}, // left
+  vertices := []Sb_Vertex {
+    {position = {0.0, 0.1, 0.5}, texcoord = {1, 0}, normal_pos = {0, 0, 0}}, // t
+    {position = {0.1, -0.1, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // r
+    {position = {-0.1, -0.1, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // l
     // quad
-    {pos = {-0.1, -0.1, 0.5}, texcoord = {0, 1}}, // tl
-    {pos = {0.1, -0.1, 0.5}, texcoord = {0, 1}}, // tr
-    {pos = {0.1, -0.4, 0.5}, texcoord = {0, 1}}, // br
-    {pos = {-0.1, -0.4, 0.5}, texcoord = {0, 1}}, // bl
+    {position = {-0.1, -0.1, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // tl
+    {position = {0.1, -0.1, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // tr
+    {position = {0.1, -0.4, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // br
+    {position = {-0.1, -0.4, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // bl
     // quad 2
-    {pos = {-0.1, -0.4, 0.5}, texcoord = {0, 1}}, // tl
-    {pos = {0.1, -0.4, 0.5}, texcoord = {0, 1}}, // tr
-    {pos = {0.1, -0.8, 0.5}, texcoord = {0, 1}}, // br
-    {pos = {-0.1, -0.8, 0.5}, texcoord = {0, 1}}, // bl
+    {position = {-0.1, -0.4, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // tl
+    {position = {0.1, -0.4, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // tr
+    {position = {0.1, -0.8, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // br
+    {position = {-0.1, -0.8, 0.5}, texcoord = {0, 1}, normal_pos = {0, 0, 0}}, // bl
   }
   
   // odinfmt: disable
@@ -69,7 +65,17 @@ build_grass :: proc(id: BindingID) {
   }
   // odinfmt: enable
 
-  g.bindings[id].vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
+  g.bindings[id].storage_buffers = {
+    SBUF_vertices  = sg.make_buffer(
+      {usage = {storage_buffer = true}, data = sg_range(vertices)},
+    ),
+    SBUF_instances = sg.make_buffer(
+      {
+        usage = {storage_buffer = true, stream_update = true},
+        size = GRASS_COUNT * size_of(Sb_Instance),
+      },
+    ),
+  }
   g.bindings[id].index_buffer = sg.make_buffer(
     {usage = {index_buffer = true}, data = sg_range(indices)},
   )
