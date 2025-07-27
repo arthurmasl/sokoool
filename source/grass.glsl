@@ -1,6 +1,7 @@
 #pragma sokol @include common.glsl
 
 #pragma sokol @vs vs
+#pragma sokol @include_block common
 
 struct sb_vertex {
     vec3 position;

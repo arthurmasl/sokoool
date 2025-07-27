@@ -29,7 +29,8 @@ TERRAIN_WIDTH :: 12800.0
 TERRAIN_HEIGHT :: 12800.0
 TERRAIN_TILES :: 100
 
-GRASS_COUNT :: 300
+GRASS_COUNT :: 10000
+GRASS_CHUNK_SIZE :: 100
 
 TRIANGLES :: TERRAIN_TILES * 2 * 4
 
@@ -124,7 +125,11 @@ game_init :: proc() {
   build_grass(.Grass)
   for &grass in g.grass_inst {
     grass.model = linalg.matrix4_translate_f32(
-      {rand.float32_range(-50, 50), 0, rand.float32_range(-50, 50)},
+      {
+        rand.float32_range(-GRASS_CHUNK_SIZE, GRASS_CHUNK_SIZE),
+        0,
+        rand.float32_range(-GRASS_CHUNK_SIZE, GRASS_CHUNK_SIZE),
+      },
     )
   }
 
@@ -152,6 +157,9 @@ game_init :: proc() {
   // images
   g.bindings[.Terrain].images[IMG_heightmap_texture] = image_noise
   g.bindings[.Terrain].samplers[SMP_heightmap_smp] = sampler
+
+  // g.bindings[.Grass].images[IMG_heightmap_texture_g] = image_noise
+  // g.bindings[.Grass].samplers[SMP_heightmap_smp_g] = sampler
 
   // g.bindings[.Terrain].images[IMG_diffuse_texture] = image_diffuse
   // g.bindings[.Terrain].samplers[SMP_diffuse_smp] = sampler
