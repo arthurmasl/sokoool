@@ -46,12 +46,28 @@ build_grass :: proc(id: BindingID) {
     normal:   Vec3,
     texcoord: Vec2,
   } {
-    {pos = {0.0, 0.5, 0.5}, texcoord = {1, 0}}, // top
-    {pos = {0.5, -0.5, 0.5}, texcoord = {0, 1}}, // right
-    {pos = {-0.5, -0.5, 0.5}, texcoord = {0, 1}}, // left
+    {pos = {0.0, 0.1, 0.5}, texcoord = {1, 0}}, // top
+    {pos = {0.1, -0.1, 0.5}, texcoord = {0, 1}}, // right
+    {pos = {-0.1, -0.1, 0.5}, texcoord = {0, 1}}, // left
+    // quad
+    {pos = {-0.1, -0.1, 0.5}, texcoord = {0, 1}}, // tl
+    {pos = {0.1, -0.1, 0.5}, texcoord = {0, 1}}, // tr
+    {pos = {0.1, -0.4, 0.5}, texcoord = {0, 1}}, // br
+    {pos = {-0.1, -0.4, 0.5}, texcoord = {0, 1}}, // bl
+    // quad 2
+    {pos = {-0.1, -0.4, 0.5}, texcoord = {0, 1}}, // tl
+    {pos = {0.1, -0.4, 0.5}, texcoord = {0, 1}}, // tr
+    {pos = {0.1, -0.8, 0.5}, texcoord = {0, 1}}, // br
+    {pos = {-0.1, -0.8, 0.5}, texcoord = {0, 1}}, // bl
   }
-
-  indices := []u16{0, 1, 2}
+  
+  // odinfmt: disable
+  indices := []u16{
+    0, 1, 2,
+    3, 4, 5, 3, 5, 6,
+    7, 8, 9, 7, 9, 10,
+  }
+  // odinfmt: enable
 
   g.bindings[id].vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
   g.bindings[id].index_buffer = sg.make_buffer(
@@ -59,6 +75,6 @@ build_grass :: proc(id: BindingID) {
   )
   g.ranges[id] = sshape.Element_Range {
     base_element = 0,
-    num_elements = 3,
+    num_elements = 15,
   }
 }
