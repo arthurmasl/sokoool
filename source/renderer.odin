@@ -39,3 +39,26 @@ build_shape :: proc(id: BindingID, desc: ShapeType) {
   g.bindings[id].vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buffer))
   g.bindings[id].index_buffer = sg.make_buffer(sshape.index_buffer_desc(buffer))
 }
+
+build_grass :: proc(id: BindingID) {
+  vertices := []struct {
+    pos:      Vec3,
+    normal:   Vec3,
+    texcoord: Vec2,
+  } {
+    {pos = {0.0, 0.5, 0.5}, texcoord = {1, 0}}, // top
+    {pos = {0.5, -0.5, 0.5}, texcoord = {0, 1}}, // right
+    {pos = {-0.5, -0.5, 0.5}, texcoord = {0, 1}}, // left
+  }
+
+  indices := []u16{0, 1, 2}
+
+  g.bindings[id].vertex_buffers[0] = sg.make_buffer({data = sg_range(vertices)})
+  g.bindings[id].index_buffer = sg.make_buffer(
+    {usage = {index_buffer = true}, data = sg_range(indices)},
+  )
+  g.ranges[id] = sshape.Element_Range {
+    base_element = 0,
+    num_elements = 3,
+  }
+}

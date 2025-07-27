@@ -3,6 +3,7 @@ package game
 import "base:intrinsics"
 import "core:fmt"
 import "core:os"
+import "core:slice"
 import sg "sokol/gfx"
 import stbi "vendor:stb/image"
 
