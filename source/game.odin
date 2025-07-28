@@ -112,16 +112,24 @@ game_init :: proc() {
   }
 
   // shapes
-  build_shape(
-    .Terrain,
-    sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
-  )
+  // build_shape(
+  //   .Terrain,
+  //   sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
+  // )
   build_shape(
     .Atlas,
     sshape.Plane{width = 2, depth = 2, tiles = 1, transform = {m = atlas_transform}},
   )
 
   // grass
+  vertices_storage_buffer := sg.make_buffer(
+    {usage = {storage_buffer = true}, size = size_of(Terrain_Vertex_Out) * 1000},
+  )
+
+  g.bindings[.Compute].storage_buffers = {
+    SBUF_terrain_vertices_in = vertices_storage_buffer,
+  }
+
   build_grass(.Grass)
   for &grass in g.grass_inst {
     grass.model = linalg.matrix4_translate_f32(
@@ -139,7 +147,13 @@ game_init :: proc() {
   )
 
   // pipelines
-  g.pipelines[.Display] = sg.make_pipeline(display_pip_desc)
+  terrain_pip_desc := sg.Pipeline_Desc {
+    shader = sg.make_shader(terrain_shader_desc(sg.query_backend())),
+    cull_mode = .BACK,
+    depth = {compare = .LESS_EQUAL, write_enabled = true},
+  }
+
+  g.pipelines[.Display] = sg.make_pipeline(terrain_pip_desc)
   g.pipelines[.Atlas] = sg.make_pipeline(quad_pip_desc)
   g.pipelines[.Primitive] = sg.make_pipeline(debug_pip_desc)
   g.pipelines[.Compute] = sg.make_pipeline(
@@ -150,13 +164,19 @@ game_init :: proc() {
   // compute
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Compute])
+  sg.apply_bindings(g.bindings[.Compute])
   sg.dispatch(NOISE_WIDTH / 32, NOISE_HEIGHT / 32, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Compute])
 
+  // ssbo
+  g.bindings[.Terrain].storage_buffers = {
+    SBUF_terrain_vertices_out = vertices_storage_buffer,
+  }
+
   // images
-  g.bindings[.Terrain].images[IMG_heightmap_texture] = image_noise
-  g.bindings[.Terrain].samplers[SMP_heightmap_smp] = sampler
+  // g.bindings[.Terrain].images[IMG_heightmap_texture] = image_noise
+  // g.bindings[.Terrain].samplers[SMP_heightmap_smp] = sampler
 
   // g.bindings[.Grass].images[IMG_heightmap_texture_g] = image_noise
   // g.bindings[.Grass].samplers[SMP_heightmap_smp_g] = sampler
@@ -193,7 +213,8 @@ game_frame :: proc() {
   sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Display])
   sg.apply_bindings(g.bindings[.Terrain])
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
+  // sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
+  sg.draw(0, 100000, 1)
 
   // grass
   sg.apply_pipeline(g.pipelines[.Grass])

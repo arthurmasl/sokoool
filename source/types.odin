@@ -11,6 +11,7 @@ BindingID :: enum u8 {
   Terrain,
   Atlas,
   Grass,
+  Compute,
 }
 
 PipelineID :: enum u8 {
