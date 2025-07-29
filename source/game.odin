@@ -22,7 +22,10 @@ Game_Memory :: struct {
 
 QUAD_SIZE :: 500
 NOISE_SIZE :: 128
-COMPUTE_THREADS :: 32
+COMPUTE_THREADS :: 1
+GRID_SIZE :: 1000
+
+NUM_TERRAIN_VERTICES :: (GRID_SIZE + COMPUTE_THREADS) * (GRID_SIZE + COMPUTE_THREADS)
 
 TERRAIN_SIZE :: 12800.0
 TERRAIN_TILES :: 100
@@ -99,13 +102,16 @@ game_init :: proc() {
   }
   g.pipelines[.Terrain] = sg.make_pipeline(terrain_pip_desc)
 
-  build_shape(
-    .Terrain,
-    sshape.Plane{width = TERRAIN_SIZE, depth = TERRAIN_SIZE, tiles = TERRAIN_TILES},
-  )
+  // build_shape(
+  //   .Terrain,
+  //   sshape.Plane{width = TERRAIN_SIZE, depth = TERRAIN_SIZE, tiles = TERRAIN_TILES},
+  // )
 
   terrain_storage_buffer := sg.make_buffer(
-    {usage = {storage_buffer = true}, size = size_of(Terrain_Vertex) * 1000},
+    {
+      usage = {storage_buffer = true},
+      size = size_of(Terrain_Vertex) * NUM_TERRAIN_VERTICES,
+    },
   )
   g.bindings[.Terrain].storage_buffers = {
     SBUF_terrain_vertices_buffer = terrain_storage_buffer,
@@ -171,7 +177,7 @@ game_init :: proc() {
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Compute])
   sg.apply_bindings(g.bindings[.Compute])
-  sg.dispatch(NOISE_SIZE / COMPUTE_THREADS, NOISE_SIZE / COMPUTE_THREADS, 1)
+  sg.dispatch(GRID_SIZE + 1, GRID_SIZE + 1, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Compute])
 
@@ -185,7 +191,7 @@ game_frame :: proc() {
   time := f32(stm.sec(stm.now()))
 
   vs_params := Vs_Params {
-    mvp         = projection * view * linalg.matrix4_translate_f32({0, -500, 0}),
+    mvp         = projection * view * linalg.matrix4_translate_f32({0, 0, 0}),
     u_time      = time,
     u_light_dir = Vec3{0.0, 1.0, 0.0},
   }
@@ -201,8 +207,8 @@ game_frame :: proc() {
   sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Terrain])
   sg.apply_bindings(g.bindings[.Terrain])
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
-  // sg.draw(0, 100000, 1)
+  // sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
+  sg.draw(0, NUM_TERRAIN_VERTICES, 1)
 
   // grass
   sg.apply_pipeline(g.pipelines[.Grass])

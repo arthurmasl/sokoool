@@ -72,7 +72,7 @@ void main() {
     vec3 biome_color = get_biome_color(height);
     vec3 final = vec3(dot(normal, light_dir) * biome_color);
 
-    final = vec3(1, 0, 0);
+    // final = vec3(1, 0, 0);
     frag_color = vec4(final, 1);
 }
 

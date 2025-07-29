@@ -3,7 +3,7 @@
 #pragma sokol @cs cs_init
 #pragma sokol @include_block common
 
-layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(binding = 0, rgba32f) uniform image2D noise_image;
 layout(binding = 1, rgba32f) uniform image2D diffuse_image;
 
@@ -35,6 +35,8 @@ float noise(vec2 uv) {
     return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
+const uint GRID_SIZE = 1000;
+
 void main() {
     // heightmap texture
     ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);
@@ -49,8 +51,13 @@ void main() {
     imageStore(noise_image, texel_coord, vec4(vec3(h), 1.0));
 
     // terrain vertices
-    // terrain_vertices[gl_GlobalInvocationID.x].position.y = terrain_vertices[gl_GlobalInvocationID.x].position.y;
-    terrain_vertices[gl_GlobalInvocationID.x].position.y = h * HEIGHT_SCALE;
+    uint x = gl_GlobalInvocationID.x;
+    uint z = gl_GlobalInvocationID.y;
+    uint index = z * (GRID_SIZE + 1) + x;
+
+    terrain_vertices[index].position = vec3(float(x), h, float(z));
+
+    // terrain_vertices[gl_GlobalInvocationID.x].position.y = h * HEIGHT_SCALE;
     // terrain_vertices[gl_GlobalInvocationID.x].texcoord = uv;
     // terrain_vertices[gl_GlobalInvocationID.x].normal_pos = vec3(0);
 
