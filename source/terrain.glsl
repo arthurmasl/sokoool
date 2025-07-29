@@ -3,15 +3,6 @@
 #pragma sokol @vs vs
 #pragma sokol @include_block common
 
-// layout(location = 0) in vec4 position;
-// layout(location = 1) in vec3 normal_pos;
-// layout(location = 2) in vec2 texcoord;
-// layout(location = 3) in vec4 color0;
-
-// layout(binding = 0) uniform texture2D heightmap_texture;
-// layout(binding = 0) uniform sampler heightmap_smp;
-// #define sampled_heightmap sampler2D(heightmap_texture, heightmap_smp)
-
 layout(binding = 0) uniform vs_params {
     mat4 mvp;
     float u_time;
@@ -36,8 +27,6 @@ out float time;
 out vec3 light_dir;
 
 void main() {
-    // float h = texture(sampled_heightmap, texcoord).r;
-    // vec4 pos = vec4(position.x, h * HEIGHT_SCALE, position.z, 1.0);
     vec3 pos = terrain_vertices[gl_VertexIndex].position;
 
     gl_Position = mvp * vec4(pos, 1.0);
@@ -53,10 +42,6 @@ void main() {
 
 #pragma sokol @fs fs
 #pragma sokol @include_block common
-
-// layout(binding = 1) uniform texture2D diffuse_texture;
-// layout(binding = 1) uniform sampler diffuse_smp;
-// #define sampled_diffuse sampler2D(diffuse_texture, diffuse_smp)
 
 in vec3 frag_pos;
 in vec2 uv;

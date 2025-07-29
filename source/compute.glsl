@@ -52,6 +52,10 @@ void main() {
 
     imageStore(noise_image, texel_coord, vec4(vec3(h), 1.0));
 
+    // color texture
+    vec3 color = get_biome_color(h);
+    imageStore(diffuse_image, texel_coord, vec4(color, 1.0));
+
     // terrain vertices
     uint x = gl_GlobalInvocationID.x;
     uint z = gl_GlobalInvocationID.y;
@@ -63,10 +67,6 @@ void main() {
 
     terrain_vertices[index].position = vec3(float(x), h * HEIGHT_SCALE, float(z));
     terrain_vertices[index].texcoord = vec2(x / grid_size, z / grid_size);
-
-    // color texture
-    vec3 color = get_biome_color(h);
-    imageStore(diffuse_image, texel_coord, vec4(color, 1.0));
 }
 
 #pragma sokol @end
