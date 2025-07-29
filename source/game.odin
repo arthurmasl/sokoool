@@ -112,7 +112,7 @@ game_init :: proc() {
   }
 
   // shapes
-  build_shape(
+  vertices_terrain_buffer := build_shape(
     .Terrain,
     sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
   )
