@@ -44,17 +44,17 @@ void main() {
     float f2 = 0.5 * noise(2 * uv * FREQUENCY);
     float f3 = 0.25 * noise(4 * uv * FREQUENCY);
 
-    float n = pow((f1 + f2 + f3) / (1 + 0.5 + 0.25), REDISTRIBUTION);
+    float h = pow((f1 + f2 + f3) / (1 + 0.5 + 0.25), REDISTRIBUTION);
 
-    imageStore(noise_image, texel_coord, vec4(vec3(n), 1.0));
+    imageStore(noise_image, texel_coord, vec4(vec3(h), 1.0));
 
     // terrain vertices
-    terrain_vtx[gl_GlobalInvocationID.x].position = vec3(0, n, 0);
+    terrain_vtx[gl_GlobalInvocationID.x].position = vec3(0, h, 0);
     terrain_vtx[gl_GlobalInvocationID.x].texcoord = uv;
     terrain_vtx[gl_GlobalInvocationID.x].normal_pos = vec3(0);
 
     // color texture
-    vec3 color = get_biome_color(n);
+    vec3 color = get_biome_color(h);
     imageStore(diffuse_image, texel_coord, vec4(color, 1.0));
 }
 
