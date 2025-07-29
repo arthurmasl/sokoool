@@ -13,7 +13,11 @@ struct terrain_vertex_compute {
     vec2 texcoord;
 };
 
-layout(binding = 2) writeonly buffer terrain_vertices_compute {
+layout(binding = 0) uniform vs_params_compute {
+    float grid_size;
+};
+
+layout(binding = 1) writeonly buffer terrain_vertices_compute {
     terrain_vertex_compute terrain_vertices[];
 };
 
@@ -35,8 +39,6 @@ float noise(vec2 uv) {
     return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
-const uint GRID_SIZE = 1000;
-
 void main() {
     // heightmap texture
     ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);
@@ -54,16 +56,13 @@ void main() {
     uint x = gl_GlobalInvocationID.x;
     uint z = gl_GlobalInvocationID.y;
 
-    if (x > GRID_SIZE || z > GRID_SIZE)
+    if (x > grid_size || z > grid_size)
         return;
 
-    uint index = z * (GRID_SIZE + 1) + x;
+    uint index = z * (uint(grid_size) + 1) + x;
 
     terrain_vertices[index].position = vec3(float(x), h * HEIGHT_SCALE, float(z));
-
-    // terrain_vertices[gl_GlobalInvocationID.x].position.y = h * HEIGHT_SCALE;
-    // terrain_vertices[gl_GlobalInvocationID.x].texcoord = uv;
-    // terrain_vertices[gl_GlobalInvocationID.x].normal_pos = vec3(0);
+    terrain_vertices[index].texcoord = vec2(x / grid_size, z / grid_size);
 
     // color texture
     vec3 color = get_biome_color(h);

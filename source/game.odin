@@ -23,10 +23,10 @@ Game_Memory :: struct {
 QUAD_SIZE :: 500
 NOISE_SIZE :: 128
 COMPUTE_THREADS :: 1
-GRID_SIZE :: 1000
+GRID_SIZE :: 100
 
 NUM_TERRAIN_VERTICES :: (GRID_SIZE + COMPUTE_THREADS) * (GRID_SIZE + COMPUTE_THREADS)
-NUM_TERRAIN_INDICES :: GRID_SIZE * 2 * 3
+NUM_TERRAIN_INDICES :: GRID_SIZE * GRID_SIZE * 6
 
 GRASS_COUNT :: 10000
 GRASS_CHUNK_SIZE :: 10000
@@ -92,7 +92,7 @@ game_init :: proc() {
   // terrain
   terrain_pip_desc := sg.Pipeline_Desc {
     shader = sg.make_shader(terrain_shader_desc(sg.query_backend())),
-    cull_mode = .BACK,
+    cull_mode = .FRONT,
     index_type = .UINT16,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
   }
@@ -178,6 +178,10 @@ game_init :: proc() {
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Compute])
   sg.apply_bindings(g.bindings[.Compute])
+  vs_params_compute := Vs_Params_Compute {
+    grid_size = GRID_SIZE,
+  }
+  sg.apply_uniforms(UB_vs_params_compute, sg_range(&vs_params_compute))
   sg.dispatch(GRID_SIZE + 1, GRID_SIZE + 1, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Compute])
@@ -209,7 +213,7 @@ game_frame :: proc() {
   sg.apply_bindings(g.bindings[.Terrain])
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   // sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
-  sg.draw(0, NUM_TERRAIN_VERTICES, 1)
+  sg.draw(0, NUM_TERRAIN_INDICES, 1)
 
   // grass
   sg.apply_pipeline(g.pipelines[.Grass])

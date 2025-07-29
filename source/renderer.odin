@@ -1,6 +1,5 @@
 package game
 
-import "core:fmt"
 import sg "sokol/gfx"
 import sshape "sokol/shape"
 
@@ -92,8 +91,8 @@ build_grass :: proc(id: BindingID) {
 build_indices :: proc(num: u16, grid_size: u16) -> []u16 {
   indices := make([dynamic]u16, 0, num)
 
-  for z in 0 ..= grid_size {
-    for x in 0 ..= grid_size {
+  for z in 0 ..< grid_size {
+    for x in 0 ..< grid_size {
       top_left := z * (grid_size + 1) + x
       top_right := top_left + 1
       bottom_left := (z + 1) * (grid_size + 1) + x
@@ -104,6 +103,5 @@ build_indices :: proc(num: u16, grid_size: u16) -> []u16 {
     }
   }
 
-  fmt.println(len(indices))
   return indices[:]
 }

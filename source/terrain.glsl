@@ -28,12 +28,12 @@ layout(binding = 1) readonly buffer terrain_vertices_buffer {
     terrain_vertex terrain_vertices[];
 };
 
-// out vec4 color;
+out vec3 frag_pos;
 out vec2 uv;
 out vec3 normal;
+
 out float time;
 out vec3 light_dir;
-out float height;
 
 void main() {
     // float h = texture(sampled_heightmap, texcoord).r;
@@ -45,10 +45,9 @@ void main() {
     time = u_time;
     light_dir = u_light_dir;
 
-    // color = color0;
     uv = terrain_vertices[gl_VertexIndex].texcoord;
     normal = terrain_vertices[gl_VertexIndex].normal_pos;
-    height = pos.y;
+    frag_pos = normalize(pos);
 }
 #pragma sokol @end
 
@@ -59,18 +58,19 @@ void main() {
 // layout(binding = 1) uniform sampler diffuse_smp;
 // #define sampled_diffuse sampler2D(diffuse_texture, diffuse_smp)
 
+in vec3 frag_pos;
 in vec2 uv;
 in vec3 normal;
 
 in float time;
 in vec3 light_dir;
-in float height;
 
 out vec4 frag_color;
 
 void main() {
-    vec3 biome_color = get_biome_color(height);
-    vec3 final = vec3(dot(normal, light_dir) * biome_color);
+    vec3 biome_color = get_biome_color(frag_pos.y);
+    // vec3 final = vec3(dot(normal, light_dir) * biome_color);
+    vec3 final = vec3(biome_color);
 
     // final = vec3(1, 0, 0);
     frag_color = vec4(final, 1);

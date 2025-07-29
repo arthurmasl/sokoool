@@ -8,7 +8,7 @@ import sg "sokol/gfx"
 import slog "sokol/log"
 
 DEBUG_TEXT := true
-DEBUG_LINES := true
+DEBUG_LINES := false
 
 debug_init :: proc() {
   sdtx.setup({fonts = {0 = sdtx.font_oric()}, logger = {func = slog.func}})
