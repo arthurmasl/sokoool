@@ -47,7 +47,7 @@ game_init :: proc() {
   debug_init()
 
   // resources
-  display_pip_desc := sg.Pipeline_Desc {
+  default_pip_desc := sg.Pipeline_Desc {
     shader = sg.make_shader(terrain_shader_desc(sg.query_backend())),
     layout = {
       buffers = {0 = sshape.vertex_buffer_layout_state()},
@@ -61,20 +61,6 @@ game_init :: proc() {
     index_type = .UINT16,
     cull_mode = .BACK,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
-  }
-
-  quad_pip_desc := display_pip_desc
-  quad_pip_desc.shader = sg.make_shader(quad_shader_desc(sg.query_backend()))
-
-  debug_pip_desc := display_pip_desc
-  debug_pip_desc.primitive_type = .LINE_STRIP
-
-  grass_pip_desc := sg.Pipeline_Desc {
-    shader = sg.make_shader(grass_shader_desc(sg.query_backend())),
-    index_type = .UINT16,
-    cull_mode = .NONE,
-    depth = {compare = .LESS_EQUAL, write_enabled = true},
-    // primitive_type = .LINE_STRIP,
   }
 
   sampler := sg.make_sampler({})
@@ -97,11 +83,6 @@ game_init :: proc() {
     },
   )
 
-  atlas_transform := transmute([4][4]f32)(linalg.matrix4_rotate_f32(
-      90 * linalg.RAD_PER_DEG,
-      {1, 0, 0},
-    ))
-
   // passes
   g.passes[.Display] = {
     action = {colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}}},
@@ -111,26 +92,41 @@ game_init :: proc() {
     attachments = attachments,
   }
 
-  // shapes
-  vertices_terrain_buffer := build_shape_storage(
+  // terrain
+  terrain_pip_desc := sg.Pipeline_Desc {
+    shader = sg.make_shader(terrain_shader_desc(sg.query_backend())),
+    cull_mode = .BACK,
+    index_type = .UINT16,
+    depth = {compare = .LESS_EQUAL, write_enabled = true},
+  }
+  g.pipelines[.Terrain] = sg.make_pipeline(terrain_pip_desc)
+
+  build_shape(
     .Terrain,
     sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
   )
-  build_shape(
-    .Atlas,
-    sshape.Plane{width = 2, depth = 2, tiles = 1, transform = {m = atlas_transform}},
+
+  terrain_storage_buffer := sg.make_buffer(
+    {usage = {storage_buffer = true}, size = size_of(Terrain_Vertex_Out) * 1000},
   )
 
-  // vertices_storage_buffer := sg.make_buffer(
-  //   {usage = {storage_buffer = true}, size = size_of(Terrain_Vertex_Out) * 1000},
-  // )
-
-  g.bindings[.Compute].storage_buffers = {
-    SBUF_terrain_vertices_in = vertices_terrain_buffer,
-  }
+  // primitive
+  debug_pip_desc := default_pip_desc
+  debug_pip_desc.primitive_type = .LINE_STRIP
+  g.pipelines[.Primitive] = sg.make_pipeline(debug_pip_desc)
 
   // grass
+  grass_pip_desc := sg.Pipeline_Desc {
+    shader = sg.make_shader(grass_shader_desc(sg.query_backend())),
+    index_type = .UINT16,
+    cull_mode = .NONE,
+    depth = {compare = .LESS_EQUAL, write_enabled = true},
+    // primitive_type = .LINE_STRIP,
+  }
+  g.pipelines[.Grass] = sg.make_pipeline(grass_pip_desc)
+
   build_grass(.Grass)
+
   for &grass in g.grass_inst {
     grass.model = linalg.matrix4_translate_f32(
       {
@@ -146,53 +142,42 @@ game_init :: proc() {
     data = {ptr = &g.grass_inst, size = GRASS_COUNT * size_of(Sb_Instance)},
   )
 
-  // pipelines
-  terrain_pip_desc := sg.Pipeline_Desc {
-    shader = sg.make_shader(terrain_shader_desc(sg.query_backend())),
-    cull_mode = .BACK,
-    index_type = .UINT16,
-    depth = {compare = .LESS_EQUAL, write_enabled = true},
-    // layout = {buffers = {0 = sshape.vertex_buffer_layout_state()}},
-  }
-
-  g.pipelines[.Display] = sg.make_pipeline(terrain_pip_desc)
+  // atlas
+  quad_pip_desc := default_pip_desc
+  quad_pip_desc.shader = sg.make_shader(quad_shader_desc(sg.query_backend()))
   g.pipelines[.Atlas] = sg.make_pipeline(quad_pip_desc)
-  g.pipelines[.Primitive] = sg.make_pipeline(debug_pip_desc)
+
+  atlas_transform := transmute([4][4]f32)(linalg.matrix4_rotate_f32(
+      90 * linalg.RAD_PER_DEG,
+      {1, 0, 0},
+    ))
+  build_shape(
+    .Atlas,
+    sshape.Plane{width = 2, depth = 2, tiles = 1, transform = {m = atlas_transform}},
+  )
+
+  g.bindings[.Atlas].images[IMG_noise_texture] = image_diffuse
+  g.bindings[.Atlas].samplers[SMP_noise_smp] = sampler
+
+  // compute
   g.pipelines[.Compute] = sg.make_pipeline(
     {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
   )
-  g.pipelines[.Grass] = sg.make_pipeline(grass_pip_desc)
+  g.bindings[.Compute].storage_buffers = {
+    SBUF_terrain_vertices_in = terrain_storage_buffer,
+  }
 
-  // compute
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Compute])
   sg.apply_bindings(g.bindings[.Compute])
-  // sg.dispatch(NOISE_WIDTH / 32, NOISE_HEIGHT / 32, 1)
+  sg.dispatch(NOISE_WIDTH / 32, NOISE_HEIGHT / 32, 1)
   // sg.dispatch(g.ranges[.Terrain].num_elements, 1, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Compute])
 
   g.bindings[.Terrain].storage_buffers = {
-    SBUF_terrain_vertices_out = vertices_terrain_buffer,
+    SBUF_terrain_vertices_out = terrain_storage_buffer,
   }
-
-  // ssbo
-  // g.bindings[.Terrain].storage_buffers = {
-  //   SBUF_terrain_vertices_out = vertices_storage_buffer,
-  // }
-
-  // images
-  // g.bindings[.Terrain].images[IMG_heightmap_texture] = image_noise
-  // g.bindings[.Terrain].samplers[SMP_heightmap_smp] = sampler
-
-  // g.bindings[.Grass].images[IMG_heightmap_texture_g] = image_noise
-  // g.bindings[.Grass].samplers[SMP_heightmap_smp_g] = sampler
-
-  // g.bindings[.Terrain].images[IMG_diffuse_texture] = image_diffuse
-  // g.bindings[.Terrain].samplers[SMP_diffuse_smp] = sampler
-
-  g.bindings[.Atlas].images[IMG_noise_texture] = image_diffuse
-  g.bindings[.Atlas].samplers[SMP_noise_smp] = sampler
 
 }
 
@@ -217,7 +202,7 @@ game_frame :: proc() {
   sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
 
   // terrain
-  sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Display])
+  sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Terrain])
   sg.apply_bindings(g.bindings[.Terrain])
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
   sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)

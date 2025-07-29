@@ -40,41 +40,6 @@ build_shape :: proc(id: BindingID, desc: ShapeType) {
   g.ranges[id] = sshape.element_range(buffer)
 }
 
-build_shape_storage :: proc(id: BindingID, desc: ShapeType) -> sg.Buffer {
-  buffer: sshape.Buffer
-
-  switch d in desc {
-  case sshape.Plane:
-    buffer = sshape.build_plane(shape_buffer, d)
-  case sshape.Box:
-    buffer = sshape.build_box(shape_buffer, d)
-  case sshape.Sphere:
-    buffer = sshape.build_sphere(shape_buffer, d)
-  case sshape.Cylinder:
-    buffer = sshape.build_cylinder(shape_buffer, d)
-  case sshape.Torus:
-    buffer = sshape.build_torus(shape_buffer, d)
-  }
-
-  // g.bindings[id].vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buffer))
-  // desc := sshape.vertex_buffer_desc(buffer)
-  desc := sg.Buffer_Desc {
-    usage = {storage_buffer = true},
-    data = sg.Range(buffer.vertices.buffer),
-  }
-  // desc.usage = {
-  //   storage_buffer = true,
-  // }
-  vertices_buffer := sg.make_buffer(desc)
-  // g.bindings[id].storage_buffers = {
-  //   SBUF_terrain_vertices_out = vertices_buffer,
-  // }
-  g.bindings[id].index_buffer = sg.make_buffer(sshape.index_buffer_desc(buffer))
-  g.ranges[id] = sshape.element_range(buffer)
-
-  return vertices_buffer
-}
-
 build_grass :: proc(id: BindingID) {
   vertices := []Sb_Vertex {
     // Triangle (top)

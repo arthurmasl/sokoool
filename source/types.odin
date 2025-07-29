@@ -15,7 +15,7 @@ BindingID :: enum u8 {
 }
 
 PipelineID :: enum u8 {
-  Display,
+  Terrain,
   Primitive,
   Atlas,
   Compute,
