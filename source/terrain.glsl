@@ -22,6 +22,7 @@ struct terrain_vertex_out {
     vec3 position;
     vec3 normal_pos;
     vec2 texcoord;
+    vec3 color0;
 };
 
 layout(binding = 1) readonly buffer terrain_vertices_out {
@@ -48,7 +49,7 @@ void main() {
     // color = color0;
     uv = terrain_vtx[gl_VertexIndex].texcoord;
     normal = terrain_vtx[gl_VertexIndex].normal_pos;
-    height = 1.0;
+    height = pos.y;
 }
 #pragma sokol @end
 
