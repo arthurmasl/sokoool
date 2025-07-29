@@ -105,10 +105,10 @@ game_init :: proc() {
   )
 
   terrain_storage_buffer := sg.make_buffer(
-    {usage = {storage_buffer = true}, size = size_of(Terrain_Vertex_Out) * 1000},
+    {usage = {storage_buffer = true}, size = size_of(Terrain_Vertex) * 1000},
   )
   g.bindings[.Terrain].storage_buffers = {
-    SBUF_terrain_vertices_out = terrain_storage_buffer,
+    SBUF_terrain_vertices_buffer = terrain_storage_buffer,
   }
 
   // primitive
@@ -165,7 +165,7 @@ game_init :: proc() {
     {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
   )
   g.bindings[.Compute].storage_buffers = {
-    SBUF_terrain_vertices_in = terrain_storage_buffer,
+    SBUF_terrain_vertices_compute = terrain_storage_buffer,
   }
 
   sg.begin_pass(g.passes[.Compute])

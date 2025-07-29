@@ -18,15 +18,14 @@ layout(binding = 0) uniform vs_params {
     vec3 u_light_dir;
 };
 
-struct terrain_vertex_out {
+struct terrain_vertex {
     vec3 position;
     vec3 normal_pos;
     vec2 texcoord;
-    vec3 color0;
 };
 
-layout(binding = 1) readonly buffer terrain_vertices_out {
-    terrain_vertex_out terrain_vtx[];
+layout(binding = 1) readonly buffer terrain_vertices_buffer {
+    terrain_vertex terrain_vertices[];
 };
 
 // out vec4 color;
@@ -39,7 +38,7 @@ out float height;
 void main() {
     // float h = texture(sampled_heightmap, texcoord).r;
     // vec4 pos = vec4(position.x, h * HEIGHT_SCALE, position.z, 1.0);
-    vec3 pos = terrain_vtx[gl_VertexIndex].position;
+    vec3 pos = terrain_vertices[gl_VertexIndex].position;
 
     gl_Position = mvp * vec4(pos, 1.0);
 
@@ -47,8 +46,8 @@ void main() {
     light_dir = u_light_dir;
 
     // color = color0;
-    uv = terrain_vtx[gl_VertexIndex].texcoord;
-    normal = terrain_vtx[gl_VertexIndex].normal_pos;
+    uv = terrain_vertices[gl_VertexIndex].texcoord;
+    normal = terrain_vertices[gl_VertexIndex].normal_pos;
     height = pos.y;
 }
 #pragma sokol @end

@@ -7,14 +7,14 @@ layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 layout(binding = 0, rgba32f) uniform image2D noise_image;
 layout(binding = 1, rgba32f) uniform image2D diffuse_image;
 
-struct terrain_vertex_in {
+struct terrain_vertex_compute {
     vec3 position;
     vec3 normal_pos;
     vec2 texcoord;
 };
 
-layout(binding = 2) buffer terrain_vertices_in {
-    terrain_vertex_in terrain_vtx[];
+layout(binding = 2) writeonly buffer terrain_vertices_compute {
+    terrain_vertex_compute terrain_vertices[];
 };
 
 float random2d(vec2 coord) {
@@ -49,10 +49,10 @@ void main() {
     imageStore(noise_image, texel_coord, vec4(vec3(h), 1.0));
 
     // terrain vertices
-    // terrain_vtx[gl_GlobalInvocationID.x].position.y = terrain_vtx[gl_GlobalInvocationID.x].position.y;
-    terrain_vtx[gl_GlobalInvocationID.x].position.y = h * HEIGHT_SCALE;
-    // terrain_vtx[gl_GlobalInvocationID.x].texcoord = uv;
-    // terrain_vtx[gl_GlobalInvocationID.x].normal_pos = vec3(0);
+    // terrain_vertices[gl_GlobalInvocationID.x].position.y = terrain_vertices[gl_GlobalInvocationID.x].position.y;
+    terrain_vertices[gl_GlobalInvocationID.x].position.y = h * HEIGHT_SCALE;
+    // terrain_vertices[gl_GlobalInvocationID.x].texcoord = uv;
+    // terrain_vertices[gl_GlobalInvocationID.x].normal_pos = vec3(0);
 
     // color texture
     vec3 color = get_biome_color(h);
