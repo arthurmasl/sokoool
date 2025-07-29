@@ -112,10 +112,10 @@ game_init :: proc() {
   }
 
   // shapes
-  // build_shape(
-  //   .Terrain,
-  //   sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
-  // )
+  build_shape(
+    .Terrain,
+    sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
+  )
   build_shape(
     .Atlas,
     sshape.Plane{width = 2, depth = 2, tiles = 1, transform = {m = atlas_transform}},
