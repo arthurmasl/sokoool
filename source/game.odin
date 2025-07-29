@@ -21,7 +21,7 @@ Game_Memory :: struct {
 }
 
 QUAD_SIZE :: 500
-NOISE_SIZE :: 128
+NOISE_SIZE :: 100
 COMPUTE_THREADS :: 1
 GRID_SIZE :: 100
 
@@ -212,7 +212,6 @@ game_frame :: proc() {
   sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Terrain])
   sg.apply_bindings(g.bindings[.Terrain])
   sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
-  // sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
   sg.draw(0, NUM_TERRAIN_INDICES, 1)
 
   // grass
