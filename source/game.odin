@@ -21,16 +21,14 @@ Game_Memory :: struct {
 }
 
 QUAD_SIZE :: 500
+NOISE_SIZE :: 128
+COMPUTE_THREADS :: 32
 
-NOISE_WIDTH :: 128
-NOISE_HEIGHT :: 128
-
-TERRAIN_WIDTH :: 1000.0
-TERRAIN_HEIGHT :: 1000.0
+TERRAIN_SIZE :: 12800.0
 TERRAIN_TILES :: 100
 
-GRASS_COUNT :: 1000000
-GRASS_CHUNK_SIZE :: TERRAIN_WIDTH / 2
+GRASS_COUNT :: 10000
+GRASS_CHUNK_SIZE :: TERRAIN_SIZE / 2
 
 TRIANGLES :: TERRAIN_TILES * 2 * 4
 
@@ -66,8 +64,8 @@ game_init :: proc() {
   sampler := sg.make_sampler({})
   image_desc := sg.Image_Desc {
     type = ._2D,
-    width = NOISE_WIDTH,
-    height = NOISE_HEIGHT,
+    width = NOISE_SIZE,
+    height = NOISE_SIZE,
     usage = {storage_attachment = true},
     pixel_format = .RGBA32F,
   }
@@ -103,12 +101,15 @@ game_init :: proc() {
 
   build_shape(
     .Terrain,
-    sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
+    sshape.Plane{width = TERRAIN_SIZE, depth = TERRAIN_SIZE, tiles = TERRAIN_TILES},
   )
 
   terrain_storage_buffer := sg.make_buffer(
     {usage = {storage_buffer = true}, size = size_of(Terrain_Vertex_Out) * 1000},
   )
+  g.bindings[.Terrain].storage_buffers = {
+    SBUF_terrain_vertices_out = terrain_storage_buffer,
+  }
 
   // primitive
   debug_pip_desc := default_pip_desc
@@ -170,14 +171,9 @@ game_init :: proc() {
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Compute])
   sg.apply_bindings(g.bindings[.Compute])
-  sg.dispatch(NOISE_WIDTH / 32, NOISE_HEIGHT / 32, 1)
-  // sg.dispatch(g.ranges[.Terrain].num_elements, 1, 1)
+  sg.dispatch(NOISE_SIZE / COMPUTE_THREADS, NOISE_SIZE / COMPUTE_THREADS, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Compute])
-
-  g.bindings[.Terrain].storage_buffers = {
-    SBUF_terrain_vertices_out = terrain_storage_buffer,
-  }
 
 }
 
