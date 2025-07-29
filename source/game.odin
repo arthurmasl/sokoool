@@ -26,14 +26,13 @@ COMPUTE_THREADS :: 1
 GRID_SIZE :: 1000
 
 NUM_TERRAIN_VERTICES :: (GRID_SIZE + COMPUTE_THREADS) * (GRID_SIZE + COMPUTE_THREADS)
+NUM_TERRAIN_INDICES :: GRID_SIZE * 2 * 3
 
-TERRAIN_SIZE :: 12800.0
-TERRAIN_TILES :: 100
+// TERRAIN_SIZE :: 12800.0
+// TERRAIN_TILES :: 100
 
 GRASS_COUNT :: 10000
-GRASS_CHUNK_SIZE :: TERRAIN_SIZE / 2
-
-TRIANGLES :: TERRAIN_TILES * 2 * 4
+GRASS_CHUNK_SIZE :: 10000
 
 @(export)
 game_init :: proc() {
@@ -116,9 +115,15 @@ game_init :: proc() {
   g.bindings[.Terrain].storage_buffers = {
     SBUF_terrain_vertices_buffer = terrain_storage_buffer,
   }
+  g.bindings[.Terrain].index_buffer = sg.make_buffer(
+    {
+      usage = {index_buffer = true},
+      data = sg_range(build_indices(NUM_TERRAIN_INDICES, GRID_SIZE)),
+    },
+  )
 
   // primitive
-  debug_pip_desc := default_pip_desc
+  debug_pip_desc := terrain_pip_desc
   debug_pip_desc.primitive_type = .LINE_STRIP
   g.pipelines[.Primitive] = sg.make_pipeline(debug_pip_desc)
 

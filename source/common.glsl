@@ -9,7 +9,7 @@ const float PI = 3.14159265359;
 const float TAU = PI * 2;
 
 const float FREQUENCY = 10.0;
-const float HEIGHT_SCALE = 1050.0;
+const float HEIGHT_SCALE = 10.0;
 const float REDISTRIBUTION = 3.0;
 
 const float WATER = 0.01;

@@ -55,7 +55,7 @@ void main() {
     uint z = gl_GlobalInvocationID.y;
     uint index = z * (GRID_SIZE + 1) + x;
 
-    terrain_vertices[index].position = vec3(float(x), h, float(z));
+    terrain_vertices[index].position = vec3(float(x), h * HEIGHT_SCALE, float(z));
 
     // terrain_vertices[gl_GlobalInvocationID.x].position.y = h * HEIGHT_SCALE;
     // terrain_vertices[gl_GlobalInvocationID.x].texcoord = uv;
