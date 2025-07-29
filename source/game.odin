@@ -112,9 +112,12 @@ game_init :: proc() {
   }
 
   // shapes
-  vertices_terrain_buffer := build_shape(
+  terrain_buffer := build_shape(
     .Terrain,
     sshape.Plane{width = TERRAIN_WIDTH, depth = TERRAIN_HEIGHT, tiles = TERRAIN_TILES},
+  )
+  vertices_terrain_buffer := sg.make_buffer(
+    {usage = {storage_buffer = true}, data = sg.Range(terrain_buffer.vertices.buffer)},
   )
   build_shape(
     .Atlas,

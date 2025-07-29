@@ -19,7 +19,7 @@ shape_buffer := sshape.Buffer {
   indices = {buffer = {ptr = &indices, size = size_of(indices)}},
 }
 
-build_shape :: proc(id: BindingID, desc: ShapeType) -> sg.Buffer {
+build_shape :: proc(id: BindingID, desc: ShapeType) -> sshape.Buffer {
   buffer: sshape.Buffer
 
   switch d in desc {
@@ -35,13 +35,11 @@ build_shape :: proc(id: BindingID, desc: ShapeType) -> sg.Buffer {
     buffer = sshape.build_torus(shape_buffer, d)
   }
 
-  vertex_buffer := sg.make_buffer(sshape.vertex_buffer_desc(buffer))
-
-  g.bindings[id].vertex_buffers[0] = vertex_buffer
+  g.bindings[id].vertex_buffers[0] = sg.make_buffer(sshape.vertex_buffer_desc(buffer))
   g.bindings[id].index_buffer = sg.make_buffer(sshape.index_buffer_desc(buffer))
   g.ranges[id] = sshape.element_range(buffer)
 
-  return vertex_buffer
+  return buffer
 }
 
 build_grass :: proc(id: BindingID) {
