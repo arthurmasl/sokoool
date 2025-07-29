@@ -28,9 +28,6 @@ GRID_SIZE :: 1000
 NUM_TERRAIN_VERTICES :: (GRID_SIZE + COMPUTE_THREADS) * (GRID_SIZE + COMPUTE_THREADS)
 NUM_TERRAIN_INDICES :: GRID_SIZE * 2 * 3
 
-// TERRAIN_SIZE :: 12800.0
-// TERRAIN_TILES :: 100
-
 GRASS_COUNT :: 10000
 GRASS_CHUNK_SIZE :: 10000
 
@@ -115,11 +112,10 @@ game_init :: proc() {
   g.bindings[.Terrain].storage_buffers = {
     SBUF_terrain_vertices_buffer = terrain_storage_buffer,
   }
+  terrain_indices := build_indices(NUM_TERRAIN_INDICES, GRID_SIZE)
+  defer delete(terrain_indices)
   g.bindings[.Terrain].index_buffer = sg.make_buffer(
-    {
-      usage = {index_buffer = true},
-      data = sg_range(build_indices(NUM_TERRAIN_INDICES, GRID_SIZE)),
-    },
+    {usage = {index_buffer = true}, data = sg_range(terrain_indices)},
   )
 
   // primitive

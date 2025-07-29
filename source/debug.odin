@@ -7,8 +7,8 @@ import sdtx "sokol/debugtext"
 import sg "sokol/gfx"
 import slog "sokol/log"
 
-DEBUG_TEXT := false
-DEBUG_LINES := false
+DEBUG_TEXT := true
+DEBUG_LINES := true
 
 debug_init :: proc() {
   sdtx.setup({fonts = {0 = sdtx.font_oric()}, logger = {func = slog.func}})
@@ -25,6 +25,11 @@ debug_process :: proc() {
   fps := 1.0 / delta_time
   print_text("FPS: %d", u8(fps))
   // print_text("TRIANGLES: %#w", TRIANGLES)
+
+  print_text("THREADS : %#w", COMPUTE_THREADS)
+  print_text("GRID SIZE: %#w", GRID_SIZE)
+  print_text("TERRAIN VERTICES: %#w", NUM_TERRAIN_VERTICES)
+  print_text("TERRAIN INDICES: %#w", NUM_TERRAIN_INDICES)
 
   // print_text("CAMERA: %#w", g.camera)
 

@@ -53,6 +53,10 @@ void main() {
     // terrain vertices
     uint x = gl_GlobalInvocationID.x;
     uint z = gl_GlobalInvocationID.y;
+
+    if (x > GRID_SIZE || z > GRID_SIZE)
+        return;
+
     uint index = z * (GRID_SIZE + 1) + x;
 
     terrain_vertices[index].position = vec3(float(x), h * HEIGHT_SCALE, float(z));
