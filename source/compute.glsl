@@ -50,8 +50,8 @@ void main() {
 
     // terrain vertices
     terrain_vtx[gl_GlobalInvocationID.x].position = vec3(0, h, 0);
-    terrain_vtx[gl_GlobalInvocationID.x].texcoord = uv;
-    terrain_vtx[gl_GlobalInvocationID.x].normal_pos = vec3(0);
+    // terrain_vtx[gl_GlobalInvocationID.x].texcoord = uv;
+    // terrain_vtx[gl_GlobalInvocationID.x].normal_pos = vec3(0);
 
     // color texture
     vec3 color = get_biome_color(h);
