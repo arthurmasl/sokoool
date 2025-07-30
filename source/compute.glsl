@@ -15,6 +15,7 @@ struct terrain_vertex_compute {
 
 layout(binding = 0) uniform vs_params_compute {
     float grid_size;
+    float grid_scale;
 };
 
 layout(binding = 1) writeonly buffer terrain_vertices_compute {
@@ -47,7 +48,7 @@ void main() {
 
     uint index = z * (uint(grid_size) + 1) + x;
 
-    terrain_vertices[index].position = vec3(float(x), h * HEIGHT_SCALE, float(z));
+    terrain_vertices[index].position = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
     terrain_vertices[index].texcoord = vec2(x / grid_size, z / grid_size);
 }
 
