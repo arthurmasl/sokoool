@@ -30,7 +30,7 @@ NUM_TERRAIN_VERTICES :: (GRID_TILES + COMPUTE_THREADS) * (GRID_TILES + COMPUTE_T
 NUM_TERRAIN_INDICES :: GRID_TILES * GRID_TILES * 6
 
 GRASS_COUNT :: 1000000
-GRASS_CHUNK_SIZE :: 50 * GRID_SCALE
+GRASS_CHUNK_SIZE :: GRID_TILES * GRID_SCALE
 
 @(export)
 game_init :: proc() {
@@ -139,9 +139,9 @@ game_init :: proc() {
   for &grass in g.grass_inst {
     grass.model = linalg.matrix4_translate_f32(
       {
-        rand.float32_range(-GRASS_CHUNK_SIZE, GRASS_CHUNK_SIZE) + GRASS_CHUNK_SIZE,
+        rand.float32_range(0, GRASS_CHUNK_SIZE),
         0,
-        rand.float32_range(-GRASS_CHUNK_SIZE, GRASS_CHUNK_SIZE) + GRASS_CHUNK_SIZE,
+        rand.float32_range(0, GRASS_CHUNK_SIZE),
       },
     )
   }

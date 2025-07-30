@@ -34,18 +34,18 @@ out vec3 normal;
 out vec3 light_dir;
 
 void main() {
+    uv = vtx[gl_VertexIndex].texcoord;
+    normal = vtx[gl_VertexIndex].normal_pos;
+    light_dir = u_light_dir;
+
     mat4 model = inst[gl_InstanceIndex].model;
     vec3 pos = vtx[gl_VertexIndex].position;
 
     vec4 pm = model * vec4(pos, 1.0);
-    float height = texture(sampled_heightmap, pm.xz).r;
-    pm.y = height;
+    float height = texture(sampled_heightmap, pm.xz / 50).r;
+    pm.y = height * 10;
 
     gl_Position = vp * pm;
-
-    uv = vtx[gl_VertexIndex].texcoord;
-    normal = vtx[gl_VertexIndex].normal_pos;
-    light_dir = u_light_dir;
 }
 #pragma sokol @end
 
