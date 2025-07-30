@@ -25,9 +25,9 @@ layout(binding = 0) uniform vs_params_grass {
     vec3 u_light_dir;
 };
 
-// layout(binding = 0) uniform texture2D heightmap_texture_g;
-// layout(binding = 0) uniform sampler heightmap_smp_g;
-// #define sampled_heightmap sampler2D(heightmap_texture_g, heightmap_smp_g)
+layout(binding = 0) uniform texture2D heightmap_texture_g;
+layout(binding = 0) uniform sampler heightmap_smp_g;
+#define sampled_heightmap sampler2D(heightmap_texture_g, heightmap_smp_g)
 
 out vec2 uv;
 out vec3 normal;
@@ -36,7 +36,12 @@ out vec3 light_dir;
 void main() {
     mat4 model = inst[gl_InstanceIndex].model;
     vec3 pos = vtx[gl_VertexIndex].position;
-    gl_Position = vp * model * vec4(pos, 1.0);
+
+    vec4 pm = model * vec4(pos, 1.0);
+    float height = texture(sampled_heightmap, pm.xz).r;
+    pm.y = height;
+
+    gl_Position = vp * pm;
 
     uv = vtx[gl_VertexIndex].texcoord;
     normal = vtx[gl_VertexIndex].normal_pos;

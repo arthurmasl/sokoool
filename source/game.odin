@@ -29,8 +29,8 @@ GRID_SCALE :: 100
 NUM_TERRAIN_VERTICES :: (GRID_TILES + COMPUTE_THREADS) * (GRID_TILES + COMPUTE_THREADS)
 NUM_TERRAIN_INDICES :: GRID_TILES * GRID_TILES * 6
 
-GRASS_COUNT :: 100000
-GRASS_CHUNK_SIZE :: 50
+GRASS_COUNT :: 1000000
+GRASS_CHUNK_SIZE :: 50 * GRID_SCALE
 
 @(export)
 game_init :: proc() {
@@ -150,6 +150,9 @@ game_init :: proc() {
     g.bindings[.Grass].storage_buffers[SBUF_instances],
     data = {ptr = &g.grass_inst, size = GRASS_COUNT * size_of(Sb_Instance)},
   )
+
+  g.bindings[.Grass].images[IMG_heightmap_texture_g] = image_noise
+  g.bindings[.Grass].samplers[SMP_heightmap_smp_g] = sampler
 
   // atlas
   quad_pip_desc := default_pip_desc
