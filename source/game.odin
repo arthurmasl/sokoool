@@ -23,11 +23,11 @@ Game_Memory :: struct {
 QUAD_SIZE :: 500
 NOISE_SIZE :: 100
 COMPUTE_THREADS :: 1
-GRID_SIZE :: 100
+GRID_TILES :: 100
 GRID_SCALE :: 100
 
-NUM_TERRAIN_VERTICES :: (GRID_SIZE + COMPUTE_THREADS) * (GRID_SIZE + COMPUTE_THREADS)
-NUM_TERRAIN_INDICES :: GRID_SIZE * GRID_SIZE * 6
+NUM_TERRAIN_VERTICES :: (GRID_TILES + COMPUTE_THREADS) * (GRID_TILES + COMPUTE_THREADS)
+NUM_TERRAIN_INDICES :: GRID_TILES * GRID_TILES * 6
 
 GRASS_COUNT :: 100000
 GRASS_CHUNK_SIZE :: 50
@@ -113,7 +113,7 @@ game_init :: proc() {
   g.bindings[.Terrain].storage_buffers = {
     SBUF_terrain_vertices_buffer = terrain_storage_buffer,
   }
-  terrain_indices := build_indices(NUM_TERRAIN_INDICES, GRID_SIZE)
+  terrain_indices := build_indices(NUM_TERRAIN_INDICES, GRID_TILES)
   defer delete(terrain_indices)
   g.bindings[.Terrain].index_buffer = sg.make_buffer(
     {usage = {index_buffer = true}, data = sg_range(terrain_indices)},
@@ -180,11 +180,11 @@ game_init :: proc() {
   sg.apply_pipeline(g.pipelines[.Compute])
   sg.apply_bindings(g.bindings[.Compute])
   vs_params_compute := Vs_Params_Compute {
-    grid_size  = GRID_SIZE,
+    grid_tiles = GRID_TILES,
     grid_scale = GRID_SCALE,
   }
   sg.apply_uniforms(UB_vs_params_compute, sg_range(&vs_params_compute))
-  sg.dispatch(GRID_SIZE + 1, GRID_SIZE + 1, 1)
+  sg.dispatch(GRID_TILES + 1, GRID_TILES + 1, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Compute])
 

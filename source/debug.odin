@@ -27,7 +27,7 @@ debug_process :: proc() {
   // print_text("TRIANGLES: %#w", TRIANGLES)
 
   print_text("THREADS : %#w", COMPUTE_THREADS)
-  print_text("GRID SIZE: %#w", GRID_SIZE)
+  print_text("GRID TILES: %#w", GRID_TILES)
   print_text("TERRAIN VERTICES: %#w", NUM_TERRAIN_VERTICES)
   print_text("TERRAIN INDICES: %#w", NUM_TERRAIN_INDICES)
 

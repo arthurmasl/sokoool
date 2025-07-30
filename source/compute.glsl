@@ -14,7 +14,7 @@ struct terrain_vertex_compute {
 };
 
 layout(binding = 0) uniform vs_params_compute {
-    float grid_size;
+    float grid_tiles;
     float grid_scale;
 };
 
@@ -43,13 +43,13 @@ void main() {
     uint x = gl_GlobalInvocationID.x;
     uint z = gl_GlobalInvocationID.y;
 
-    if (x > grid_size || z > grid_size)
+    if (x > grid_tiles || z > grid_tiles)
         return;
 
-    uint index = z * (uint(grid_size) + 1) + x;
+    uint index = z * (uint(grid_tiles) + 1) + x;
 
     terrain_vertices[index].position = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
-    terrain_vertices[index].texcoord = vec2(x / grid_size, z / grid_size);
+    terrain_vertices[index].texcoord = vec2(x / grid_tiles, z / grid_tiles);
 }
 
 #pragma sokol @end
