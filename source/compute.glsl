@@ -23,8 +23,11 @@ layout(binding = 1) writeonly buffer terrain_vertices_compute {
 };
 
 void main() {
+    uint x = gl_GlobalInvocationID.x;
+    uint z = gl_GlobalInvocationID.y;
+
     // heightmap texture
-    ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 texel_coord = ivec2(x, z);
     vec2 uv = vec2(texel_coord) / vec2(imageSize(noise_image));
 
     float f1 = 1.0 * noise(uv * FREQUENCY);
@@ -40,8 +43,6 @@ void main() {
     imageStore(diffuse_image, texel_coord, vec4(color, 1.0));
 
     // terrain vertices
-    uint x = gl_GlobalInvocationID.x;
-    uint z = gl_GlobalInvocationID.y;
 
     if (x > grid_tiles || z > grid_tiles)
         return;

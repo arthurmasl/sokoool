@@ -13,7 +13,9 @@ const float HEIGHT_SCALE = 10.0;
 const float REDISTRIBUTION = 3.0;
 
 const float WATER = 0.01;
-const float BEACH = 0.02;
+const float SAND = 0.02;
+const float GRASS = 0.20;
+const float MOUNTAIN = 0.80;
 
 float random2d(vec2 coord) {
     return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
@@ -38,10 +40,14 @@ vec3 get_biome_color(float height) {
 
     if (height < WATER)
         color = vec3(0.1, 0.3, 0.8);
-    else if (height < BEACH)
-        color = vec3(0.6, 0.5, 0.2);
+    else if (height < SAND)
+        color = vec3(0.6, 0.6, 0.3);
+    else if (height < GRASS)
+        color = vec3(0.2, 0.7, 0.2);
+    else if (height < MOUNTAIN)
+        color = vec3(0.3, 0.6, 0.3);
     else
-        color = mix(vec3(0.5, 0.2, 0.2), vec3(0.2, 0.7, 0.2), height + 0.5);
+        color = vec3(0.8, 0.7, 0.7);
 
     return color;
 }
