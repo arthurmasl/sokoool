@@ -21,24 +21,6 @@ layout(binding = 1) writeonly buffer terrain_vertices_compute {
     terrain_vertex_compute terrain_vertices[];
 };
 
-float random2d(vec2 coord) {
-    return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-float noise(vec2 uv) {
-    vec2 i = floor(uv);
-    vec2 f = fract(uv);
-
-    float a = random2d(i);
-    float b = random2d(i + vec2(1.0, 0.0));
-    float c = random2d(i + vec2(0.0, 1.0));
-    float d = random2d(i + vec2(1.0, 1.0));
-
-    vec2 u = f * f * (3.0 - 2.0 * f);
-
-    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-}
-
 void main() {
     // heightmap texture
     ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);

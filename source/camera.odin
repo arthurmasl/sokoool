@@ -24,7 +24,7 @@ Camera :: struct {
 key_down: #sparse[sapp.Keycode]bool
 
 SPEED :: 20
-TURBO_SPEED :: 500
+TURBO_SPEED :: 100
 SENSITIVITY :: 0.2
 
 camera_init :: proc() {
