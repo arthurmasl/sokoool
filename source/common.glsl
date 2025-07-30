@@ -8,13 +8,13 @@
 const float PI = 3.14159265359;
 const float TAU = PI * 2;
 
-const float FREQUENCY = 10.0;
+const float FREQUENCY = 15.0;
 const float HEIGHT_SCALE = 10.0;
 const float REDISTRIBUTION = 3.0;
 
-const float WATER = 0.01;
-const float SAND = 0.02;
-const float GRASS = 0.20;
+const float WATER = 0.02;
+const float SAND = 0.03;
+const float GRASS = 0.2;
 const float MOUNTAIN = 0.80;
 
 float random2d(vec2 coord) {
@@ -43,7 +43,7 @@ vec3 get_biome_color(float height) {
     else if (height < SAND)
         color = vec3(0.6, 0.6, 0.3);
     else if (height < GRASS)
-        color = vec3(0.2, 0.7, 0.2);
+        color = vec3(0.2, 0.7, 0.3);
     else if (height < MOUNTAIN)
         color = vec3(0.3, 0.6, 0.3);
     else

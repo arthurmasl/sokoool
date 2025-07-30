@@ -24,7 +24,8 @@ layout(binding = 0) uniform sampler noise_smp;
 #define sampled_noise sampler2D(noise_texture, noise_smp)
 
 void main() {
-    vec3 texture_color = texture(sampled_noise, uv).rgb;
+    vec2 flipped_uv = vec2(1 - uv.x, uv.y);
+    vec3 texture_color = texture(sampled_noise, flipped_uv).rgb;
     frag_color = vec4(texture_color, 1.0);
 }
 
