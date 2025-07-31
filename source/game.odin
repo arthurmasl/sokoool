@@ -23,7 +23,7 @@ QUAD_SIZE :: 500
 NOISE_SIZE :: 100
 COMPUTE_THREADS :: 1
 GRID_TILES :: 100
-GRID_SCALE :: 100
+GRID_SCALE :: 10
 
 NUM_TERRAIN_VERTICES :: (GRID_TILES + COMPUTE_THREADS) * (GRID_TILES + COMPUTE_THREADS)
 NUM_TERRAIN_INDICES :: GRID_TILES * GRID_TILES * 6
@@ -134,10 +134,7 @@ game_init :: proc() {
   g.pipelines[.Grass] = sg.make_pipeline(grass_pip_desc)
 
   grass_storage_buffer := sg.make_buffer(
-    {
-      usage = {storage_buffer = true, stream_update = false},
-      size = size_of(Sb_Instance) * GRASS_COUNT,
-    },
+    {usage = {storage_buffer = true}, size = size_of(Sb_Instance) * GRASS_COUNT},
   )
   build_grass(.Grass, grass_storage_buffer)
 

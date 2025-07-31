@@ -70,7 +70,7 @@ void main() {
     terrain_vertices[index].position = new_pos;
     terrain_vertices[index].texcoord = vec2(x / grid_tiles, z / grid_tiles);
 
-    new_pos.y += 1;
+    new_pos.y += 0.7;
     grass_instances[index].model = translate(new_pos);
 }
 
