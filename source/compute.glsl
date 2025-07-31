@@ -13,6 +13,10 @@ struct terrain_vertex_compute {
     vec2 texcoord;
 };
 
+struct grass_instance_compute {
+    mat4 model;
+};
+
 layout(binding = 0) uniform vs_params_compute {
     float grid_tiles;
     float grid_scale;
@@ -21,6 +25,18 @@ layout(binding = 0) uniform vs_params_compute {
 layout(binding = 1) writeonly buffer terrain_vertices_compute {
     terrain_vertex_compute terrain_vertices[];
 };
+layout(binding = 2) writeonly buffer grass_instances_compute {
+    grass_instance_compute grass_instances[];
+};
+
+mat4 translate(vec3 t) {
+    return mat4(
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        t.x, t.y, t.z, 1.0
+    );
+}
 
 void main() {
     uint x = gl_GlobalInvocationID.x;
@@ -49,8 +65,13 @@ void main() {
 
     uint index = z * (uint(grid_tiles) + 1) + x;
 
-    terrain_vertices[index].position = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
+    vec3 new_pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
+
+    terrain_vertices[index].position = new_pos;
     terrain_vertices[index].texcoord = vec2(x / grid_tiles, z / grid_tiles);
+
+    new_pos.y += 1;
+    grass_instances[index].model = translate(new_pos);
 }
 
 #pragma sokol @end

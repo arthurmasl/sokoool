@@ -1,7 +1,6 @@
 package game
 
 import "core:math/linalg"
-import "core:math/rand"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
@@ -29,7 +28,7 @@ GRID_SCALE :: 100
 NUM_TERRAIN_VERTICES :: (GRID_TILES + COMPUTE_THREADS) * (GRID_TILES + COMPUTE_THREADS)
 NUM_TERRAIN_INDICES :: GRID_TILES * GRID_TILES * 6
 
-GRASS_COUNT :: 1000000
+GRASS_COUNT :: 10000
 GRASS_CHUNK_SIZE :: GRID_TILES * GRID_SCALE
 
 @(export)
@@ -134,25 +133,16 @@ game_init :: proc() {
   }
   g.pipelines[.Grass] = sg.make_pipeline(grass_pip_desc)
 
-  build_grass(.Grass)
-
-  for &grass in g.grass_inst {
-    grass.model = linalg.matrix4_translate_f32(
-      {
-        rand.float32_range(0, GRASS_CHUNK_SIZE),
-        0,
-        rand.float32_range(0, GRASS_CHUNK_SIZE),
-      },
-    )
-  }
-
-  sg.update_buffer(
-    g.bindings[.Grass].storage_buffers[SBUF_instances],
-    data = {ptr = &g.grass_inst, size = GRASS_COUNT * size_of(Sb_Instance)},
+  grass_storage_buffer := sg.make_buffer(
+    {
+      usage = {storage_buffer = true, stream_update = false},
+      size = size_of(Sb_Instance) * GRASS_COUNT,
+    },
   )
+  build_grass(.Grass, grass_storage_buffer)
 
-  g.bindings[.Grass].images[IMG_heightmap_texture_g] = image_noise
-  g.bindings[.Grass].samplers[SMP_heightmap_smp_g] = sampler
+  // g.bindings[.Grass].images[IMG_heightmap_texture_g] = image_noise
+  // g.bindings[.Grass].samplers[SMP_heightmap_smp_g] = sampler
 
   // atlas
   quad_pip_desc := default_pip_desc
@@ -177,6 +167,7 @@ game_init :: proc() {
   )
   g.bindings[.Compute].storage_buffers = {
     SBUF_terrain_vertices_compute = terrain_storage_buffer,
+    SBUF_grass_instances_compute  = grass_storage_buffer,
   }
 
   sg.begin_pass(g.passes[.Compute])

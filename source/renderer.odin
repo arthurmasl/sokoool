@@ -40,7 +40,7 @@ build_shape :: proc(id: BindingID, desc: ShapeType) {
   g.ranges[id] = sshape.element_range(buffer)
 }
 
-build_grass :: proc(id: BindingID) {
+build_grass :: proc(id: BindingID, instances_buffer: sg.Buffer) {
   vertices := []Sb_Vertex {
     // Triangle (top)
     {position = {0.0, 0.1, 0.5}, texcoord = {0.5, 0.0}, normal_pos = {0, 0, 0}}, // top-center
@@ -72,12 +72,13 @@ build_grass :: proc(id: BindingID) {
     SBUF_vertices  = sg.make_buffer(
       {usage = {storage_buffer = true}, data = sg_range(vertices)},
     ),
-    SBUF_instances = sg.make_buffer(
-      {
-        usage = {storage_buffer = true, stream_update = true},
-        size = GRASS_COUNT * size_of(Sb_Instance),
-      },
-    ),
+    SBUF_instances = instances_buffer,
+    // SBUF_instances = sg.make_buffer(
+    //   {
+    //     usage = {storage_buffer = true, stream_update = true},
+    //     size = GRASS_COUNT * size_of(Sb_Instance),
+    //   },
+    // ),
   }
   g.bindings[id].index_buffer = sg.make_buffer(
     {usage = {index_buffer = true}, data = sg_range(indices)},
