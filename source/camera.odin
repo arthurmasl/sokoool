@@ -24,7 +24,7 @@ Camera :: struct {
 key_down: #sparse[sapp.Keycode]bool
 
 SPEED :: 200
-TURBO_SPEED :: 2000
+TURBO_SPEED :: 700
 SENSITIVITY :: 0.2
 
 camera_init :: proc() {
@@ -39,9 +39,9 @@ camera_init :: proc() {
 
   g.camera.speed = SPEED
 
-  g.camera.pos = {4250, 3200, 1900}
+  g.camera.pos = {1155, 450, 420}
   g.camera.pitch = -40
-  g.camera.yaw = 90
+  g.camera.yaw = 180
 }
 
 camera_process_input :: proc(e: ^sapp.Event) {

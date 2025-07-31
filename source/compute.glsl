@@ -38,6 +38,7 @@ mat4 translate(vec3 t) {
     );
 }
 
+int grass_index = 0;
 void main() {
     uint x = gl_GlobalInvocationID.x;
     uint z = gl_GlobalInvocationID.y;
@@ -59,19 +60,16 @@ void main() {
     imageStore(diffuse_image, texel_coord, vec4(color, 1.0));
 
     // terrain vertices
-
-    if (x > grid_tiles || z > grid_tiles)
-        return;
-
     uint index = z * (uint(grid_tiles) + 1) + x;
+    vec3 pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
 
-    vec3 new_pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
-
-    terrain_vertices[index].position = new_pos;
+    terrain_vertices[index].position = pos;
     terrain_vertices[index].texcoord = vec2(x / grid_tiles, z / grid_tiles);
 
-    new_pos.y += 0.7;
-    grass_instances[index].model = translate(new_pos);
+    if (h > SAND && h < GRASS) {
+        pos.y += 0.7;
+        grass_instances[index].model = translate(pos);
+    }
 }
 
 #pragma sokol @end
