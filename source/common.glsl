@@ -12,9 +12,9 @@ const float FREQUENCY = 15.0;
 const float HEIGHT_SCALE = 10.0;
 const float REDISTRIBUTION = 3.0;
 
-const float WATER = 0.02;
-const float SAND = 0.03;
-const float GRASS = 0.2;
+const float WATER = 0.03;
+const float SAND = 0.07;
+const float GRASS = 0.18;
 const float MOUNTAIN = 0.80;
 
 float random2d(vec2 coord) {
