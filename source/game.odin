@@ -16,7 +16,7 @@ Game_Memory :: struct {
   bindings:   [BindingID]sg.Bindings,
   pipelines:  [PipelineID]sg.Pipeline,
   //
-  grass_inst: [GRASS_COUNT]Sb_Instance,
+  grass_inst: [GRASS_COUNT]Grass_Sb_Instance,
 }
 
 QUAD_SIZE :: 500
@@ -74,8 +74,8 @@ game_init :: proc() {
   attachments := sg.make_attachments(
     {
       storages = {
-        SIMG_noise_image = {image = image_noise},
-        SIMG_diffuse_image = {image = image_diffuse},
+        SIMG_compute_noise_image = {image = image_noise},
+        SIMG_compute_diffuse_image = {image = image_diffuse},
       },
     },
   )
@@ -106,7 +106,7 @@ game_init :: proc() {
   terrain_storage_buffer := sg.make_buffer(
     {
       usage = {storage_buffer = true},
-      size = size_of(Terrain_Vertex) * NUM_TERRAIN_VERTICES,
+      size = size_of(Terrain_Sb_Vertex) * NUM_TERRAIN_VERTICES,
     },
   )
   g.bindings[.Terrain].storage_buffers = {
@@ -134,7 +134,7 @@ game_init :: proc() {
   g.pipelines[.Grass] = sg.make_pipeline(grass_pip_desc)
 
   grass_storage_buffer := sg.make_buffer(
-    {usage = {storage_buffer = true}, size = size_of(Sb_Instance) * GRASS_COUNT},
+    {usage = {storage_buffer = true}, size = size_of(Grass_Sb_Instance) * GRASS_COUNT},
   )
   build_grass(.Grass, grass_storage_buffer)
 
@@ -155,26 +155,26 @@ game_init :: proc() {
     sshape.Plane{width = 2, depth = 2, tiles = 1, transform = {m = atlas_transform}},
   )
 
-  g.bindings[.Atlas].images[IMG_noise_texture] = image_diffuse
-  g.bindings[.Atlas].samplers[SMP_noise_smp] = sampler
+  g.bindings[.Atlas].images[IMG_quad_noise_texture] = image_diffuse
+  g.bindings[.Atlas].samplers[SMP_quad_noise_smp] = sampler
 
   // compute
   g.pipelines[.Compute] = sg.make_pipeline(
     {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
   )
   g.bindings[.Compute].storage_buffers = {
-    SBUF_terrain_vertices_compute = terrain_storage_buffer,
-    SBUF_grass_instances_compute  = grass_storage_buffer,
+    SBUF_compute_terrain_buffer = terrain_storage_buffer,
+    SBUF_compute_grass_buffer   = grass_storage_buffer,
   }
 
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Compute])
   sg.apply_bindings(g.bindings[.Compute])
-  vs_params_compute := Vs_Params_Compute {
+  vs_params_compute := Compute_Vs_Params {
     grid_tiles = GRID_TILES,
     grid_scale = GRID_SCALE,
   }
-  sg.apply_uniforms(UB_vs_params_compute, sg_range(&vs_params_compute))
+  sg.apply_uniforms(UB_compute_vs_params, sg_range(&vs_params_compute))
   sg.dispatch(GRID_TILES + 1, GRID_TILES + 1, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Compute])
@@ -188,12 +188,12 @@ game_frame :: proc() {
   view, projection := camera_update()
   time := f32(stm.sec(stm.now()))
 
-  vs_params := Vs_Params {
+  vs_params := Terrain_Vs_Params {
     mvp         = projection * view * linalg.matrix4_translate_f32({0, 0, 0}),
     u_time      = time,
     u_light_dir = Vec3{0.0, 1.0, 0.0},
   }
-  vs_params_grass := Vs_Params_Grass {
+  vs_params_grass := Grass_Vs_Params {
     vp          = projection * view,
     u_time      = vs_params.u_time,
     u_light_dir = vs_params.u_light_dir,
@@ -204,13 +204,13 @@ game_frame :: proc() {
   // terrain
   sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Terrain])
   sg.apply_bindings(g.bindings[.Terrain])
-  sg.apply_uniforms(UB_vs_params, data = sg_range(&vs_params))
+  sg.apply_uniforms(UB_terrain_vs_params, data = sg_range(&vs_params))
   sg.draw(0, NUM_TERRAIN_INDICES, 1)
 
   // grass
   sg.apply_pipeline(g.pipelines[.Grass])
   sg.apply_bindings(g.bindings[.Grass])
-  sg.apply_uniforms(UB_vs_params_grass, data = sg_range(&vs_params_grass))
+  sg.apply_uniforms(UB_grass_vs_params, data = sg_range(&vs_params_grass))
   sg.draw(g.ranges[.Grass].base_element, g.ranges[.Grass].num_elements, GRASS_COUNT)
 
   // debug screen

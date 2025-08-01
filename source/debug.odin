@@ -31,7 +31,7 @@ debug_process :: proc() {
   print_text("TERRAIN VERTICES: %#w", NUM_TERRAIN_VERTICES)
   print_text("TERRAIN INDICES: %#w", NUM_TERRAIN_INDICES)
 
-  print_text("CAMERA: %#w", g.camera)
+  // print_text("CAMERA: %#w", g.camera)
 
   sdtx.draw()
 }

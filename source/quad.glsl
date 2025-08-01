@@ -1,3 +1,4 @@
+#pragma sokol @module quad
 #pragma sokol @include common.glsl
 
 #pragma sokol @vs vs

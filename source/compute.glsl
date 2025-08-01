@@ -1,3 +1,4 @@
+#pragma sokol @module compute
 #pragma sokol @include common.glsl
 
 #pragma sokol @cs cs_init
@@ -7,26 +8,26 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(binding = 0, rgba32f) uniform image2D noise_image;
 layout(binding = 1, rgba32f) uniform image2D diffuse_image;
 
-struct terrain_vertex_compute {
+struct terrain_vertex {
     vec3 position;
     vec3 normal_pos;
     vec2 texcoord;
 };
 
-struct grass_instance_compute {
+struct grass_instance {
     vec3 position;
 };
 
-layout(binding = 0) uniform vs_params_compute {
+layout(binding = 0) uniform vs_params {
     float grid_tiles;
     float grid_scale;
 };
 
-layout(binding = 1) writeonly buffer terrain_vertices_compute {
-    terrain_vertex_compute terrain_vertices[];
+layout(binding = 1) writeonly buffer terrain_buffer {
+    terrain_vertex terrain_vertices[];
 };
-layout(binding = 2) writeonly buffer grass_instances_compute {
-    grass_instance_compute grass_instances[];
+layout(binding = 2) writeonly buffer grass_buffer {
+    grass_instance grass_instances[];
 };
 
 int grass_index = 0;

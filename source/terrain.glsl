@@ -1,3 +1,4 @@
+#pragma sokol @module terrain
 #pragma sokol @include common.glsl
 
 #pragma sokol @vs vs
@@ -9,14 +10,14 @@ layout(binding = 0) uniform vs_params {
     vec3 u_light_dir;
 };
 
-struct terrain_vertex {
+struct sb_vertex {
     vec3 position;
     vec3 normal_pos;
     vec2 texcoord;
 };
 
-layout(binding = 1) readonly buffer terrain_vertices_buffer {
-    terrain_vertex terrain_vertices[];
+layout(binding = 1) readonly buffer vertices_buffer {
+    sb_vertex vtx[];
 };
 
 out vec3 frag_pos;
@@ -27,15 +28,15 @@ out float time;
 out vec3 light_dir;
 
 void main() {
-    vec3 pos = terrain_vertices[gl_VertexIndex].position;
+    vec3 pos = vtx[gl_VertexIndex].position;
 
     gl_Position = mvp * vec4(pos, 1.0);
 
     time = u_time;
     light_dir = u_light_dir;
 
-    uv = terrain_vertices[gl_VertexIndex].texcoord;
-    normal = terrain_vertices[gl_VertexIndex].normal_pos;
+    uv = vtx[gl_VertexIndex].texcoord;
+    normal = vtx[gl_VertexIndex].normal_pos;
     frag_pos = normalize(pos);
 }
 #pragma sokol @end

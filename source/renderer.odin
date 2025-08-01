@@ -41,7 +41,7 @@ build_shape :: proc(id: BindingID, desc: ShapeType) {
 }
 
 build_grass :: proc(id: BindingID, instances_buffer: sg.Buffer) {
-  vertices := []Sb_Vertex {
+  vertices := []Grass_Sb_Vertex {
     // Triangle (top)
     {position = {0.0, 0.1, 0.5}, texcoord = {0.5, 0.0}, normal_pos = {0, 0, 0}}, // top-center
     {position = {0.1, -0.1, 0.5}, texcoord = {1.0, 0.222}, normal_pos = {0, 0, 0}}, // bottom-right
@@ -69,10 +69,10 @@ build_grass :: proc(id: BindingID, instances_buffer: sg.Buffer) {
   // odinfmt: enable
 
   g.bindings[id].storage_buffers = {
-    SBUF_vertices  = sg.make_buffer(
+    SBUF_grass_vertices  = sg.make_buffer(
       {usage = {storage_buffer = true}, data = sg_range(vertices)},
     ),
-    SBUF_instances = instances_buffer,
+    SBUF_grass_instances = instances_buffer,
     // SBUF_instances = sg.make_buffer(
     //   {
     //     usage = {storage_buffer = true, stream_update = true},

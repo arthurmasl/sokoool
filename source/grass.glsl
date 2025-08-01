@@ -1,3 +1,4 @@
+#pragma sokol @module grass
 #pragma sokol @include common.glsl
 
 #pragma sokol @vs vs
@@ -19,7 +20,7 @@ layout(binding = 1) readonly buffer instances {
     sb_instance inst[];
 };
 
-layout(binding = 0) uniform vs_params_grass {
+layout(binding = 0) uniform vs_params {
     mat4 vp;
     float u_time;
     vec3 u_light_dir;
