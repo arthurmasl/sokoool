@@ -14,7 +14,7 @@ struct terrain_vertex_compute {
 };
 
 struct grass_instance_compute {
-    mat4 model;
+    vec3 position;
 };
 
 layout(binding = 0) uniform vs_params_compute {
@@ -28,15 +28,6 @@ layout(binding = 1) writeonly buffer terrain_vertices_compute {
 layout(binding = 2) writeonly buffer grass_instances_compute {
     grass_instance_compute grass_instances[];
 };
-
-mat4 translate(vec3 t) {
-    return mat4(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        t.x, t.y, t.z, 1.0
-    );
-}
 
 int grass_index = 0;
 void main() {
@@ -67,8 +58,7 @@ void main() {
     terrain_vertices[index].texcoord = vec2(x / grid_tiles, z / grid_tiles);
 
     if (h > SAND && h < GRASS) {
-        pos.y += 0.7;
-        grass_instances[index].model = translate(pos);
+        grass_instances[index].position = vec3(pos.x, pos.y + 0.7, pos.z);
     }
 }
 

@@ -9,7 +9,7 @@ struct sb_vertex {
     vec2 texcoord;
 };
 struct sb_instance {
-    mat4 model;
+    vec3 position;
 };
 
 layout(binding = 0) readonly buffer vertices {
@@ -38,10 +38,10 @@ void main() {
     normal = vtx[gl_VertexIndex].normal_pos;
     light_dir = u_light_dir;
 
-    mat4 model = inst[gl_InstanceIndex].model;
-    vec3 pos = vtx[gl_VertexIndex].position;
+    vec3 local_pos = vtx[gl_VertexIndex].position;
+    vec3 world_pos = inst[gl_InstanceIndex].position;
 
-    gl_Position = vp * model * vec4(pos, 1.0);
+    gl_Position = vp * vec4(local_pos + world_pos, 1.0);
 }
 #pragma sokol @end
 
