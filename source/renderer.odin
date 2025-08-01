@@ -69,10 +69,10 @@ build_grass :: proc(id: BindingID, instances_buffer: sg.Buffer) {
   // odinfmt: enable
 
   g.bindings[id].storage_buffers = {
-    SBUF_grass_vertices  = sg.make_buffer(
+    SBUF_grass_vertices_buffer  = sg.make_buffer(
       {usage = {storage_buffer = true}, data = sg_range(vertices)},
     ),
-    SBUF_grass_instances = instances_buffer,
+    SBUF_grass_instances_buffer = instances_buffer,
     // SBUF_instances = sg.make_buffer(
     //   {
     //     usage = {storage_buffer = true, stream_update = true},

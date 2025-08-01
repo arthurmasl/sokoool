@@ -13,11 +13,11 @@ struct sb_instance {
     vec3 position;
 };
 
-layout(binding = 0) readonly buffer vertices {
-    sb_vertex vtx[];
+layout(binding = 0) readonly buffer vertices_buffer {
+    sb_vertex vertices[];
 };
-layout(binding = 1) readonly buffer instances {
-    sb_instance inst[];
+layout(binding = 1) readonly buffer instances_buffer {
+    sb_instance instances[];
 };
 
 layout(binding = 0) uniform vs_params {
@@ -35,12 +35,12 @@ out vec3 normal;
 out vec3 light_dir;
 
 void main() {
-    uv = vtx[gl_VertexIndex].texcoord;
-    normal = vtx[gl_VertexIndex].normal_pos;
+    uv = vertices[gl_VertexIndex].texcoord;
+    normal = vertices[gl_VertexIndex].normal_pos;
     light_dir = u_light_dir;
 
-    vec3 local_pos = vtx[gl_VertexIndex].position;
-    vec3 world_pos = inst[gl_InstanceIndex].position;
+    vec3 local_pos = vertices[gl_VertexIndex].position;
+    vec3 world_pos = instances[gl_InstanceIndex].position;
 
     gl_Position = vp * vec4(local_pos + world_pos, 1.0);
 }

@@ -17,7 +17,7 @@ struct sb_vertex {
 };
 
 layout(binding = 1) readonly buffer vertices_buffer {
-    sb_vertex vtx[];
+    sb_vertex vertices[];
 };
 
 out vec3 frag_pos;
@@ -28,15 +28,15 @@ out float time;
 out vec3 light_dir;
 
 void main() {
-    vec3 pos = vtx[gl_VertexIndex].position;
+    vec3 pos = vertices[gl_VertexIndex].position;
 
     gl_Position = mvp * vec4(pos, 1.0);
 
     time = u_time;
     light_dir = u_light_dir;
 
-    uv = vtx[gl_VertexIndex].texcoord;
-    normal = vtx[gl_VertexIndex].normal_pos;
+    uv = vertices[gl_VertexIndex].texcoord;
+    normal = vertices[gl_VertexIndex].normal_pos;
     frag_pos = normalize(pos);
 }
 #pragma sokol @end
