@@ -8,6 +8,7 @@ import sg "sokol/gfx"
 import slog "sokol/log"
 
 DEBUG_TEXT := true
+DEBUG_CAMERA := false
 DEBUG_LINES := false
 
 debug_init :: proc() {
@@ -24,14 +25,13 @@ debug_process :: proc() {
 
   fps := 1.0 / delta_time
   print_text("FPS: %d", u8(fps))
-  // print_text("TRIANGLES: %#w", TRIANGLES)
 
-  print_text("THREADS : %#w", COMPUTE_THREADS)
   print_text("GRID TILES: %#w", GRID_TILES)
   print_text("TERRAIN VERTICES: %#w", NUM_TERRAIN_VERTICES)
   print_text("TERRAIN INDICES: %#w", NUM_TERRAIN_INDICES)
+  print_text("GRASS COUNT: %#w", GRASS_COUNT)
 
-  // print_text("CAMERA: %#w", g.camera)
+  if DEBUG_CAMERA do print_text("CAMERA: %#w", g.camera)
 
   sdtx.draw()
 }

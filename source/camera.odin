@@ -44,6 +44,11 @@ camera_init :: proc() {
   g.camera.yaw = 180
 }
 
+set_turbo :: proc(state: bool) {
+  g.camera.turbo = state
+  g.camera.speed = g.camera.turbo ? TURBO_SPEED : SPEED
+}
+
 camera_process_input :: proc(e: ^sapp.Event) {
   if e.type == .FOCUSED || e.type == .RESIZED do sapp.lock_mouse(true)
   if e.type == .UNFOCUSED do sapp.lock_mouse(false)
@@ -53,11 +58,6 @@ camera_process_input :: proc(e: ^sapp.Event) {
   // keyboard
   if e.type == .KEY_DOWN do key_down[e.key_code] = true
   if e.type == .KEY_UP do key_down[e.key_code] = false
-
-  if e.type == .KEY_DOWN && e.key_code == .T {
-    g.camera.turbo = !g.camera.turbo
-    g.camera.speed = g.camera.turbo ? TURBO_SPEED : SPEED
-  }
 
   // mosue
   if e.type == .MOUSE_MOVE {

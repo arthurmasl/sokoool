@@ -84,10 +84,12 @@ game_event :: proc(e: ^sapp.Event) {
   if e.type == .KEY_DOWN {
     if e.key_code == .R do force_reset = true
     if e.key_code == .Q do sapp.request_quit()
-    if e.key_code == .Y do DEBUG_TEXT = !DEBUG_TEXT
-    if e.key_code == .L do DEBUG_LINES = !DEBUG_LINES
 
     if e.key_code == .W do write_config()
+    if e.key_code == .Y do DEBUG_TEXT = !DEBUG_TEXT;write_config()
+    if e.key_code == .L do DEBUG_LINES = !DEBUG_LINES;write_config()
+    if e.key_code == .C do DEBUG_CAMERA = !DEBUG_CAMERA;write_config()
+    if e.key_code == .T do set_turbo(!g.camera.turbo);write_config()
   }
 
   camera_process_input(e)
