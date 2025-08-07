@@ -100,11 +100,6 @@ game_init :: proc() {
   }
   g.pipelines[.Terrain] = sg.make_pipeline(terrain_pip_desc)
 
-  // build_shape(
-  //   .Terrain,
-  //   sshape.Plane{width = TERRAIN_SIZE, depth = TERRAIN_SIZE, tiles = TERRAIN_TILES},
-  // )
-
   terrain_storage_buffer := sg.make_buffer(
     {
       usage = {storage_buffer = true},
