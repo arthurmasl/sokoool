@@ -47,14 +47,18 @@ CONFIG_SRC :: "settings.config"
 
 write_config :: proc() {
   format := "pos: %w\npitch: %w\nyaw: %w"
-  config := fmt.aprintf(format, g.camera.pos, g.camera.pitch, g.camera.yaw)
-  defer delete(config)
+  config := fmt.aprintf(
+    format,
+    g.camera.pos,
+    g.camera.pitch,
+    g.camera.yaw,
+    allocator = context.temp_allocator,
+  )
   write_entire_file(CONFIG_SRC, transmute([]byte)config)
 }
 
 read_config :: proc() {
-  config, success := read_entire_file(CONFIG_SRC)
-  defer delete(config)
+  config, success := read_entire_file(CONFIG_SRC, context.temp_allocator)
   if !success do write_config()
 
   str := strings.split(transmute(string)config, "\n", context.temp_allocator)
