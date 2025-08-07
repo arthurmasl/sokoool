@@ -4,6 +4,8 @@ import "base:intrinsics"
 import "core:fmt"
 import "core:os"
 import "core:slice"
+import "core:strconv"
+import "core:strings"
 import sg "sokol/gfx"
 import stbi "vendor:stb/image"
 
@@ -24,6 +26,61 @@ read_entire_file :: proc(
     return web.read_entire_file(name, allocator)
   } else {
     return os.read_entire_file(name, allocator)
+  }
+}
+
+write_entire_file :: proc(
+  name: string,
+  data: []byte,
+  truncate := true,
+) -> (
+  success: bool,
+) {
+  when IS_WEB {
+    return web.write_entire_file(name, data, truncate)
+  } else {
+    return os.write_entire_file(name, data, truncate)
+  }
+}
+
+CONFIG_SRC :: "settings.config"
+
+write_config :: proc() {
+  format := "pos: %w\npitch: %w\nyaw: %w"
+  config := fmt.aprintf(format, g.camera.pos, g.camera.pitch, g.camera.yaw)
+  defer delete(config)
+  write_entire_file(CONFIG_SRC, transmute([]byte)config)
+}
+
+read_config :: proc() {
+  config, success := read_entire_file(CONFIG_SRC)
+  defer delete(config)
+  if !success do write_config()
+
+  str := strings.split(transmute(string)config, "\n", context.temp_allocator)
+
+  for line in str {
+    value := strings.split(line, ": ", context.temp_allocator)[1]
+    name := strings.split(line, ":", context.temp_allocator)[0]
+
+    if name == "pos" {
+      value = value[1:len(value) - 1]
+      values := strings.split(value, ", ", context.temp_allocator)
+
+      g.camera.pos = Vec3 {
+        f32(strconv.atoi(values[0])),
+        f32(strconv.atoi(values[1])),
+        f32(strconv.atoi(values[2])),
+      }
+    }
+
+    if name == "pitch" {
+      g.camera.pitch = f32(strconv.atoi(value))
+    }
+
+    if name == "yaw" {
+      g.camera.yaw = f32(strconv.atoi(value))
+    }
   }
 }
 

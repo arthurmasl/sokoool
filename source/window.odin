@@ -86,6 +86,8 @@ game_event :: proc(e: ^sapp.Event) {
     if e.key_code == .Q do sapp.request_quit()
     if e.key_code == .Y do DEBUG_TEXT = !DEBUG_TEXT
     if e.key_code == .L do DEBUG_LINES = !DEBUG_LINES
+
+    if e.key_code == .W do write_config()
   }
 
   camera_process_input(e)

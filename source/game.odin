@@ -39,6 +39,8 @@ game_init :: proc() {
     camera_init()
   }
 
+  read_config()
+
   sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
   stm.setup()
   debug_init()
