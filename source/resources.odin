@@ -64,17 +64,18 @@ read_config :: proc() {
   str := strings.split(transmute(string)config, "\n", context.temp_allocator)
 
   for line in str {
-    value := strings.split(line, ": ", context.temp_allocator)[1]
-    name := strings.split(line, ":", context.temp_allocator)[0]
+    values := strings.split(line, ": ", context.temp_allocator)
+    name := values[0]
+    value := values[1]
 
     if name == "pos" {
       value = value[1:len(value) - 1]
-      values := strings.split(value, ", ", context.temp_allocator)
+      args := strings.split(value, ", ", context.temp_allocator)
 
       g.camera.pos = Vec3 {
-        f32(strconv.atoi(values[0])),
-        f32(strconv.atoi(values[1])),
-        f32(strconv.atoi(values[2])),
+        f32(strconv.atoi(args[0])),
+        f32(strconv.atoi(args[1])),
+        f32(strconv.atoi(args[2])),
       }
     }
 
