@@ -54,7 +54,7 @@ in vec3 light_dir;
 out vec4 frag_color;
 
 void main() {
-    vec3 color = mix(vec3(0.3, 0.6, 0.3), vec3(0.8, 0.9, 0), 1.0 - uv.y);
+    vec3 color = mix(vec3(0.3, 0.6, 0.3), vec3(0.5, 0.9, 0), 1.0 - uv.y);
     // vec3 final = vec3(dot(normal, light_dir) * color);
     vec3 final = vec3(color);
 
