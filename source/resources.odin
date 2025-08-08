@@ -1,3 +1,4 @@
+#+feature dynamic-literals
 package game
 
 import "base:intrinsics"
@@ -45,29 +46,20 @@ write_entire_file :: proc(
 
 CONFIG_SRC :: "settings.config"
 
-Param_Id :: enum {
-  Pos,
-  Yaw,
-  Pitch,
-  Turbo,
-  Debug_Text,
-  Debug_Lines,
-  Debug_Camera,
-}
-
 write_config :: proc() {
-  params_array := [Param_Id]any {
-    .Pos          = g.camera.pos,
-    .Yaw          = g.camera.yaw,
-    .Pitch        = g.camera.pitch,
-    .Turbo        = g.camera.turbo,
-    .Debug_Text   = DEBUG_TEXT,
-    .Debug_Lines  = DEBUG_LINES,
-    .Debug_Camera = DEBUG_CAMERA,
+  params_array := map[string]any {
+    "pos"          = g.camera.pos,
+    "yaw"          = g.camera.yaw,
+    "pitch"        = g.camera.pitch,
+    "turbo"        = g.camera.turbo,
+    "debug_text"   = DEBUG_TEXT,
+    "debug_lines"  = DEBUG_LINES,
+    "debug_camera" = DEBUG_CAMERA,
   }
+  defer delete(params_array)
 
   config: string
-  for value, key in params_array {
+  for key, value in params_array {
     config = strings.join(
       []string {
         config,
@@ -93,7 +85,7 @@ read_config :: proc() {
     value := values[1]
 
     switch name {
-    case "Pos":
+    case "pos":
       value = value[1:len(value) - 1]
       args := strings.split(value, ", ", context.temp_allocator)
 
@@ -102,20 +94,20 @@ read_config :: proc() {
         f32(strconv.atoi(args[1])),
         f32(strconv.atoi(args[2])),
       }
-    case "Pitch":
+    case "pitch":
       g.camera.pitch = f32(strconv.atoi(value))
 
-    case "Yaw":
+    case "yaw":
       g.camera.yaw = f32(strconv.atoi(value))
 
-    case "Turbo":
+    case "turbo":
       set_turbo(value == "true")
 
-    case "Debug_Text":
+    case "debug_text":
       DEBUG_TEXT = value == "true"
-    case "Debug_Lines":
+    case "debug_lines":
       DEBUG_LINES = value == "true"
-    case "Debug_Camera":
+    case "debug_camera":
       DEBUG_CAMERA = value == "true"
 
     }
