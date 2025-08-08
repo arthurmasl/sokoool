@@ -45,19 +45,38 @@ write_entire_file :: proc(
 
 CONFIG_SRC :: "settings.config"
 
+Param_Id :: enum {
+  Pos,
+  Yaw,
+  Pitch,
+  Turbo,
+  Debug_Text,
+  Debug_Lines,
+  Debug_Camera,
+}
+
 write_config :: proc() {
-  format := "pos: %w\npitch: %w\nyaw: %w\nturbo: %w\ndebug_text: %w\ndebug_lines: %w\ndebug_camera: %w\n"
-  params := []any {
-    g.camera.pos,
-    g.camera.pitch,
-    g.camera.yaw,
-    g.camera.turbo,
-    DEBUG_TEXT,
-    DEBUG_LINES,
-    DEBUG_CAMERA,
+  params_array := [Param_Id]any {
+    .Pos          = g.camera.pos,
+    .Yaw          = g.camera.yaw,
+    .Pitch        = g.camera.pitch,
+    .Turbo        = g.camera.turbo,
+    .Debug_Text   = DEBUG_TEXT,
+    .Debug_Lines  = DEBUG_LINES,
+    .Debug_Camera = DEBUG_CAMERA,
   }
 
-  config := fmt.aprintf(format, ..params[:], allocator = context.temp_allocator)
+  config: string
+  for value, key in params_array {
+    config = strings.join(
+      []string {
+        config,
+        fmt.aprintf("%v: %v\n", key, value, allocator = context.temp_allocator),
+      },
+      "",
+      allocator = context.temp_allocator,
+    )
+  }
 
   write_entire_file(CONFIG_SRC, transmute([]byte)config)
 }
@@ -74,7 +93,7 @@ read_config :: proc() {
     value := values[1]
 
     switch name {
-    case "pos":
+    case "Pos":
       value = value[1:len(value) - 1]
       args := strings.split(value, ", ", context.temp_allocator)
 
@@ -83,20 +102,20 @@ read_config :: proc() {
         f32(strconv.atoi(args[1])),
         f32(strconv.atoi(args[2])),
       }
-    case "pitch":
+    case "Pitch":
       g.camera.pitch = f32(strconv.atoi(value))
 
-    case "yaw":
+    case "Yaw":
       g.camera.yaw = f32(strconv.atoi(value))
 
-    case "turbo":
+    case "Turbo":
       set_turbo(value == "true")
 
-    case "debug_text":
+    case "Debug_Text":
       DEBUG_TEXT = value == "true"
-    case "debug_lines":
+    case "Debug_Lines":
       DEBUG_LINES = value == "true"
-    case "debug_camera":
+    case "Debug_Camera":
       DEBUG_CAMERA = value == "true"
 
     }
