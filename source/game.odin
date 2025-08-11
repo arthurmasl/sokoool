@@ -155,6 +155,12 @@ game_init :: proc() {
   g.bindings[.Atlas].images[IMG_quad_noise_texture] = image_diffuse
   g.bindings[.Atlas].samplers[SMP_quad_noise_smp] = sampler
 
+  // compute
+  compute_params := Grass_Compute_Vs_Params {
+    grid_tiles = GRID_TILES,
+    grid_scale = GRID_SCALE,
+  }
+
   // compute terrain
   g.pipelines[.Terrain_Compute] = sg.make_pipeline(
     {
@@ -164,17 +170,12 @@ game_init :: proc() {
   )
   g.bindings[.Terrain_Compute].storage_buffers = {
     SBUF_terrain_compute_terrain_buffer = terrain_storage_buffer,
-    // SBUF_terrain_compute_grass_buffer   = grass_storage_buffer,
   }
 
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Terrain_Compute])
   sg.apply_bindings(g.bindings[.Terrain_Compute])
-  terrain_compute_params := Terrain_Compute_Vs_Params {
-    grid_tiles = GRID_TILES,
-    grid_scale = GRID_SCALE,
-  }
-  sg.apply_uniforms(UB_terrain_compute_vs_params, sg_range(&terrain_compute_params))
+  sg.apply_uniforms(UB_terrain_compute_vs_params, sg_range(&compute_params))
   sg.dispatch(GRID_TILES + 1, GRID_TILES + 1, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Terrain_Compute])
@@ -193,11 +194,7 @@ game_init :: proc() {
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Grass_Compute])
   sg.apply_bindings(g.bindings[.Grass_Compute])
-  grass_compute_params := Grass_Compute_Vs_Params {
-    grid_tiles = GRID_TILES,
-    grid_scale = GRID_SCALE,
-  }
-  sg.apply_uniforms(UB_grass_compute_vs_params, sg_range(&grass_compute_params))
+  sg.apply_uniforms(UB_grass_compute_vs_params, sg_range(&compute_params))
   sg.dispatch(GRID_TILES + 1, GRID_TILES + 1, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Grass_Compute])
