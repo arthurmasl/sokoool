@@ -5,8 +5,10 @@
 #pragma sokol @include_block common
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-// layout(binding = 0, rgba32f) uniform image2D noise_image;
-// layout(binding = 1, rgba32f) uniform image2D diffuse_image;
+
+layout(binding = 0) uniform texture2D heightmap_texture;
+layout(binding = 0) uniform sampler heightmap_smp;
+#define sampled_heightmap sampler2D(heightmap_texture, heightmap_smp)
 
 struct grass_instance {
     vec3 position;
@@ -25,7 +27,7 @@ void main() {
     uint x = gl_GlobalInvocationID.x;
     uint z = gl_GlobalInvocationID.y;
 
-    float h = 0.0;
+    float h = texture(sampled_heightmap, vec2(x, z)).r;
 
     uint index = z * (uint(grid_tiles) + 1) + x;
     vec3 pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
