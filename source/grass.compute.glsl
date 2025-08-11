@@ -25,7 +25,7 @@ void main() {
     uint x = gl_GlobalInvocationID.x;
     uint z = gl_GlobalInvocationID.y;
 
-    float h = 10.0;
+    float h = 0.0;
 
     uint index = z * (uint(grid_tiles) + 1) + x;
     vec3 pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
