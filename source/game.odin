@@ -76,8 +76,8 @@ game_init :: proc() {
   attachments := sg.make_attachments(
     {
       storages = {
-        SIMG_compute_noise_image = {image = image_noise},
-        SIMG_compute_diffuse_image = {image = image_diffuse},
+        SIMG_terrain_compute_noise_image = {image = image_noise},
+        SIMG_terrain_compute_diffuse_image = {image = image_diffuse},
       },
     },
   )
@@ -160,18 +160,18 @@ game_init :: proc() {
     {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
   )
   g.bindings[.Compute].storage_buffers = {
-    SBUF_compute_terrain_buffer = terrain_storage_buffer,
-    SBUF_compute_grass_buffer   = grass_storage_buffer,
+    SBUF_terrain_compute_terrain_buffer = terrain_storage_buffer,
+    SBUF_terrain_compute_grass_buffer   = grass_storage_buffer,
   }
 
   sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Compute])
   sg.apply_bindings(g.bindings[.Compute])
-  vs_params_compute := Compute_Vs_Params {
+  vs_params_compute := Terrain_Compute_Vs_Params {
     grid_tiles = GRID_TILES,
     grid_scale = GRID_SCALE,
   }
-  sg.apply_uniforms(UB_compute_vs_params, sg_range(&vs_params_compute))
+  sg.apply_uniforms(UB_terrain_compute_vs_params, sg_range(&vs_params_compute))
   sg.dispatch(GRID_TILES + 1, GRID_TILES + 1, 1)
   sg.end_pass()
   sg.destroy_pipeline(g.pipelines[.Compute])
