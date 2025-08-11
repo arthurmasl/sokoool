@@ -26,6 +26,6 @@ PipelineID :: enum u8 {
 
 PassID :: enum u8 {
   Display,
-  Compute_Terrain,
-  Compute_Grass,
+  Terrain_Compute,
+  Grass_Compute,
 }
