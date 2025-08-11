@@ -11,18 +11,21 @@ BindingID :: enum u8 {
   Terrain,
   Atlas,
   Grass,
-  Compute,
+  Terrain_Compute,
+  Grass_Compute,
 }
 
 PipelineID :: enum u8 {
   Terrain,
   Primitive,
   Atlas,
-  Compute,
+  Terrain_Compute,
+  Grass_Compute,
   Grass,
 }
 
 PassID :: enum u8 {
   Display,
-  Compute,
+  Terrain_Compute,
+  Grass_Compute,
 }

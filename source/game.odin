@@ -86,7 +86,11 @@ game_init :: proc() {
   g.passes[.Display] = {
     action = {colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}}},
   }
-  g.passes[.Compute] = {
+  g.passes[.Terrain_Compute] = {
+    compute     = true,
+    attachments = attachments,
+  }
+  g.passes[.Grass_Compute] = {
     compute     = true,
     attachments = attachments,
   }
@@ -155,27 +159,52 @@ game_init :: proc() {
   g.bindings[.Atlas].images[IMG_quad_noise_texture] = image_diffuse
   g.bindings[.Atlas].samplers[SMP_quad_noise_smp] = sampler
 
-  // compute
-  g.pipelines[.Compute] = sg.make_pipeline(
-    {compute = true, shader = sg.make_shader(init_shader_desc(sg.query_backend()))},
+  // compute terrain
+  g.pipelines[.Terrain_Compute] = sg.make_pipeline(
+    {
+      compute = true,
+      shader = sg.make_shader(terrain_compute_shader_desc(sg.query_backend())),
+    },
   )
-  g.bindings[.Compute].storage_buffers = {
+  g.bindings[.Terrain_Compute].storage_buffers = {
     SBUF_terrain_compute_terrain_buffer = terrain_storage_buffer,
-    SBUF_terrain_compute_grass_buffer   = grass_storage_buffer,
+    // SBUF_terrain_compute_grass_buffer   = grass_storage_buffer,
   }
 
-  sg.begin_pass(g.passes[.Compute])
-  sg.apply_pipeline(g.pipelines[.Compute])
-  sg.apply_bindings(g.bindings[.Compute])
-  vs_params_compute := Terrain_Compute_Vs_Params {
+  sg.begin_pass(g.passes[.Terrain_Compute])
+  sg.apply_pipeline(g.pipelines[.Terrain_Compute])
+  sg.apply_bindings(g.bindings[.Terrain_Compute])
+  terrain_compute_params := Terrain_Compute_Vs_Params {
     grid_tiles = GRID_TILES,
     grid_scale = GRID_SCALE,
   }
-  sg.apply_uniforms(UB_terrain_compute_vs_params, sg_range(&vs_params_compute))
+  sg.apply_uniforms(UB_terrain_compute_vs_params, sg_range(&terrain_compute_params))
   sg.dispatch(GRID_TILES + 1, GRID_TILES + 1, 1)
   sg.end_pass()
-  sg.destroy_pipeline(g.pipelines[.Compute])
+  sg.destroy_pipeline(g.pipelines[.Terrain_Compute])
 
+  // compute grass
+  g.pipelines[.Grass_Compute] = sg.make_pipeline(
+    {
+      compute = true,
+      shader = sg.make_shader(grass_compute_shader_desc(sg.query_backend())),
+    },
+  )
+  g.bindings[.Grass_Compute].storage_buffers = {
+    SBUF_grass_compute_grass_buffer = grass_storage_buffer,
+  }
+
+  sg.begin_pass(g.passes[.Grass_Compute])
+  sg.apply_pipeline(g.pipelines[.Grass_Compute])
+  sg.apply_bindings(g.bindings[.Grass_Compute])
+  grass_compute_params := Grass_Compute_Vs_Params {
+    grid_tiles = GRID_TILES,
+    grid_scale = GRID_SCALE,
+  }
+  sg.apply_uniforms(UB_grass_compute_vs_params, sg_range(&grass_compute_params))
+  sg.dispatch(GRID_TILES + 1, GRID_TILES + 1, 1)
+  sg.end_pass()
+  sg.destroy_pipeline(g.pipelines[.Grass_Compute])
 }
 
 @(export)

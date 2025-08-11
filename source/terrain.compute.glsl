@@ -14,10 +14,6 @@ struct terrain_vertex {
     vec2 texcoord;
 };
 
-struct grass_instance {
-    vec3 position;
-};
-
 layout(binding = 0) uniform vs_params {
     float grid_tiles;
     float grid_scale;
@@ -26,11 +22,7 @@ layout(binding = 0) uniform vs_params {
 layout(binding = 1) writeonly buffer terrain_buffer {
     terrain_vertex terrain_vertices[];
 };
-layout(binding = 2) writeonly buffer grass_buffer {
-    grass_instance grass_instances[];
-};
 
-int grass_index = 0;
 void main() {
     uint x = gl_GlobalInvocationID.x;
     uint z = gl_GlobalInvocationID.y;
@@ -57,11 +49,7 @@ void main() {
 
     terrain_vertices[index].position = pos;
     terrain_vertices[index].texcoord = vec2(x / grid_tiles, z / grid_tiles);
-
-    if (h > SAND && h < GRASS) {
-        grass_instances[index].position = vec3(pos.x, pos.y + 0.7, pos.z);
-    }
 }
 
 #pragma sokol @end
-#pragma sokol @program init cs_terrain_init
+#pragma sokol @program terrain_compute cs_terrain_init
