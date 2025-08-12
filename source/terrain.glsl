@@ -3,17 +3,12 @@
 
 #pragma sokol @vs vs
 #pragma sokol @include_block common
+#pragma sokol @include_block common_compute
 
 layout(binding = 0) uniform vs_params {
     mat4 mvp;
     float u_time;
     vec3 u_light_dir;
-};
-
-struct sb_vertex {
-    vec3 position;
-    vec3 normal_pos;
-    vec2 texcoord;
 };
 
 layout(binding = 1) readonly buffer vertices_buffer {

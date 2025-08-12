@@ -2,16 +2,7 @@
 #pragma sokol @include common.glsl
 
 #pragma sokol @vs vs
-#pragma sokol @include_block common
-
-struct sb_vertex {
-    vec3 position;
-    vec3 normal_pos;
-    vec2 texcoord;
-};
-struct sb_instance {
-    vec3 position;
-};
+#pragma sokol @include_block common_compute
 
 layout(binding = 0) readonly buffer vertices_buffer {
     sb_vertex vertices[];

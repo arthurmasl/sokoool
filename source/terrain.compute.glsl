@@ -3,16 +3,11 @@
 
 #pragma sokol @cs cs_terrain_init
 #pragma sokol @include_block common
+#pragma sokol @include_block common_compute
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(binding = 0, rgba32f) uniform image2D noise_image;
 layout(binding = 1, rgba32f) uniform image2D diffuse_image;
-
-struct terrain_vertex {
-    vec3 position;
-    vec3 normal_pos;
-    vec2 texcoord;
-};
 
 layout(binding = 0) uniform vs_params {
     float grid_tiles;
@@ -20,7 +15,7 @@ layout(binding = 0) uniform vs_params {
 };
 
 layout(binding = 1) writeonly buffer terrain_buffer {
-    terrain_vertex terrain_vertices[];
+    sb_vertex vertices[];
 };
 
 void main() {
@@ -47,8 +42,8 @@ void main() {
     uint index = z * (uint(grid_tiles) + 1) + x;
     vec3 pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
 
-    terrain_vertices[index].position = pos;
-    terrain_vertices[index].texcoord = vec2(x / grid_tiles, z / grid_tiles);
+    vertices[index].position = pos;
+    vertices[index].texcoord = vec2(x / grid_tiles, z / grid_tiles);
 }
 
 #pragma sokol @end

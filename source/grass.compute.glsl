@@ -3,16 +3,13 @@
 
 #pragma sokol @cs cs_grass_init
 #pragma sokol @include_block common
+#pragma sokol @include_block common_compute
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(binding = 0, rgba32f) uniform image2D noise_image;
 
-struct grass_instance {
-    vec3 position;
-};
-
 layout(binding = 0) writeonly buffer grass_buffer {
-    grass_instance grass_instances[];
+    sb_instance grass_instances[];
 };
 
 layout(binding = 1) uniform vs_params {

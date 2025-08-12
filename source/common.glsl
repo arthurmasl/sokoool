@@ -52,3 +52,16 @@ vec3 get_biome_color(float height) {
     return color;
 }
 #pragma sokol @end
+
+#pragma sokol @block common_compute
+struct sb_vertex {
+    vec3 position;
+    vec3 normal_pos;
+    vec2 texcoord;
+};
+
+struct sb_instance {
+    vec3 position;
+};
+
+#pragma sokol @end
