@@ -91,7 +91,8 @@ game_init :: proc() {
     attachments = attachments,
   }
   g.passes[.Grass_Compute] = {
-    compute = true,
+    compute     = true,
+    attachments = attachments,
   }
 
   // terrain
@@ -193,8 +194,6 @@ game_init :: proc() {
   g.bindings[.Grass_Compute].storage_buffers = {
     SBUF_grass_compute_grass_buffer = grass_storage_buffer,
   }
-  g.bindings[.Grass_Compute].images[IMG_grass_compute_heightmap_texture] = image_noise
-  g.bindings[.Grass_Compute].samplers[SMP_grass_compute_heightmap_smp] = sampler
 
   sg.begin_pass(g.passes[.Grass_Compute])
   sg.apply_pipeline(g.pipelines[.Grass_Compute])
