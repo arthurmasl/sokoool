@@ -86,11 +86,7 @@ game_init :: proc() {
   g.passes[.Display] = {
     action = {colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}}},
   }
-  g.passes[.Terrain_Compute] = {
-    compute     = true,
-    attachments = attachments,
-  }
-  g.passes[.Grass_Compute] = {
+  g.passes[.Compute] = {
     compute     = true,
     attachments = attachments,
   }
@@ -176,7 +172,7 @@ game_init :: proc() {
     SBUF_terrain_compute_terrain_buffer = terrain_storage_buffer,
   }
 
-  sg.begin_pass(g.passes[.Terrain_Compute])
+  sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Terrain_Compute])
   sg.apply_bindings(g.bindings[.Terrain_Compute])
   sg.apply_uniforms(UB_terrain_compute_vs_params, sg_range(&compute_params))
@@ -195,7 +191,7 @@ game_init :: proc() {
     SBUF_grass_compute_grass_buffer = grass_storage_buffer,
   }
 
-  sg.begin_pass(g.passes[.Grass_Compute])
+  sg.begin_pass(g.passes[.Compute])
   sg.apply_pipeline(g.pipelines[.Grass_Compute])
   sg.apply_bindings(g.bindings[.Grass_Compute])
   sg.apply_uniforms(UB_grass_compute_vs_params, sg_range(&compute_params))
