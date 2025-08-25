@@ -24,21 +24,26 @@ void main() {
     float h = imageLoad(noise_image, ivec2(x, z)).r;
 
     uint index = z * (uint(grid_tiles) + 1) + x;
+    vec3 pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
 
-    for (int yo = 0; yo < 10; yo++) {
-        for (int xo = 0; xo < 10; xo++) {
-            vec3 pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
-
-            pos.x += xo;
-            pos.z += yo;
-
-            uint io = index * 100 + (yo * uint(grid_tiles) + xo);
-
-            if (h > SAND && h < GRASS) {
-                grass_instances[io].position = vec3(pos.x, pos.y + 0.7, pos.z);
-            }
-        }
+    if (h > SAND && h < GRASS) {
+        grass_instances[index].position = vec3(pos.x, pos.y + 0.7, pos.z);
     }
+
+    // for (int yo = 0; yo < 10; yo++) {
+    //     for (int xo = 0; xo < 10; xo++) {
+    //         vec3 pos = vec3(x * grid_scale, h * HEIGHT_SCALE * grid_scale, z * grid_scale);
+    //
+    //         pos.x += xo;
+    //         pos.z += yo;
+    //
+    //         uint io = index * 100 + (yo * uint(grid_tiles) + xo);
+    //
+    //         if (h > SAND && h < GRASS) {
+    //             grass_instances[io].position = vec3(pos.x, pos.y + 0.7, pos.z);
+    //         }
+    //     }
+    // }
 }
 
 #pragma sokol @end
