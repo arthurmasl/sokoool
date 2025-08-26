@@ -97,7 +97,7 @@ game_frame :: proc() {
   vs_params := Base_Vs_Params {
     mvp         = projection * view,
     u_time      = time,
-    u_light_dir = Vec3{0.0, 1.0, 0.0},
+    u_light_dir = Vec3{0.5, 1.0, 0.5},
   }
 
   sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
