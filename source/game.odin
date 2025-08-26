@@ -31,6 +31,11 @@ game_init :: proc() {
   stm.setup()
   debug_init()
 
+  // passes
+  g.passes[.Display] = {
+    action = {colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}}},
+  }
+
   // resources
   default_pip_desc := sg.Pipeline_Desc {
     shader = sg.make_shader(base_shader_desc(sg.query_backend())),
@@ -46,11 +51,6 @@ game_init :: proc() {
     index_type = .UINT16,
     cull_mode = .BACK,
     depth = {compare = .LESS_EQUAL, write_enabled = true},
-  }
-
-  // passes
-  g.passes[.Display] = {
-    action = {colors = {0 = {load_action = .CLEAR, clear_value = {0.2, 0.2, 0.2, 1.0}}}},
   }
 
   // primitive
