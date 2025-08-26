@@ -1,4 +1,4 @@
-#pragma sokol @module base
+#pragma sokol @module display
 #pragma sokol @include common.glsl
 
 #pragma sokol @vs vs
@@ -44,4 +44,4 @@ void main() {
 }
 
 #pragma sokol @end
-#pragma sokol @program base vs fs
+#pragma sokol @program display vs fs

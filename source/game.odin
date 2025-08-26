@@ -38,7 +38,7 @@ game_init :: proc() {
 
   // resources
   default_pip_desc := sg.Pipeline_Desc {
-    shader = sg.make_shader(base_shader_desc(sg.query_backend())),
+    shader = sg.make_shader(display_shader_desc(sg.query_backend())),
     layout = {
       buffers = {0 = sshape.vertex_buffer_layout_state()},
       attrs = {
@@ -94,7 +94,7 @@ game_frame :: proc() {
   view, projection := camera_update()
   time := f32(stm.sec(stm.now()))
 
-  vs_params := Base_Vs_Params {
+  vs_params := Display_Vs_Params {
     mvp         = projection * view,
     u_time      = time,
     u_light_dir = Vec3{0.5, 1.0, 0.5},
@@ -105,12 +105,12 @@ game_frame :: proc() {
 
   // cube
   sg.apply_bindings(g.bindings[.Cube])
-  sg.apply_uniforms(UB_base_vs_params, data = sg_range(&vs_params))
+  sg.apply_uniforms(UB_display_vs_params, data = sg_range(&vs_params))
   sg.draw(g.ranges[.Cube].base_element, g.ranges[.Cube].num_elements, 1)
 
   // terrain
   sg.apply_bindings(g.bindings[.Terrain])
-  sg.apply_uniforms(UB_base_vs_params, data = sg_range(&vs_params))
+  sg.apply_uniforms(UB_display_vs_params, data = sg_range(&vs_params))
   sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
 
   debug_process()
