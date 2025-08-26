@@ -26,6 +26,11 @@ debug_process :: proc() {
   fps := 1.0 / delta_time
   print_text("FPS: %d", u8(fps))
 
+  print_text("GRID TILES: %#w", GRID_TILES)
+  print_text("TERRAIN VERTICES: %#w", NUM_TERRAIN_VERTICES)
+  print_text("TERRAIN INDICES: %#w", NUM_TERRAIN_INDICES)
+  print_text("GRASS COUNT: %#w", GRASS_COUNT)
+
   if DEBUG_CAMERA do print_text("CAMERA: %#w", g.camera)
 
   sdtx.draw()

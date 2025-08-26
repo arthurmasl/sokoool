@@ -8,14 +8,23 @@ Mat3 :: matrix[3, 3]f32
 Mat4 :: matrix[4, 4]f32
 
 BindingID :: enum u8 {
-  Cube,
+  Terrain,
+  Atlas,
+  Grass,
+  Terrain_Compute,
+  Grass_Compute,
 }
 
 PipelineID :: enum u8 {
-  Cube,
+  Terrain,
   Primitive,
+  Atlas,
+  Terrain_Compute,
+  Grass_Compute,
+  Grass,
 }
 
 PassID :: enum u8 {
   Display,
+  Compute,
 }
