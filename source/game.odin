@@ -92,12 +92,9 @@ game_frame :: proc() {
   delta_time = f32(sapp.frame_duration())
 
   view, projection := camera_update()
-  time := f32(stm.sec(stm.now()))
 
   vs_params := Display_Vs_Params {
-    mvp         = projection * view,
-    u_time      = time,
-    u_light_dir = Vec3{0.5, 1.0, 0.5},
+    mvp = projection * view,
   }
 
   sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
