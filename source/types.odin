@@ -10,13 +10,16 @@ Mat4 :: matrix[4, 4]f32
 BindingID :: enum u8 {
   Cube,
   Terrain,
+  Shadow,
 }
 
 PipelineID :: enum u8 {
   Display,
   Primitive,
+  Shadow,
 }
 
 PassID :: enum u8 {
   Display,
+  Shadow,
 }

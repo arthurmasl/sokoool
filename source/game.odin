@@ -85,6 +85,57 @@ game_init :: proc() {
     },
   )
 
+  // shadow
+  shadow_map_img := sg.make_image(
+    {
+      usage = {depth_stencil_attachment = true},
+      width = 2048,
+      height = 2048,
+      pixel_format = .DEPTH,
+      sample_count = 1,
+    },
+  )
+
+  shadow_map_ds_view := sg.make_view(
+    {depth_stencil_attachment = {image = shadow_map_img}},
+  )
+  shadow_map_tex_view := sg.make_view({texture = {image = shadow_map_img}})
+
+  g.passes[.Shadow] = {
+    action = {depth = {load_action = .CLEAR, store_action = .STORE, clear_value = 1.0}},
+    attachments = {depth_stencil = shadow_map_ds_view},
+  }
+
+  shadow_sampler := sg.make_sampler(
+    {
+      min_filter = .LINEAR,
+      mag_filter = .LINEAR,
+      wrap_u = .CLAMP_TO_EDGE,
+      wrap_v = .CLAMP_TO_EDGE,
+      compare = .LESS,
+    },
+  )
+
+  g.pipelines[.Shadow] = sg.make_pipeline(
+    {
+      layout = {
+        buffers = {0 = {stride = 6 * size_of(f32)}},
+        // attrs = {ATTR_shadow_pos = {format = .FLOAT3}},
+        attrs = {0 = {format = .FLOAT3}},
+      },
+      shader = sg.make_shader(shadow_shader_desc(sg.query_backend())),
+      index_type = .UINT16,
+      cull_mode = .FRONT,
+      sample_count = 1,
+      depth = {pixel_format = .DEPTH, compare = .LESS_EQUAL, write_enabled = true},
+      colors = {0 = {pixel_format = .NONE}},
+    },
+  )
+
+  g.bindings[.Shadow] = {
+    vertex_buffers = {0 = shape_buffer.vertices},
+  }
+
 }
 
 @(export)
