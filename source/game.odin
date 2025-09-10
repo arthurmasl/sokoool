@@ -133,8 +133,12 @@ game_init :: proc() {
   )
 
   g.bindings[.Shadow] = {
-    vertex_buffers = {0 = shape_buffer.vertices},
+    vertex_buffers = {0 = g.bindings[.Cube].vertex_buffers[0]},
+    index_buffer = g.bindings[.Cube].index_buffer,
   }
+
+  g.bindings[.Cube].views[0] = shadow_map_tex_view
+  g.bindings[.Cube].samplers[0] = shadow_sampler
 
 }
 
