@@ -1,5 +1,7 @@
 package game
 
+import "core:fmt"
+import "core:image"
 import "core:math/linalg"
 import sapp "sokol/app"
 import sg "sokol/gfx"
@@ -139,7 +141,6 @@ game_init :: proc() {
 
   g.bindings[.Cube].views[0] = shadow_map_tex_view
   g.bindings[.Cube].samplers[0] = shadow_sampler
-
 }
 
 @(export)
@@ -149,7 +150,13 @@ game_frame :: proc() {
   view, projection := camera_update()
 
   vs_params := Display_Vs_Params {
-    mvp = projection * view,
+    mvp   = projection * view,
+    model = {},
+  }
+
+  fs_params := Display_Fs_Params {
+    light_dir = Vec3{50, 50, 50},
+    eye_pos   = g.camera.pos,
   }
 
   sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
@@ -165,7 +172,7 @@ game_frame :: proc() {
   sg.apply_uniforms(UB_display_vs_params, data = sg_range(&vs_params))
   sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
 
-  debug_process()
+  // debug_process()
 
   sg.end_pass()
   sg.commit()
