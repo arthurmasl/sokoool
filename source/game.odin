@@ -141,6 +141,9 @@ game_init :: proc() {
 
   g.bindings[.Cube].views[0] = shadow_map_tex_view
   g.bindings[.Cube].samplers[0] = shadow_sampler
+
+  g.bindings[.Terrain].views[0] = shadow_map_tex_view
+  g.bindings[.Terrain].samplers[0] = shadow_sampler
 }
 
 @(export)
@@ -149,18 +152,29 @@ game_frame :: proc() {
 
   view, projection := camera_update()
 
+  eye_pos := g.camera.pos
+  terrain_model := Mat4{}
+  cube_model := Mat4{}
+
+  light_pos := Mat4{}
+  light_view := Mat4{}
+  light_proj := Mat4{}
+  light_view_proj := light_view * light_proj
+
   vs_params := Display_Vs_Params {
-    mvp   = projection * view,
-    model = {},
+    mvp       = projection * view,
+    model     = {},
+    light_mvp = light_view_proj,
   }
 
   fs_params := Display_Fs_Params {
-    light_dir = Vec3{50, 50, 50},
-    eye_pos   = g.camera.pos,
+    light_dir = Vec3{50, 500, 50},
+    eye_pos   = eye_pos,
   }
 
   sg.begin_pass({action = g.passes[.Display].action, swapchain = sglue.swapchain()})
   sg.apply_pipeline(DEBUG_LINES ? g.pipelines[.Primitive] : g.pipelines[.Display])
+  sg.apply_uniforms(UB_display_fs_params, sg_range(&fs_params))
 
   // cube
   sg.apply_bindings(g.bindings[.Cube])
@@ -172,7 +186,7 @@ game_frame :: proc() {
   sg.apply_uniforms(UB_display_vs_params, data = sg_range(&vs_params))
   sg.draw(g.ranges[.Terrain].base_element, g.ranges[.Terrain].num_elements, 1)
 
-  // debug_process()
+  debug_process()
 
   sg.end_pass()
   sg.commit()
