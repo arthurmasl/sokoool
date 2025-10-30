@@ -153,12 +153,10 @@ game_frame :: proc() {
   view, projection := camera_update()
 
   eye_pos := g.camera.pos
-  terrain_model := Mat4{}
-  cube_model := Mat4{}
 
-  light_pos := Mat4{}
-  light_view := Mat4{}
-  light_proj := Mat4{}
+  light_pos := Vec4{50, 50, -50, 1.0}
+  light_view := linalg.matrix4_look_at_f32(light_pos.xyz, {0, 1.5, 0}, {0, 1, 0})
+  light_proj := linalg.matrix_ortho3d_f32(-5, 5, -5, 5, 0, 100)
   light_view_proj := light_view * light_proj
 
   vs_params := Display_Vs_Params {
@@ -168,7 +166,7 @@ game_frame :: proc() {
   }
 
   fs_params := Display_Fs_Params {
-    light_dir = Vec3{50, 500, 50},
+    light_dir = light_pos.xyz,
     eye_pos   = eye_pos,
   }
 
